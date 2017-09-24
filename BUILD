@@ -28,8 +28,8 @@ ts_binary(
 filegroup(
     name = "pack_template",
     srcs = [
-        # "@gs_ui//:pack_template",
-        # "//src/dir:template",
+        "@gs_ui//:pack_template",
+        "//src/main:template",
     ]
 )
 

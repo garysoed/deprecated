@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "baseUrl": ".",
-        "target": "es5",
+        "target": "es2016",
         "module": "commonjs",
         "moduleResolution": "node",
         "isolatedModules": false,
@@ -29,6 +29,8 @@
         "src/**/*.ts",
         "external/gs_tools/declarations/**/*.d.ts",
         "external/gs_tools/src/**/*.ts",
+        "external/gs_ui/declarations/**/*.d.ts",
+        "external/gs_ui/src/**/*.ts",
         "src/**/*.ts",
         "node_modules/typescript/lib/lib.dom.d.ts",
         "node_modules/typescript/lib/lib.es2015.d.ts"
