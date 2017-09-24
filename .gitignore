@@ -2,6 +2,7 @@
 bazel-bin
 bazel-genfiles
 bazel-gs-tools
+bazel-thoth
 bazel-out
 bazel-testlogs
 npm-debug.log
