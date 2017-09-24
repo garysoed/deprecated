@@ -1,0 +1,13 @@
+{
+  "generator-gs": {
+    "gsDeps": [
+      "gs_tools",
+      "gs_ui"
+    ],
+    "languages": [
+      "typescript"
+    ],
+    "name": "thoth",
+    "mainBazelTarget": "thoth"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "thoth",
+  "version": "1.0.0",
+  "description": "Thoth is a file based wiki page generator.",
+  "main": "index.js",
+  "dependencies": {
+    "gs-tools": "github:garysoed/gs-tools",
+    "gs-ui": "github:garysoed/gs-ui",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}
