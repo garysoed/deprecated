@@ -5,13 +5,12 @@ import { Main } from 'external/gs_ui/src/bootstrap';
 import { DefaultPalettes, Theme } from 'external/gs_ui/src/theming';
 
 import { RootView } from '../main/root-view';
-import { RouteFactoryService } from '../route/route-factory-service';
 
 const theme = Theme.newInstance(
     DefaultPalettes.get('green'),
     DefaultPalettes.get('orangepeel'));
 window.addEventListener('load', () => {
-  Main.newInstance({routeFactoryServiceCtor: RouteFactoryService}).bootstrap(theme, [RootView]);
+  Main.newInstance().bootstrap(theme, [RootView]);
 });
 
 Jsons.setValue(window, 'gs.Templates', Templates);

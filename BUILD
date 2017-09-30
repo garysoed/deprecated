@@ -57,13 +57,13 @@ filegroup(
 test_suite(
     name = "lint",
     tests = [
-        # "//src/dir:lint",
+        "//src/main:lint",
     ]
 )
 
 karma_run(
     name = "test",
     srcs = [
-        # "//src/dir:test_src",
+        "//src/main:test_src",
     ]
 )
