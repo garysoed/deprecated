@@ -57,6 +57,7 @@ filegroup(
 test_suite(
     name = "lint",
     tests = [
+        "//src/data:lint",
         "//src/main:lint",
     ]
 )
@@ -64,6 +65,7 @@ test_suite(
 karma_run(
     name = "test",
     srcs = [
+        "//src/data:test_src",
         "//src/main:test_src",
     ]
 )

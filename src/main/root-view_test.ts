@@ -35,7 +35,10 @@ describe('main.RootView', () => {
 
   describe('renderCrumbs_', () => {
     it(`should return the correct crumbs`, () => {
-      assert(view.renderCrumbs_(('/a/b'))).to.haveElements([
+      const root = {name: '(root)', parent: null, path: '/'};
+      const a = {name: 'a', parent: root, path: '/a'};
+      const b = {name: 'b', parent: a, path: '/a/b'};
+      assert(view.renderCrumbs_(b as any)).to.haveElements([
         {name: '(root)', url: '/'},
         {name: 'a', url: '/a'},
         {name: 'b', url: '/a/b'},

@@ -15,11 +15,15 @@ import {
   Persona,
   render,
   resolveSelectors } from 'external/gs_tools/src/persona';
-import { $location, Locations } from 'external/gs_tools/src/ui';
+import { $location } from 'external/gs_tools/src/ui';
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 
 import { CrumbData } from 'external/gs_ui/src/routing';
 import { ThemeService } from 'external/gs_ui/src/theming';
+
+import { Folder } from '../data/folder';
+import { Item } from '../data/item';
+import { $selectedFolder } from '../main/selected-folder-graph';
 
 export const $ = resolveSelectors({
   breadcrumb: {
@@ -54,17 +58,13 @@ export class RootView extends BaseThemedElement2 {
   }
 
   @render.attribute($.breadcrumb.crumb)
-  renderCrumbs_(@nodeIn($location.path) path: string): ImmutableList<CrumbData> {
-    let url = '';
+  renderCrumbs_(@nodeIn($selectedFolder) folder: Folder): ImmutableList<CrumbData> {
     const crumbs: CrumbData[] = [];
-    for (const part of Locations.normalizePath(path).split('/')) {
-      url = url[url.length - 1] === '/' ? `${url}${part}` : `${url}/${part}`;
-      if (part === '') {
-        crumbs.push({name: '(root)', url});
-      } else {
-        crumbs.push({name: part, url});
-      }
+    let current: Item | null = folder;
+    while (current) {
+      crumbs.push({name: current.name, url: current.path});
+      current = current.parent;
     }
-    return ImmutableList.of(crumbs);
+    return ImmutableList.of(crumbs).reverse();
   }
 }
