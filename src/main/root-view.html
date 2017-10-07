@@ -1,1 +1,25 @@
-<gs-breadcrumb id="breadcrumb"></gs-breadcrumb>
+<style>
+  #addButton {
+    display: inline-block;
+  }
+
+  #breadcrumbContainer {
+    height: 2.4rem;
+    margin-left: 1rem;
+    position: relative;
+  }
+</style>
+<section class="gs-theme-normal" fill-parent layout="column">
+  <section class="gs-theme-normal-hilite">
+    <div id="breadcrumbContainer">
+      <gs-breadcrumb id="breadcrumb"></gs-breadcrumb>
+    </div>
+  </section>
+  <section flex>
+    <section id="toolbar">
+      <gs-basic-button id="addButton">
+        <gs-icon>add</gs-icon>
+      </gs-basic-button>
+    </section>
+  </section>
+</section>
