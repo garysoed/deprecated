@@ -58,6 +58,7 @@ test_suite(
     name = "lint",
     tests = [
         "//src/data:lint",
+        "//src/import:lint",
         "//src/main:lint",
     ]
 )
@@ -66,6 +67,7 @@ karma_run(
     name = "test",
     srcs = [
         "//src/data:test_src",
+        "//src/import:test_src",
         "//src/main:test_src",
     ]
 )

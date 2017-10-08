@@ -5,4 +5,5 @@ load("//:defs.bzl", "thoth")
 thoth(
     deps = [
         "@gs_tools//src",
+        "//src/api",
     ])

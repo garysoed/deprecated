@@ -24,6 +24,7 @@ import { ThemeService } from 'external/gs_ui/src/theming';
 
 import { Folder } from '../data/folder';
 import { Item } from '../data/item';
+import { DriveSearch } from '../main/drive-search';
 import { Navigator } from '../main/navigator';
 import { $selectedFolder } from '../main/selected-folder-graph';
 
@@ -34,6 +35,8 @@ enum ContentTypes {
 
 function contentSwitchFactory(document: Document, type: ContentTypes): HTMLElement {
   switch (type) {
+    case ContentTypes.ADD:
+      return document.createElement('th-drive-search');
     case ContentTypes.NAVIGATE:
       return document.createElement('th-navigator');
   }
@@ -67,7 +70,7 @@ const $contentType = instanceId('contentType', EnumType(ContentTypes));
 const $contentTypeProvider = Graph.createProvider($contentType, ContentTypes.NAVIGATE);
 
 @component({
-  dependencies: [Navigator],
+  dependencies: [DriveSearch, Navigator],
   tag: 'th-root-view',
   templateKey: 'src/main/root-view',
 })

@@ -8,4 +8,5 @@ thoth(
         "@gs_ui//src",
         "//src/api",
         "//src/data",
+        "//src/import",
     ])
