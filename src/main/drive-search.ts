@@ -1,8 +1,10 @@
 import {
   ElementWithTagType,
+  HasPropertiesType,
   InstanceofType,
   IterableOfType,
   StringType } from 'external/gs_tools/src/check';
+  import { AssertionError } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
 import { ImmutableList } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
@@ -21,17 +23,39 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
 import { DriveFolder, DriveStorage } from '../import/drive-storage';
+import { SearchItem } from '../main/search-item';
 
-export function driveItemsGetter(element: HTMLDivElement): string {
-  return element.innerText;
+const DriveFolderType = HasPropertiesType<DriveFolder>({
+  id: StringType,
+  name: StringType,
+});
+
+export function driveItemsGetter(element: HTMLElement): DriveFolder {
+  const item = element.children[0];
+  const id = item.getAttribute('id');
+  const name = item.getAttribute('text');
+  if (!id) {
+    throw AssertionError.condition('id', 'should exist', id);
+  }
+
+  if (!name) {
+    throw AssertionError.condition('text', 'should exist', name);
+  }
+  return {id, name};
 }
 
-export function driveItemsFactory(document: Document): HTMLDivElement {
-  return document.createElement('div');
+export function driveItemsFactory(document: Document): HTMLElement {
+  const item = document.createElement('th-search-item');
+  const container = document.createElement('div');
+  container.appendChild(item);
+  container.classList.add('itemContainer');
+  return container;
 }
 
-export function driveItemsSetter(value: string, element: HTMLDivElement): void {
-  element.innerText = value;
+export function driveItemsSetter(folder: DriveFolder, element: HTMLElement): void {
+  const item = element.children[0];
+  item.setAttribute('text', folder.name);
+  item.setAttribute('itemId', folder.id);
 }
 
 export const $ = resolveSelectors({
@@ -50,16 +74,17 @@ export const $ = resolveSelectors({
         driveItemsFactory,
         driveItemsGetter,
         driveItemsSetter,
-        StringType,
-        InstanceofType(HTMLDivElement)),
+        DriveFolderType,
+        InstanceofType(HTMLElement)),
     el: elementSelector('#results', ElementWithTagType('section')),
   },
 });
 
-export const $driveItems = instanceId('driveItems', IterableOfType(StringType));
-const driveItemsProvider = Graph.createProvider($driveItems, ['']);
+export const $driveItems = instanceId('driveItems', IterableOfType(DriveFolderType));
+const driveItemsProvider = Graph.createProvider($driveItems, []);
 
 @component({
+  dependencies: [SearchItem],
   tag: 'th-drive-search',
   templateKey: 'src/main/drive-search',
 })
@@ -72,7 +97,7 @@ export class DriveSearch extends BaseThemedElement2 {
   async onInputChange_(): Promise<void> {
     // TODO: Take in search query
     const folders = await DriveStorage.list();
-    return driveItemsProvider(folders.mapItem((folder: DriveFolder) => folder.name), this);
+    return driveItemsProvider(folders, this);
   }
 
   @render.children($.results.children)

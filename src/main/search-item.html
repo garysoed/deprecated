@@ -1,0 +1,44 @@
+<style>
+  #back, #content {
+    padding: var(--gsSizePadding);
+  }
+
+  #box {
+    text-align: center;
+    width: var(--gsLineHeight);
+  }
+
+  #content {
+    background-color: var(--contentBG);
+    color: var(--contentFG);
+    left: var(--contentLeft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all .3s;
+    white-space: nowrap;
+  }
+
+  #root {
+    cursor: pointer;
+  }
+
+  :host {
+    --contentBG: var(--gsColorActionBG);
+    --contentFG: var(--gsColorActionFG);
+    --contentLeft: 0;
+  }
+
+  :host(:hover), :host(:focus) {
+    --contentFG: var(--gsColorActionFocusFG);
+  }
+
+  :host([selected="true"]) {
+    --contentLeft: calc(2 * var(--gsSizePadding) + var(--gsLineHeight));
+  }
+</style>
+<div fill-parent id="root">
+  <div fill-parent gs-theme="normal" gs-highlight id="back">
+    <div id="box">✔</div>
+  </div>
+  <div fill-parent id="content"></div>
+</div>
