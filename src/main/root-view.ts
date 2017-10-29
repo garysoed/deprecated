@@ -22,8 +22,8 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { CrumbData } from 'external/gs_ui/src/routing';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { Folder } from '../data/folder';
-import { Item } from '../data/item';
+import { FolderImpl } from '../data/folder-impl';
+import { ItemImpl } from '../data/item-impl';
 import { DriveSearch } from '../main/drive-search';
 import { Navigator } from '../main/navigator';
 import { $selectedFolder } from '../main/selected-folder-graph';
@@ -90,9 +90,9 @@ export class RootView extends BaseThemedElement2 {
   }
 
   @render.attribute($.breadcrumb.crumb)
-  renderCrumbs_(@nodeIn($selectedFolder) folder: Folder): ImmutableList<CrumbData> {
+  renderCrumbs_(@nodeIn($selectedFolder) folder: FolderImpl): ImmutableList<CrumbData> {
     const crumbs: CrumbData[] = [];
-    let current: Item | null = folder;
+    let current: ItemImpl | null = folder;
     while (current) {
       crumbs.push({name: current.name, url: current.path});
       current = current.parent;

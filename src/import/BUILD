@@ -6,4 +6,5 @@ thoth(
     deps = [
         "@gs_tools//src",
         "//src/api",
+        "//src/data",
     ])

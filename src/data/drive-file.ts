@@ -1,6 +1,6 @@
-import { File } from '../data/file';
+import { FileImpl } from '../data/file-impl';
 
-export class DriveFile extends File {
+export class DriveFile extends FileImpl {
   getSearchIndex(): { name: string; } {
     return {name: this.name};
   }

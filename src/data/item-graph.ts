@@ -3,12 +3,12 @@ import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { DataModelParser } from 'external/gs_tools/src/parse';
 import { LocalStorage } from 'external/gs_tools/src/store';
 
-import { Item } from '../data/item';
+import { ItemImpl } from '../data/item-impl';
 
-class ItemSearcher implements Searcher<Item> {
-  private readonly index_: Map<string, Item> = new Map();
+class ItemSearcher implements Searcher<ItemImpl> {
+  private readonly index_: Map<string, ItemImpl> = new Map();
 
-  async index(data: Promise<ImmutableSet<Item>>): Promise<void> {
+  async index(data: Promise<ImmutableSet<ItemImpl>>): Promise<void> {
     const items = await data;
     this.index_.clear();
     for (const item of items) {
@@ -16,7 +16,7 @@ class ItemSearcher implements Searcher<Item> {
     }
   }
 
-  async search(token: string): Promise<ImmutableList<Item>> {
+  async search(token: string): Promise<ImmutableList<ItemImpl>> {
     const item = this.index_.get(token);
     if (!item) {
       return ImmutableList.of([]);
@@ -26,6 +26,6 @@ class ItemSearcher implements Searcher<Item> {
   }
 }
 
-export const $items = registerDataGraph<Item>(
+export const $items = registerDataGraph<ItemImpl>(
     new ItemSearcher(),
-    new LocalStorage<Item>(window, 'th', DataModelParser<Item>()));
+    new LocalStorage<ItemImpl>(window, 'th', DataModelParser<ItemImpl>()));

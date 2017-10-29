@@ -23,15 +23,15 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { ApiDriveFolder, DriveStorage } from '../import/drive-storage';
+import { DriveFolderSummary, DriveStorage } from '../import/drive-storage';
 import { SearchItem } from '../main/search-item';
 
-const DriveFolderType = HasPropertiesType<ApiDriveFolder>({
+const DriveFolderType = HasPropertiesType<DriveFolderSummary>({
   id: StringType,
   name: StringType,
 });
 
-export function driveItemsGetter(element: HTMLElement): ApiDriveFolder {
+export function driveItemsGetter(element: HTMLElement): DriveFolderSummary {
   const item = element.children[0];
   const id = item.getAttribute('id');
   const name = item.getAttribute('text');
@@ -53,7 +53,7 @@ export function driveItemsFactory(document: Document): HTMLElement {
   return container;
 }
 
-export function driveItemsSetter(folder: ApiDriveFolder, element: HTMLElement): void {
+export function driveItemsSetter(folder: DriveFolderSummary, element: HTMLElement): void {
   const item = element.children[0];
   item.setAttribute('text', folder.name);
   item.setAttribute('itemId', folder.id);

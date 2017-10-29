@@ -15,9 +15,10 @@ describe('import.DriveStorage', () => {
 
   describe('createListConfig_', () => {
     it(`should return the correct config`, () => {
-      assert(storage['createListConfig_']('filename')).to.equal(Matchers.objectContaining({
-        q: Matchers.stringMatching(/mimeType .* and name contains 'filename'/),
-      }));
+      assert(storage['createListConfig_']({filename: 'filename'}))
+          .to.equal(Matchers.objectContaining({
+            q: Matchers.stringMatching(/mimeType .* and name contains 'filename'/),
+          }));
     });
 
     it(`should return the correct config if filename isn't specified`, () => {
@@ -95,7 +96,7 @@ describe('import.DriveStorage', () => {
         {id: id1, name: name1},
         {id: id2, name: name2},
       ]);
-      assert(storage['createListConfig_']).to.haveBeenCalledWith(filename);
+      assert(storage['createListConfig_']).to.haveBeenCalledWith({filename});
       assert(mockFiles.list).to.haveBeenCalledWith(config);
     });
   });

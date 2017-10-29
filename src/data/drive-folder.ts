@@ -1,15 +1,14 @@
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { DriveFile } from '../data/drive-file';
-import { Folder } from '../data/folder';
-import { Item } from '../data/item';
+import { FolderImpl } from '../data/folder-impl';
 
-export class DriveFolder extends Folder {
+export class DriveFolder extends FolderImpl {
   constructor(
       readonly items: ImmutableSet<DriveFolder | DriveFile>,
       id: string,
       name: string,
-      parent: Item | null,
+      parent: FolderImpl | null,
       path: string) {
     super(items, id, name, parent, path);
   }
