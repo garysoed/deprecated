@@ -3,14 +3,31 @@
     height: calc(2 * var(--gsSizePadding) + var(--gsLineHeight));
     position: relative;
   }
+
+  #input {
+    margin-left: var(--gsSizePadding);
+  }
+
+  #results {
+    overflow: scroll;
+  }
+
+  #searchSection {
+    padding: var(--gsSizePadding);
+  }
 </style>
 
-<gs-text-input id="input"></gs-text-input>
-<section id="results">
-  <!--slot(driveItems)-->
-</section>
-<section>
-  <gs-basic-button id="okButton" primary>
-    OK
-  </gs-basic-button>
-</section>
+<div fill-parent layout="column">
+  <div id="searchSection" layout="row">
+    <label>Search:</label>
+    <gs-text-input flex id="input"></gs-text-input>
+  </div>
+  <section flex id="results">
+    <!--slot(driveItems)-->
+  </section>
+  <section>
+    <gs-basic-button id="okButton" primary>
+      OK
+    </gs-basic-button>
+  </section>
+</div>
