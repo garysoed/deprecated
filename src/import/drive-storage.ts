@@ -1,4 +1,4 @@
-import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { GapiLibrary } from 'external/gs_tools/src/net';
 import { Storage } from 'external/gs_tools/src/store';
 
@@ -12,19 +12,28 @@ export type DriveFolder = {
 export class DriveStorageImpl implements Storage<DriveFolder> {
   constructor(private readonly driveLibrary_: GapiLibrary<goog.Drive>) { }
 
+  private createListConfig_(filename: string = ''): goog.drive.ListConfig {
+    const queries = [`mimeType = 'application/vnd.google-apps.folder'`];
+    if (filename) {
+      queries.push(`name contains '${filename}'`);
+    }
+
+    return {
+      corpus: 'user',
+      includeTeamDriveItems: true,
+      pageSize: 30,
+      q: queries.join(' and '),
+      supportsTeamDrives: true,
+    };
+  }
+
   has(): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 
   async list(): Promise<ImmutableSet<DriveFolder>> {
     const drive = await this.driveLibrary_.get();
-    const response = await drive.files.list({
-      corpus: 'user',
-      includeTeamDriveItems: true,
-      pageSize: 30,
-      q: `mimeType='application/vnd.google-apps.folder'`,
-      supportsTeamDrives: true,
-    });
+    const response = await drive.files.list(this.createListConfig_());
     return ImmutableSet.of(response.result.files);
   }
 
@@ -34,6 +43,12 @@ export class DriveStorageImpl implements Storage<DriveFolder> {
 
   read(): Promise<DriveFolder | null> {
     throw new Error('Method not implemented.');
+  }
+
+  async search(filename: string): Promise<ImmutableList<DriveFolder>> {
+    const drive = await this.driveLibrary_.get();
+    const response = await drive.files.list(this.createListConfig_(filename));
+    return ImmutableList.of(response.result.files);
   }
 }
 

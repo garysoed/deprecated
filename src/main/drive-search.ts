@@ -15,9 +15,10 @@ import {
   component,
   elementSelector,
   onDom,
+  Persona,
   render,
   resolveSelectors,
-  slotSelector } from 'external/gs_tools/src/persona';
+  slotSelector} from 'external/gs_tools/src/persona';
 
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
@@ -61,9 +62,9 @@ export function driveItemsSetter(folder: DriveFolder, element: HTMLElement): voi
 export const $ = resolveSelectors({
   input: {
     el: elementSelector('#input', ElementWithTagType('gs-text-input')),
-    valueOut: attributeSelector(
+    value: attributeSelector(
         elementSelector('input.el'),
-        'value-out',
+        'value',
         StringParser,
         StringType,
         ''),
@@ -95,8 +96,8 @@ export class DriveSearch extends BaseThemedElement2 {
 
   @onDom.event($.input.el, 'change')
   async onInputChange_(): Promise<void> {
-    // TODO: Take in search query
-    const folders = await DriveStorage.list();
+    const query = Persona.getValue($.input.value, this);
+    const folders = await DriveStorage.search(query || '');
     return driveItemsProvider(folders, this);
   }
 

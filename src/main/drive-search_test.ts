@@ -3,9 +3,15 @@ TestBase.setup();
 
 import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { Persona } from 'external/gs_tools/src/persona';
 
 import { DriveStorage } from '../import/drive-storage';
-import { $driveItems, driveItemsGetter, driveItemsSetter, DriveSearch } from '../main/drive-search';
+import {
+  $,
+  $driveItems,
+  driveItemsGetter,
+  driveItemsSetter,
+  DriveSearch } from '../main/drive-search';
 
 describe('driveItemsGetter', () => {
   it(`should return the correct item`, () => {
@@ -75,14 +81,19 @@ describe('main.DriveSearch', () => {
 
   describe('onInputChange_', () => {
     it(`should update the provider correctly`, async () => {
+      const query = 'query';
+      spyOn(Persona, 'getValue').and.returnValue(query);
+
       const item1 = {id: 'id1', name: 'name1'};
       const item2 = {id: 'id2', name: 'name2'};
-      spyOn(DriveStorage, 'list').and
+      spyOn(DriveStorage, 'search').and
           .returnValue(Promise.resolve(ImmutableSet.of([item1, item2])));
 
       await search.onInputChange_();
       const items = await Graph.get($driveItems, Graph.getTimestamp(), search);
       assert([...items]).to.equal([item1, item2]);
+      assert(DriveStorage.search).to.haveBeenCalledWith(query);
+      assert(Persona.getValue).to.haveBeenCalledWith($.input.value, search);
     });
   });
 });
