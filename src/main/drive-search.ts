@@ -1,14 +1,15 @@
 import {
   ElementWithTagType,
+  EnumType,
   HasPropertiesType,
   InstanceofType,
   IterableOfType,
-  StringType } from 'external/gs_tools/src/check';
+  StringType} from 'external/gs_tools/src/check';
   import { AssertionError } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
 import { ImmutableList } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
-import { StringParser } from 'external/gs_tools/src/parse';
+import { EnumParser, StringParser } from 'external/gs_tools/src/parse';
 import {
   attributeSelector,
   childrenSelector,
@@ -23,26 +24,33 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { DriveFolderSummary, DriveStorage } from '../import/drive-storage';
+import { DriveFileSummary, DriveType } from '../import/drive';
+import { DriveStorage } from '../import/drive-storage';
 import { SearchItem } from '../main/search-item';
 
-const DriveFolderType = HasPropertiesType<DriveFolderSummary>({
+const DriveFileSummaryType = HasPropertiesType<DriveFileSummary>({
   id: StringType,
   name: StringType,
+  type: EnumType(DriveType),
 });
 
-export function driveItemsGetter(element: HTMLElement): DriveFolderSummary {
+export function driveItemsGetter(element: HTMLElement): DriveFileSummary {
   const item = element.children[0];
   const id = item.getAttribute('id');
   const name = item.getAttribute('text');
+  const type = EnumParser<DriveType>(DriveType).parse(item.getAttribute('type'));
   if (!id) {
-    throw AssertionError.condition('id', 'should exist', id);
+    throw AssertionError.condition('id', 'exist', id);
   }
 
   if (!name) {
-    throw AssertionError.condition('text', 'should exist', name);
+    throw AssertionError.condition('text', 'exist', name);
   }
-  return {id, name};
+
+  if (type === null) {
+    throw AssertionError.condition('type', 'exist', type);
+  }
+  return {id, name, type};
 }
 
 export function driveItemsFactory(document: Document): HTMLElement {
@@ -53,10 +61,11 @@ export function driveItemsFactory(document: Document): HTMLElement {
   return container;
 }
 
-export function driveItemsSetter(folder: DriveFolderSummary, element: HTMLElement): void {
+export function driveItemsSetter(folder: DriveFileSummary, element: HTMLElement): void {
   const item = element.children[0];
   item.setAttribute('text', folder.name);
   item.setAttribute('itemId', folder.id);
+  item.setAttribute('type', EnumParser<DriveType>(DriveType).stringify(folder.type));
 }
 
 export const $ = resolveSelectors({
@@ -75,13 +84,13 @@ export const $ = resolveSelectors({
         driveItemsFactory,
         driveItemsGetter,
         driveItemsSetter,
-        DriveFolderType,
+        DriveFileSummaryType,
         InstanceofType(HTMLElement)),
     el: elementSelector('#results', ElementWithTagType('section')),
   },
 });
 
-export const $driveItems = instanceId('driveItems', IterableOfType(DriveFolderType));
+export const $driveItems = instanceId('driveItems', IterableOfType(DriveFileSummaryType));
 const driveItemsProvider = Graph.createProvider($driveItems, []);
 
 @component({

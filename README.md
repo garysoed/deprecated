@@ -13,7 +13,12 @@ Thoth is a file based wiki page generator.
 
 ## Design
 
-Goes from Data > JSON > Markdown > Handlebars > HTML
+Goes like:
+
+```
+          Data > JSON >
+Markdown > Handlebars > HTML
+```
 
 ### Data
 

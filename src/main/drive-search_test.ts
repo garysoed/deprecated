@@ -5,6 +5,7 @@ import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
+import { DriveType } from '../import/drive';
 import { DriveStorage } from '../import/drive-storage';
 import {
   $,
@@ -17,20 +18,37 @@ describe('driveItemsGetter', () => {
   it(`should return the correct item`, () => {
     const id = 'id';
     const name = 'name';
+    const type = 'markdown';
     const itemEl = document.createElement('div');
     itemEl.setAttribute('id', id);
+    itemEl.setAttribute('text', name);
+    itemEl.setAttribute('type', type);
+
+    const element = document.createElement('div');
+    element.appendChild(itemEl);
+
+    assert(driveItemsGetter(element)).to.equal({id, name, type: DriveType.MARKDOWN});
+  });
+
+  it(`should throw error if type is not found`, () => {
+    const name = 'name';
+    const itemEl = document.createElement('div');
+    itemEl.setAttribute('id', 'id');
     itemEl.setAttribute('text', name);
 
     const element = document.createElement('div');
     element.appendChild(itemEl);
 
-    assert(driveItemsGetter(element)).to.equal({id, name});
+    assert(() => {
+      driveItemsGetter(element);
+    }).to.throwError(/should exist/);
   });
 
   it(`should throw error if id is not found`, () => {
     const name = 'name';
     const itemEl = document.createElement('div');
     itemEl.setAttribute('text', name);
+    itemEl.setAttribute('type', 'markdown');
 
     const element = document.createElement('div');
     element.appendChild(itemEl);
@@ -44,6 +62,7 @@ describe('driveItemsGetter', () => {
     const id = 'id';
     const itemEl = document.createElement('div');
     itemEl.setAttribute('id', id);
+    itemEl.setAttribute('type', 'markdown');
 
     const element = document.createElement('div');
     element.appendChild(itemEl);
@@ -65,9 +84,10 @@ describe('driveItemsSetter', () => {
     const element = document.createElement('div');
     element.appendChild(itemEl);
 
-    driveItemsSetter({id, name}, element);
+    driveItemsSetter({id, name, type: DriveType.MARKDOWN}, element);
     assert(itemEl.getAttribute('id')).to.equal(id);
     assert(itemEl.getAttribute('text')).to.equal(name);
+    assert(itemEl.getAttribute('type')).to.equal('markdown');
   });
 });
 
@@ -84,8 +104,8 @@ describe('main.DriveSearch', () => {
       const query = 'query';
       spyOn(Persona, 'getValue').and.returnValue(query);
 
-      const item1 = {id: 'id1', name: 'name1'};
-      const item2 = {id: 'id2', name: 'name2'};
+      const item1 = {id: 'id1', name: 'name1', type: DriveType.MARKDOWN};
+      const item2 = {id: 'id2', name: 'name2', type: DriveType.FOLDER};
       spyOn(DriveStorage, 'search').and
           .returnValue(Promise.resolve(ImmutableSet.of([item1, item2])));
 

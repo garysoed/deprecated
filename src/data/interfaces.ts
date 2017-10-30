@@ -9,7 +9,9 @@ export interface Item {
   getSearchIndex(): {name: string};
 }
 
-export interface File extends Item { }
+export interface File extends Item {
+  readonly content: string;
+}
 
 export interface Folder extends Item {
   readonly items: ImmutableSet<Item>;
