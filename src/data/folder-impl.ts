@@ -8,8 +8,8 @@ export abstract class FolderImpl extends ItemImpl implements Folder {
       readonly items: ImmutableSet<ItemImpl>,
       id: string,
       name: string,
-      parent: FolderImpl | null,
+      parentId: string | null,
       path: string) {
-    super(id, name, parent, path);
+    super(id, name, parentId, path);
   }
 }

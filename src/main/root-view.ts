@@ -4,6 +4,7 @@ import {
   HasPropertiesType,
   IterableOfType,
   StringType } from 'external/gs_tools/src/check';
+import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
 import { ImmutableList } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
@@ -17,12 +18,13 @@ import {
   resolveSelectors,
   slotSelector,
   switchSelector } from 'external/gs_tools/src/persona';
-import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 
+import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { CrumbData } from 'external/gs_ui/src/routing';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
 import { FolderImpl } from '../data/folder-impl';
+import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { DriveSearch } from '../main/drive-search';
 import { Navigator } from '../main/navigator';
@@ -90,12 +92,16 @@ export class RootView extends BaseThemedElement2 {
   }
 
   @render.attribute($.breadcrumb.crumb)
-  renderCrumbs_(@nodeIn($selectedFolder) folder: FolderImpl): ImmutableList<CrumbData> {
+  async renderCrumbs_(
+      @nodeIn($selectedFolder) folder: FolderImpl,
+      @nodeIn($items) items: DataGraph<ItemImpl>):
+      Promise<ImmutableList<CrumbData>> {
     const crumbs: CrumbData[] = [];
     let current: ItemImpl | null = folder;
     while (current) {
       crumbs.push({name: current.name, url: current.path});
-      current = current.parent;
+      const parentId: string | null = current.parentId;
+      current = await (parentId ? items.get(parentId) : Promise.resolve(null));
     }
     return ImmutableList.of(crumbs).reverse();
   }

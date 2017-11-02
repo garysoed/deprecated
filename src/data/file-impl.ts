@@ -1,4 +1,4 @@
-import { File, Folder } from '../data/interfaces';
+import { File } from '../data/interfaces';
 import { ItemImpl } from '../data/item-impl';
 
 export abstract class FileImpl extends ItemImpl implements File {
@@ -6,8 +6,8 @@ export abstract class FileImpl extends ItemImpl implements File {
       readonly content: string,
       id: string,
       name: string,
-      parent: Folder | null,
+      parentId: string | null,
       path: string) {
-    super(id, name, parent, path);
+    super(id, name, parentId, path);
   }
 }

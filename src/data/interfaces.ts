@@ -3,7 +3,7 @@ import { ImmutableSet } from 'external/gs_tools/src/immutable';
 export interface Item {
   readonly id: string;
   readonly name: string;
-  readonly parent: Folder | null;
+  readonly parentId: string | null;
   readonly path: string;
 
   getSearchIndex(): {name: string};

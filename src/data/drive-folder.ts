@@ -8,9 +8,9 @@ export class DriveFolder extends FolderImpl {
       readonly items: ImmutableSet<DriveFolder | DriveFile>,
       id: string,
       name: string,
-      parent: FolderImpl | null,
+      parentId: string | null,
       path: string) {
-    super(items, id, name, parent, path);
+    super(items, id, name, parentId, path);
   }
 
   getSearchIndex(): { name: string; } {

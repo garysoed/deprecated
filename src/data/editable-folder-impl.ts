@@ -9,8 +9,8 @@ export class EditableFolderImpl extends FolderImpl {
       name: string,
       path: string,
       items: ImmutableSet<ItemImpl>,
-      parent: FolderImpl | null) {
-    super(items, id, name, parent, path);
+      parentId: string | null) {
+    super(items, id, name, parentId, path);
   }
 
   getSearchIndex(): {name: string} {
@@ -20,6 +20,6 @@ export class EditableFolderImpl extends FolderImpl {
   setName(name: string): EditableFolderImpl {
     const parts = this.path.split('/');
     parts[parts.length - 1] = name;
-    return new EditableFolderImpl(this.id, name, parts.join('/'), this.items, this.parent);
+    return new EditableFolderImpl(this.id, name, parts.join('/'), this.items, this.parentId);
   }
 }
