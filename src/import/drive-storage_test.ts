@@ -1,7 +1,7 @@
 import { assert, Fakes, Matchers, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
-import { DriveType } from '../import/drive';
+import { ApiDriveType } from '../import/drive';
 import { DRIVE_FOLDER_MIMETYPE, DriveStorageImpl } from '../import/drive-storage';
 
 
@@ -52,8 +52,8 @@ describe('import.DriveStorage', () => {
       mockDriveLibrary.get.and.returnValue(Promise.resolve({files: mockFiles}));
 
       assert(await storage.list()).to.haveElements([
-        {id: id1, name: name1, type: DriveType.MARKDOWN},
-        {id: id2, name: name2, type: DriveType.UNKNOWN},
+        {id: id1, name: name1, type: ApiDriveType.MARKDOWN},
+        {id: id2, name: name2, type: ApiDriveType.UNKNOWN},
       ]);
     });
   });
@@ -150,18 +150,18 @@ describe('import.DriveStorage', () => {
       mockFiles.get.and.returnValue(Promise.resolve({body}));
       mockDriveLibrary.get.and.returnValue(Promise.resolve({files: mockFiles}));
 
-      await assert(storage['readFileContent_']({id, type: DriveType.MARKDOWN} as any))
+      await assert(storage['readFileContent_']({id, type: ApiDriveType.MARKDOWN} as any))
           .to.resolveWith(body);
       assert(mockFiles.get).to.haveBeenCalledWith({alt: 'media', fileId: id});
     });
 
     it(`should resolve with null if the type is FOLDER`, async () => {
-      await assert(storage['readFileContent_']({id: 'id', type: DriveType.FOLDER} as any))
+      await assert(storage['readFileContent_']({id: 'id', type: ApiDriveType.FOLDER} as any))
           .to.resolveWith(null);
     });
 
     it(`should resolve with null if the type is UNKNOWN`, async () => {
-      await assert(storage['readFileContent_']({id: 'id', type: DriveType.UNKNOWN} as any))
+      await assert(storage['readFileContent_']({id: 'id', type: ApiDriveType.UNKNOWN} as any))
           .to.resolveWith(null);
     });
   });
@@ -214,8 +214,8 @@ describe('import.DriveStorage', () => {
       spyOn(storage, 'createListConfig_').and.returnValue(config);
 
       assert(await storage.search(filename)).to.haveElements([
-        {id: id1, name: name1, type: DriveType.MARKDOWN},
-        {id: id2, name: name2, type: DriveType.UNKNOWN},
+        {id: id1, name: name1, type: ApiDriveType.MARKDOWN},
+        {id: id2, name: name2, type: ApiDriveType.UNKNOWN},
       ]);
       assert(storage['createListConfig_']).to
           .haveBeenCalledWith(Matchers.objectContaining({filename}));

@@ -96,13 +96,19 @@ export class RootView extends BaseThemedElement2 {
       @nodeIn($selectedFolder) folder: FolderImpl,
       @nodeIn($items) items: DataGraph<ItemImpl>):
       Promise<ImmutableList<CrumbData>> {
-    const crumbs: CrumbData[] = [];
+    const itemArray: ItemImpl[] = [];
     let current: ItemImpl | null = folder;
     while (current) {
-      crumbs.push({name: current.name, url: current.path});
-      const parentId: string | null = current.parentId;
+      itemArray.push(current);
+      const parentId: string | null = current.getParentId();
       current = await (parentId ? items.get(parentId) : Promise.resolve(null));
     }
-    return ImmutableList.of(crumbs).reverse();
+    const crumbs: CrumbData[] = [];
+    let path = '';
+    for (const item of ImmutableList.of(itemArray).reverse()) {
+      path += `/${item.getName()}`;
+      crumbs.push({name: item.getName(), url: path});
+    }
+    return ImmutableList.of(crumbs);
   }
 }

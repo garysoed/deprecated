@@ -1,17 +1,17 @@
-export enum DriveType {
+export enum ApiDriveType {
   UNKNOWN,
   FOLDER,
   MARKDOWN,
 }
 
-export type DriveFileSummary = {
+export type ApiDriveFileSummary = {
   id: string,
   name: string,
-  type: DriveType,
+  type: ApiDriveType,
 };
 
-export type DriveFile = {
+export type ApiDriveFile = {
   content?: string,
-  files: DriveFile[],
-  summary: DriveFileSummary,
+  files: ApiDriveFile[],
+  summary: ApiDriveFileSummary,
 };

@@ -66,7 +66,6 @@ test_suite(
 karma_run(
     name = "test",
     srcs = [
-        "//src/data:test_src",
         "//src/import:test_src",
         "//src/main:test_src",
     ]

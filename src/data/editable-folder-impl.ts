@@ -1,25 +1,11 @@
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { FolderImpl } from '../data/folder-impl';
-import { ItemImpl } from '../data/item-impl';
 
-export class EditableFolderImpl extends FolderImpl {
-  constructor(
-      id: string,
-      name: string,
-      path: string,
-      items: ImmutableSet<ItemImpl>,
-      parentId: string | null) {
-    super(items, id, name, parentId, path);
-  }
-
+export abstract class EditableFolderImpl extends FolderImpl {
   getSearchIndex(): {name: string} {
-    return {name: this.name};
+    return {name: this.getName()};
   }
 
-  setName(name: string): EditableFolderImpl {
-    const parts = this.path.split('/');
-    parts[parts.length - 1] = name;
-    return new EditableFolderImpl(this.id, name, parts.join('/'), this.items, this.parentId);
-  }
+  abstract setItems(newItems: ImmutableSet<string>): this;
 }

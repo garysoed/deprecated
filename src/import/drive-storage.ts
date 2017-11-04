@@ -3,7 +3,7 @@ import { GapiLibrary } from 'external/gs_tools/src/net';
 import { Storage } from 'external/gs_tools/src/store';
 
 import { drive } from '../api/drive';
-import { DriveFile, DriveFileSummary, DriveType } from '../import/drive';
+import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../import/drive';
 
 type ListQueryConfig = {
   filename?: string,
@@ -13,15 +13,15 @@ type ListQueryConfig = {
 
 export const DRIVE_FOLDER_MIMETYPE = 'application/vnd.google-apps.folder';
 const TYPE_MAPPING = new Map([
-  [DRIVE_FOLDER_MIMETYPE, DriveType.FOLDER],
-  ['text/x-markdown', DriveType.MARKDOWN],
+  [DRIVE_FOLDER_MIMETYPE, ApiDriveType.FOLDER],
+  ['text/x-markdown', ApiDriveType.MARKDOWN],
 ]);
 
-export function convertToType_(driveType: string): DriveType {
-  return TYPE_MAPPING.get(driveType) || DriveType.UNKNOWN;
+export function convertToType_(driveType: string): ApiDriveType {
+  return TYPE_MAPPING.get(driveType) || ApiDriveType.UNKNOWN;
 }
 
-export function convertToFileSummary_(file: goog.drive.files.File): DriveFileSummary {
+export function convertToFileSummary_(file: goog.drive.files.File): ApiDriveFileSummary {
   return {
     id: file.id,
     name: file.name,
@@ -29,7 +29,7 @@ export function convertToFileSummary_(file: goog.drive.files.File): DriveFileSum
   };
 }
 
-export class DriveStorageImpl implements Storage<DriveFile, DriveFileSummary> {
+export class DriveStorageImpl implements Storage<ApiDriveFile, ApiDriveFileSummary> {
   constructor(private readonly driveLibrary_: GapiLibrary<goog.Drive>) { }
 
   private createListConfig_(config: ListQueryConfig = {}): goog.drive.files.ListConfig {
@@ -63,7 +63,7 @@ export class DriveStorageImpl implements Storage<DriveFile, DriveFileSummary> {
     throw new Error('Method not implemented.');
   }
 
-  async list(): Promise<ImmutableSet<DriveFileSummary>> {
+  async list(): Promise<ImmutableSet<ApiDriveFileSummary>> {
     const drive = await this.driveLibrary_.get();
     const response = await drive.files.list(this.createListConfig_({
       mimeTypes: [DRIVE_FOLDER_MIMETYPE],
@@ -73,26 +73,26 @@ export class DriveStorageImpl implements Storage<DriveFile, DriveFileSummary> {
   }
 
   async listIds(): Promise<ImmutableSet<string>> {
-    return (await this.list()).mapItem((folder: DriveFileSummary) => folder.id);
+    return (await this.list()).mapItem((folder: ApiDriveFileSummary) => folder.id);
   }
 
-  async read(id: string): Promise<DriveFile> {
+  async read(id: string): Promise<ApiDriveFile> {
     const drive = await this.driveLibrary_.get();
     const getResponse = await drive.files.get({fileId: id});
     const summary = convertToFileSummary_(getResponse.result);
     switch (summary.type) {
-      case DriveType.FOLDER:
+      case ApiDriveType.FOLDER:
         return {
           files: await this.readFolderContents_(summary.id),
           summary,
         };
-      case DriveType.MARKDOWN:
+      case ApiDriveType.MARKDOWN:
         return {
           content: await this.readFileContent_(summary) || undefined,
           files: [],
           summary,
         };
-      case DriveType.UNKNOWN:
+      case ApiDriveType.UNKNOWN:
         return {
           files: [],
           summary,
@@ -100,12 +100,12 @@ export class DriveStorageImpl implements Storage<DriveFile, DriveFileSummary> {
     }
   }
 
-  private async readFileContent_(summary: DriveFileSummary): Promise<string | null> {
-    if (summary.type === DriveType.UNKNOWN) {
+  private async readFileContent_(summary: ApiDriveFileSummary): Promise<string | null> {
+    if (summary.type === ApiDriveType.UNKNOWN) {
       return null;
     }
 
-    if (summary.type === DriveType.FOLDER) {
+    if (summary.type === ApiDriveType.FOLDER) {
       return null;
     }
 
@@ -114,7 +114,7 @@ export class DriveStorageImpl implements Storage<DriveFile, DriveFileSummary> {
     return response.body;
   }
 
-  private async readFolderContents_(folderId: string): Promise<DriveFile[]> {
+  private async readFolderContents_(folderId: string): Promise<ApiDriveFile[]> {
     const drive = await this.driveLibrary_.get();
 
     // Get the contents.
@@ -125,7 +125,7 @@ export class DriveStorageImpl implements Storage<DriveFile, DriveFileSummary> {
     return Promise.all(response.result.files.map((file) => this.read(file.id)));
   }
 
-  async search(filename: string): Promise<ImmutableList<DriveFileSummary>> {
+  async search(filename: string): Promise<ImmutableList<ApiDriveFileSummary>> {
     const drive = await this.driveLibrary_.get();
     const response = await drive.files.list(this.createListConfig_({
       filename,

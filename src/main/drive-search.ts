@@ -1,15 +1,18 @@
 import {
+  BooleanType,
   ElementWithTagType,
   EnumType,
   HasPropertiesType,
   InstanceofType,
   IterableOfType,
+  NullableType,
   StringType} from 'external/gs_tools/src/check';
-  import { AssertionError } from 'external/gs_tools/src/error';
+import { DataGraph } from 'external/gs_tools/src/datamodel';
+import { AssertionError } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
-import { ImmutableList } from 'external/gs_tools/src/immutable';
+import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
-import { EnumParser, StringParser } from 'external/gs_tools/src/parse';
+import { BooleanParser, EnumParser, StringParser } from 'external/gs_tools/src/parse';
 import {
   attributeSelector,
   childrenSelector,
@@ -24,23 +27,40 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { DriveFileSummary, DriveType } from '../import/drive';
+import { DriveFile } from '../data/drive-file';
+import { DriveFolder } from '../data/drive-folder';
+import { EditableFolderImpl } from '../data/editable-folder-impl';
+import { $items } from '../data/item-graph';
+import { ItemImpl } from '../data/item-impl';
+import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../import/drive';
 import { DriveStorage } from '../import/drive-storage';
 import { SearchItem } from '../main/search-item';
+import { $selectedFolder } from '../main/selected-folder-graph';
 
-const DriveFileSummaryType = HasPropertiesType<DriveFileSummary>({
+
+const DriveFileSummaryType = HasPropertiesType<ApiDriveFileSummary>({
   id: StringType,
   name: StringType,
-  type: EnumType(DriveType),
+  type: EnumType(ApiDriveType),
 });
 
-export function driveItemsGetter(element: HTMLElement): DriveFileSummary {
+type DriveFileItemData = {
+  selected: boolean | null,
+  summary: ApiDriveFileSummary,
+};
+
+const DriveFileItemDataType = HasPropertiesType<DriveFileItemData>({
+  selected: NullableType<boolean>(BooleanType),
+  summary: DriveFileSummaryType,
+});
+
+export function driveItemsGetter(element: HTMLElement): DriveFileItemData {
   const item = element.children[0];
-  const id = item.getAttribute('id');
+  const id = item.getAttribute('itemid');
   const name = item.getAttribute('text');
-  const type = EnumParser<DriveType>(DriveType).parse(item.getAttribute('type'));
+  const type = EnumParser<ApiDriveType>(ApiDriveType).parse(item.getAttribute('type'));
   if (!id) {
-    throw AssertionError.condition('id', 'exist', id);
+    throw AssertionError.condition('itemid', 'exist', id);
   }
 
   if (!name) {
@@ -50,7 +70,9 @@ export function driveItemsGetter(element: HTMLElement): DriveFileSummary {
   if (type === null) {
     throw AssertionError.condition('type', 'exist', type);
   }
-  return {id, name, type};
+
+  const selected = BooleanParser.parse(item.getAttribute('selected'));
+  return {selected, summary: {id, name, type}};
 }
 
 export function driveItemsFactory(document: Document): HTMLElement {
@@ -61,11 +83,11 @@ export function driveItemsFactory(document: Document): HTMLElement {
   return container;
 }
 
-export function driveItemsSetter(folder: DriveFileSummary, element: HTMLElement): void {
+export function driveItemsSetter({summary}: DriveFileItemData, element: HTMLElement): void {
   const item = element.children[0];
-  item.setAttribute('text', folder.name);
-  item.setAttribute('itemId', folder.id);
-  item.setAttribute('type', EnumParser<DriveType>(DriveType).stringify(folder.type));
+  item.setAttribute('text', summary.name);
+  item.setAttribute('itemId', summary.id);
+  item.setAttribute('type', EnumParser<ApiDriveType>(ApiDriveType).stringify(summary.type));
 }
 
 export const $ = resolveSelectors({
@@ -78,13 +100,16 @@ export const $ = resolveSelectors({
         StringType,
         ''),
   },
+  okButton: {
+    el: elementSelector('#okButton', ElementWithTagType('gs-basic-button')),
+  },
   results: {
     children: childrenSelector(
         slotSelector(elementSelector('results.el'), 'driveItems'),
         driveItemsFactory,
         driveItemsGetter,
         driveItemsSetter,
-        DriveFileSummaryType,
+        DriveFileItemDataType,
         InstanceofType(HTMLElement)),
     el: elementSelector('#results', ElementWithTagType('section')),
   },
@@ -103,6 +128,34 @@ export class DriveSearch extends BaseThemedElement2 {
     super(themeService);
   }
 
+  private async createAddedItem_(
+      addedItem: ApiDriveFile,
+      parentFolderId: string,
+      itemsDataGraph: DataGraph<ItemImpl>): Promise<any> {
+    if (addedItem.summary.type !== ApiDriveType.FOLDER) {
+      const newFile = DriveFile.newInstance(
+          addedItem.summary.id,
+          addedItem.summary.name,
+          parentFolderId,
+          addedItem.content || '');
+      return itemsDataGraph.set(newFile.getId(), newFile);
+    }
+
+    const newFolder = DriveFolder.newInstance(
+        addedItem.summary.id,
+        addedItem.summary.name,
+        parentFolderId,
+        ImmutableSet.of(addedItem.files).mapItem((file) => file.summary.id));
+
+    const contentPromises = addedItem.files.map((file) => {
+      return this.createAddedItem_(file, addedItem.summary.id, itemsDataGraph);
+    });
+    return Promise.all([
+      itemsDataGraph.set(newFolder.getId(), newFolder),
+      ...contentPromises,
+    ]);
+  }
+
   @onDom.event($.input.el, 'change')
   async onInputChange_(): Promise<void> {
     const query = Persona.getValue($.input.value, this);
@@ -110,8 +163,48 @@ export class DriveSearch extends BaseThemedElement2 {
     return driveItemsProvider(folders, this);
   }
 
+  @onDom.event($.okButton.el, 'gs-action')
+  async onOkButtonAction_(): Promise<any> {
+    const items = Persona.getValue($.results.children, this);
+    if (!items) {
+      return;
+    }
+
+    const addedItems = items.filter((item) => !!item.selected);
+    const addedItemPromises = addedItems.map((item) => DriveStorage.read(item.summary.id));
+
+    const time = Graph.getTimestamp();
+    const [selectedFolder, itemsDataGraph, addedItemData] = await Promise.all([
+      Graph.get($selectedFolder, time),
+      Graph.get($items, time),
+      Promise.all(addedItemPromises),
+    ]);
+
+    const selectedId = selectedFolder.getId();
+
+    if (!(selectedFolder instanceof EditableFolderImpl)) {
+      throw AssertionError.condition('selectedFolder', 'editable', selectedFolder);
+    }
+
+    await Promise.all(addedItemData.map((data) => {
+      return this.createAddedItem_(data, selectedId, itemsDataGraph);
+    }));
+
+    // Now add the folders to the selected folder.
+    return itemsDataGraph.set(
+        selectedId,
+        selectedFolder.setItems(
+            selectedFolder
+                .getItems()
+                .addAll(addedItems.map((addedItem) => addedItem.summary.id))));
+  }
+
   @render.children($.results.children)
-  renderDriveItems_(@nodeIn($driveItems) items: Iterable<string>): ImmutableList<string> {
-    return ImmutableList.of([...items]);
+  renderDriveItems_(@nodeIn($driveItems) items: Iterable<ApiDriveFileSummary>):
+      ImmutableList<DriveFileItemData> {
+    return ImmutableList.of([...items])
+        .map((item) => {
+          return {selected: null, summary: item};
+        });
   }
 }

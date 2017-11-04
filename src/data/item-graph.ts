@@ -12,7 +12,7 @@ class ItemSearcher implements Searcher<ItemImpl> {
     const items = await data;
     this.index_.clear();
     for (const item of items) {
-      this.index_.set(item.name, item);
+      this.index_.set(item.getName(), item);
     }
   }
 
@@ -27,5 +27,6 @@ class ItemSearcher implements Searcher<ItemImpl> {
 }
 
 export const $items = registerDataGraph<ItemImpl>(
+    'items',
     new ItemSearcher(),
     new LocalStorage<ItemImpl>(window, 'th', DataModelParser<ItemImpl>()));
