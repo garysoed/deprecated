@@ -1,9 +1,18 @@
 import { field } from 'external/gs_tools/src/datamodel';
-import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { SetParser, StringParser } from 'external/gs_tools/src/parse';
 import { Folder } from '../data/interfaces';
-import { ItemImpl } from '../data/item-impl';
+import { getInitMap_ as getInitItemMap_, ItemImpl } from '../data/item-impl';
+import { ItemType } from '../data/item-type';
+
+export function getInitMap_(
+    id: string,
+    name: string,
+    parentId: string | null,
+    items: Iterable<string>): ImmutableMap<string | symbol, any> {
+  return getInitItemMap_(id, name, parentId, ItemType.FOLDER).set('items_', items);
+}
 
 export abstract class FolderImpl extends ItemImpl implements Folder {
   @field('items', SetParser(StringParser))

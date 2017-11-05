@@ -32,6 +32,7 @@ import { DriveFolder } from '../data/drive-folder';
 import { EditableFolderImpl } from '../data/editable-folder-impl';
 import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
+import { convertToItemType } from '../data/item-type';
 import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../import/drive';
 import { DriveStorage } from '../import/drive-storage';
 import { SearchItem } from '../main/search-item';
@@ -132,11 +133,13 @@ export class DriveSearch extends BaseThemedElement2 {
       addedItem: ApiDriveFile,
       parentFolderId: string,
       itemsDataGraph: DataGraph<ItemImpl>): Promise<any> {
-    if (addedItem.summary.type !== ApiDriveType.FOLDER) {
+    const apiType = addedItem.summary.type;
+    if (apiType !== ApiDriveType.FOLDER) {
       const newFile = DriveFile.newInstance(
           addedItem.summary.id,
           addedItem.summary.name,
           parentFolderId,
+          convertToItemType(apiType),
           addedItem.content || '');
       return itemsDataGraph.set(newFile.getId(), newFile);
     }

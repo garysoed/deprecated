@@ -1,9 +1,9 @@
 import { Serializable } from 'external/gs_tools/src/data';
 import { DataModels } from 'external/gs_tools/src/datamodel';
-import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { EditableFolderImpl } from '../data/editable-folder-impl';
-import { Folder } from '../data/interfaces';
+import { getInitMap_ } from '../data/folder-impl';
 
 @Serializable('data.ThothFolder')
 export abstract class ThothFolder extends EditableFolderImpl {
@@ -15,14 +15,7 @@ export abstract class ThothFolder extends EditableFolderImpl {
       id: string,
       name: string,
       parentId: string | null,
-      items: ImmutableSet<Folder>): ThothFolder {
-    return DataModels.newInstance(
-        ThothFolder,
-        ImmutableMap.of([
-          ['items_', items],
-          ['id_', id],
-          ['name_', name],
-          ['parentId_', parentId],
-        ]));
+      items: ImmutableSet<string>): ThothFolder {
+    return DataModels.newInstance(ThothFolder, getInitMap_(id, name, parentId, items));
   }
 }

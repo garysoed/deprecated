@@ -1,8 +1,8 @@
 import { Serializable } from 'external/gs_tools/src/data';
 import { DataModels } from 'external/gs_tools/src/datamodel';
-import { ImmutableMap } from 'external/gs_tools/src/immutable';
 
-import { FileImpl } from '../data/file-impl';
+import { FileImpl, getInitMap_ } from '../data/file-impl';
+import { ItemType } from '../data/item-type';
 
 @Serializable('data.DriveFile')
 export abstract class DriveFile extends FileImpl {
@@ -18,14 +18,8 @@ export abstract class DriveFile extends FileImpl {
       id: string,
       name: string,
       parentId: string,
+      type: ItemType,
       content: string): DriveFile {
-    return DataModels.newInstance(
-        DriveFile,
-        ImmutableMap.of([
-          ['id_', id],
-          ['name_', name],
-          ['parentId_', parentId],
-          ['content_', content],
-        ]));
+    return DataModels.newInstance(DriveFile, getInitMap_(id, name, parentId, type, content));
   }
 }
