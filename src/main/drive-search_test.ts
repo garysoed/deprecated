@@ -254,11 +254,15 @@ describe('main.DriveSearch', () => {
       const id1 = 'id1';
       const id2 = 'id2';
       const idUnadded = 'idUnadded';
-      spyOn(Persona, 'getValue').and.returnValue(ImmutableList.of([
-        {selected: true, summary: {id: id1}},
-        {selected: true, summary: {id: id2}},
-        {selected: false, summary: {id: idUnadded}},
-      ]));
+      const mockDispatcher = jasmine.createSpy('Dispatcher');
+
+      Fakes.build(spyOn(Persona, 'getValue'))
+          .when($.results.children, search).return(ImmutableList.of([
+            {selected: true, summary: {id: id1}},
+            {selected: true, summary: {id: id2}},
+            {selected: false, summary: {id: idUnadded}},
+          ]))
+          .when($.host.dispatcher, search).return(mockDispatcher);
 
       const data1 = Mocks.object('data1');
       const data2 = Mocks.object('data2');
@@ -269,6 +273,7 @@ describe('main.DriveSearch', () => {
       spyOn(search, 'createAddedItem_').and.returnValue(Promise.resolve());
 
       await search.onOkButtonAction_();
+      assert(mockDispatcher).to.haveBeenCalledWith('th-item-added', {});
       const selectedFolder = await itemsDataGraph.get(idSelected);
 
       assert((selectedFolder as ThothFolder).getItems()).to.haveElements([id1, id2]);
@@ -279,8 +284,26 @@ describe('main.DriveSearch', () => {
       assert(DriveStorage.read).to.haveBeenCalledWith(id1);
       assert(DriveStorage.read).to.haveBeenCalledWith(id2);
       assert(DriveStorage.read).toNot.haveBeenCalledWith(idUnadded);
+    });
 
-      assert(Persona.getValue).to.haveBeenCalledWith($.results.children, search);
+    it(`should reject if dispatcher cannot be found`, async () => {
+      Graph.clearNodesForTests([$items, $selectedFolder]);
+
+      const itemsDataGraph = new FakeDataGraph<ItemImpl>();
+      Graph.createProvider($items, itemsDataGraph);
+
+      const idSelected = 'idSelected';
+      Graph.createProvider(
+          $selectedFolder,
+          ThothFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
+
+      Fakes.build(spyOn(Persona, 'getValue'))
+          .when($.results.children, search).return(ImmutableList.of([]))
+          .when($.host.dispatcher, search).return(null);
+
+      spyOn(search, 'createAddedItem_').and.returnValue(Promise.resolve());
+
+      await assert(search.onOkButtonAction_()).to.rejectWithError(/exist/);
     });
 
     it(`should reject if the current selected folder is not editable`, async () => {

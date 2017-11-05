@@ -17,11 +17,13 @@ import {
   attributeSelector,
   childrenSelector,
   component,
+  dispatcherSelector,
   elementSelector,
   onDom,
   Persona,
   render,
   resolveSelectors,
+  shadowHostSelector,
   slotSelector} from 'external/gs_tools/src/persona';
 
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
@@ -92,6 +94,10 @@ export function driveItemsSetter({summary}: DriveFileItemData, element: HTMLElem
 }
 
 export const $ = resolveSelectors({
+  host: {
+    dispatcher: dispatcherSelector(elementSelector('host.el')),
+    el: shadowHostSelector,
+  },
   input: {
     el: elementSelector('#input', ElementWithTagType('gs-text-input')),
     value: attributeSelector(
@@ -167,7 +173,7 @@ export class DriveSearch extends BaseThemedElement2 {
   }
 
   @onDom.event($.okButton.el, 'gs-action')
-  async onOkButtonAction_(): Promise<any> {
+  async onOkButtonAction_(): Promise<void> {
     const items = Persona.getValue($.results.children, this);
     if (!items) {
       return;
@@ -194,12 +200,22 @@ export class DriveSearch extends BaseThemedElement2 {
     }));
 
     // Now add the folders to the selected folder.
-    return itemsDataGraph.set(
+    await itemsDataGraph.set(
         selectedId,
         selectedFolder.setItems(
             selectedFolder
                 .getItems()
                 .addAll(addedItems.map((addedItem) => addedItem.summary.id))));
+
+    const dispatcher = Persona.getValue($.host.dispatcher, this);
+    if (!dispatcher) {
+      throw Errors
+          .assert(`Value for ${$.host.dispatcher.toString()}`)
+          .shouldExist()
+          .butWas(dispatcher);
+    }
+
+    dispatcher('th-item-added', {});
   }
 
   @render.children($.results.children)

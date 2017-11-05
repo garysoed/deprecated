@@ -86,6 +86,11 @@ export class RootView extends BaseThemedElement2 {
     $contentTypeProvider(ContentTypes.ADD, this);
   }
 
+  @onDom.event($.content.el, 'th-item-added')
+  onContentItemAdded_(): void {
+    $contentTypeProvider(ContentTypes.NAVIGATE, this);
+  }
+
   @render.switch($.content.switch)
   renderContentSwitch_(@nodeIn($contentType) contentType: ContentTypes): ContentTypes {
     return contentType;
