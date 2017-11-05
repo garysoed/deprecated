@@ -8,7 +8,7 @@ import {
   NullableType,
   StringType} from 'external/gs_tools/src/check';
 import { DataGraph } from 'external/gs_tools/src/datamodel';
-import { AssertionError } from 'external/gs_tools/src/error';
+import { Errors } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
@@ -60,15 +60,15 @@ export function driveItemsGetter(element: HTMLElement): DriveFileItemData {
   const name = item.getAttribute('text');
   const type = EnumParser<ApiDriveType>(ApiDriveType).parse(item.getAttribute('type'));
   if (!id) {
-    throw AssertionError.condition('itemid', 'exist', id);
+    throw Errors.assert('itemid').should('exist').butWas(id);
   }
 
   if (!name) {
-    throw AssertionError.condition('text', 'exist', name);
+    throw Errors.assert('text').should('exist').butWas(name);
   }
 
   if (type === null) {
-    throw AssertionError.condition('type', 'exist', type);
+    throw Errors.assert('type').should('exist').butWas(type);
   }
 
   const selected = BooleanParser.parse(item.getAttribute('selected'));
@@ -183,7 +183,7 @@ export class DriveSearch extends BaseThemedElement2 {
     const selectedId = selectedFolder.getId();
 
     if (!(selectedFolder instanceof EditableFolderImpl)) {
-      throw AssertionError.condition('selectedFolder', 'editable', selectedFolder);
+      throw Errors.assert('selectedFolder').should('be editable').butWas(selectedFolder);
     }
 
     await Promise.all(addedItemData.map((data) => {
