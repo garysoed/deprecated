@@ -19,7 +19,7 @@ describe('main.NavigatorItem', () => {
   });
 
   describe('renderName_', () => {
-    cit(`should resolve with the correct name`, async () => {
+    it(`should resolve with the correct name`, async () => {
       const itemId = 'itemId';
       const itemName = 'itemName';
       const itemsGraph = new FakeDataGraph<ItemImpl>();
@@ -29,7 +29,7 @@ describe('main.NavigatorItem', () => {
       await assert(item.renderName_(itemId, itemsGraph)).to.resolveWith(itemName);
     });
 
-    cit(`should resolve with '' if the item cannot be found`, async () => {
+    it(`should resolve with '' if the item cannot be found`, async () => {
       const itemId = 'itemId';
       const itemsGraph = new FakeDataGraph<ItemImpl>();
 
