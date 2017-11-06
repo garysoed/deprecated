@@ -9,8 +9,10 @@ import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { ThothFolder } from '../data/thoth-folder';
 
+export const ROOT_ID = '(root)';
+
 export const ROOT_ITEM = ThothFolder.newInstance(
-    '(root)',
+    ROOT_ID,
     '(root)',
     null,
     ImmutableSet.of([]));
@@ -18,7 +20,8 @@ export const ROOT_ITEM = ThothFolder.newInstance(
 export async function providesSelectedFolder(
     location: string,
     itemGraph: DataGraph<ItemImpl>): Promise<FolderImpl> {
-  const item = await itemGraph.get(location);
+  const id = location || ROOT_ID;
+  const item = await itemGraph.get(id);
   return (item instanceof FolderImpl) ? item : ROOT_ITEM;
 }
 
@@ -28,3 +31,6 @@ Graph.registerProvider(
     providesSelectedFolder,
     $location.path,
     $items);
+Graph.onReady(null, $items, () => {
+  Graph.refresh($selectedFolder);
+});

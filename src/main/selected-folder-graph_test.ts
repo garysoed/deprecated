@@ -2,7 +2,7 @@ import { assert, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
 import { FolderImpl } from '../data/folder-impl';
-import { providesSelectedFolder, ROOT_ITEM } from '../main/selected-folder-graph';
+import { providesSelectedFolder, ROOT_ITEM, ROOT_ID } from '../main/selected-folder-graph';
 
 
 describe('main.providesSelectedFolder', () => {
@@ -26,6 +26,16 @@ describe('main.providesSelectedFolder', () => {
 
       assert(await providesSelectedFolder(location, mockGraph)).to.equal(ROOT_ITEM);
       assert(mockGraph.get).to.haveBeenCalledWith(location);
+    });
+
+    it(`should resolve with ROOT_ID if location is not specified`, async () => {
+      const item = Mocks.object('item');
+      Object.setPrototypeOf(item, FolderImpl.prototype);
+      const mockGraph = jasmine.createSpyObj('Graph', ['get']);
+      mockGraph.get.and.returnValue(Promise.resolve(item));
+
+      assert(await providesSelectedFolder('', mockGraph)).to.equal(item);
+      assert(mockGraph.get).to.haveBeenCalledWith(ROOT_ID);
     });
   });
 });

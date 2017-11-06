@@ -4,8 +4,13 @@
   }
 </style>
 
-<section id="toolbar">
-  <gs-basic-button id="addButton">
-    <gs-icon>add</gs-icon>
-  </gs-basic-button>
-</section>
+<div layout="column">
+  <section id="toolbar">
+    <gs-basic-button id="addButton">
+      <gs-icon>add</gs-icon>
+    </gs-basic-button>
+  </section>
+  <section flex id="items">
+    <!--slot(items)-->
+  </section>
+</div>

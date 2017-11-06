@@ -1,16 +1,37 @@
-import { ElementWithTagType } from 'external/gs_tools/src/check';
+import { ElementWithTagType, StringType } from 'external/gs_tools/src/check';
+import { nodeIn } from 'external/gs_tools/src/graph';
+import { ImmutableList } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
 import {
+  childrenSelector,
   component,
   dispatcherSelector,
   elementSelector,
   onDom,
   Persona,
+  render,
   resolveSelectors,
-  shadowHostSelector } from 'external/gs_tools/src/persona';
+  shadowHostSelector,
+  slotSelector} from 'external/gs_tools/src/persona';
 
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
+
+import { Folder } from '../data/interfaces';
+import { NavigatorItem } from '../main/navigator-item';
+import { $selectedFolder } from '../main/selected-folder-graph';
+
+export function itemsFactory(document: Document): HTMLElement {
+  return document.createElement('th-navigator-item');
+}
+
+export function itemsGetter(element: HTMLElement): string {
+  return element.getAttribute('itemid') || '';
+}
+
+export function itemsSetter(value: string, element: HTMLElement): void {
+  element.setAttribute('itemid', value);
+}
 
 export const $ = resolveSelectors({
   addButton: {
@@ -20,9 +41,22 @@ export const $ = resolveSelectors({
     dispatch: dispatcherSelector<null>(elementSelector('host.el')),
     el: shadowHostSelector,
   },
+  items: {
+    children: childrenSelector(
+        slotSelector(elementSelector('items.el'), 'items'),
+        itemsFactory,
+        itemsGetter,
+        itemsSetter,
+        StringType,
+        ElementWithTagType('th-navigator-item')),
+    el: elementSelector('#items', ElementWithTagType('section')),
+  },
 });
 
 @component({
+  dependencies: [
+    NavigatorItem,
+  ],
   inputs: [
     $.host.dispatch,
   ],
@@ -42,5 +76,10 @@ export class Navigator extends BaseThemedElement2 {
     }
 
     dispatcher('th-add', null);
+  }
+
+  @render.children($.items.children)
+  renderItems_(@nodeIn($selectedFolder) selectedFolder: Folder): ImmutableList<string> {
+    return ImmutableList.of(selectedFolder.getItems());
   }
 }
