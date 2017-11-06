@@ -1,9 +1,52 @@
-<div layout="row">
-  <div>
+<style>
+  #actions {
+    z-index: 0;
+  }
+
+  #content {
+    background-color: var(--contentBG);
+    color: var(--contentFG);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all .3s;
+    white-space: nowrap;
+    right: var(--contentRight);
+    z-index: 1;
+  }
+
+  #icon {
+    padding: var(--gsSizePadding);
+  }
+
+  #name {
+    padding: var(--gsSizePadding) var(--gsSizePadding) var(--gsSizePadding) 0;
+  }
+
+  #root {
+    height: 3.1rem;
+    position: relative;
+    width: 100%;
+  }
+
+  :host {
+    --contentBG: var(--gsColorActionBG);
+    --contentFG: var(--gsColorActionFG);
+    --contentRight: 0;
+  }
+
+  :host(:hover), :host(:focus) {
+    --contentFG: var(--gsColorActionFocusFG);
+    --contentRight: calc(2 * var(--gsSizePadding) + var(--gsLineHeight));
+    cursor: pointer;
+  }
+</style>
+
+<div id="root">
+  <div fill-parent id="content" layout="row">
     <gs-icon id="icon"></gs-icon>
     <div id="name"></div>
   </div>
-  <div id="actions">
+  <div fill-parent flex-justify="flex-end" gs-theme="normal" gs-highlight id="actions" layout="row">
     <gs-basic-button id="previewButton">
       <gs-icon>remove_red_eye</gs-icon>
     </gs-basic-button>
