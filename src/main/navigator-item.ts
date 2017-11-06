@@ -21,6 +21,7 @@ import { navigateToHash } from 'external/gs_tools/src/ui';
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
+import { FileImpl } from '../data/file-impl';
 import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { ItemType } from '../data/item-type';
@@ -82,8 +83,17 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @onDom.event($.previewButton.el, 'click')
-  onPreviewButtonClick_(event: MouseEvent): void {
+  async onPreviewButtonClick_(event: MouseEvent): Promise<void> {
     event.stopPropagation();
+
+    const item = await Graph.get($item, Graph.getTimestamp(), this);
+    if (!(item instanceof FileImpl)) {
+      return;
+    }
+
+    // TODO: Handle folders: Recursively renders all its items, navigate to one called index.md.
+
+    console.log(item.getPreview());
   }
 
   @nodeOut($item)
@@ -113,8 +123,7 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @render.innerText($.name.innerText)
-  renderName_(
-      @nodeIn($item) item: ItemImpl | null): string {
+  renderName_(@nodeIn($item) item: ItemImpl | null): string {
     if (!item) {
       return '';
     }

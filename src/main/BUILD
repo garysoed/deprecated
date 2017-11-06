@@ -9,4 +9,6 @@ thoth(
         "//src/api",
         "//src/data",
         "//src/import",
+        "//src/render",
+        "//types/showdown",
     ])
