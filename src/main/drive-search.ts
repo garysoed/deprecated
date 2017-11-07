@@ -140,10 +140,12 @@ export class DriveSearch extends BaseThemedElement2 {
       parentFolderId: string,
       itemsDataGraph: DataGraph<ItemImpl>): Promise<any> {
     const apiType = addedItem.summary.type;
+    const itemName = addedItem.summary.name;
+    const id = `${parentFolderId}/${itemName}`;
     if (apiType !== ApiDriveType.FOLDER) {
       const newFile = DriveFile.newInstance(
-          addedItem.summary.id,
-          addedItem.summary.name,
+          id,
+          itemName,
           parentFolderId,
           convertToItemType(apiType),
           addedItem.content || '');
@@ -151,13 +153,15 @@ export class DriveSearch extends BaseThemedElement2 {
     }
 
     const newFolder = DriveFolder.newInstance(
-        addedItem.summary.id,
+        id,
         addedItem.summary.name,
         parentFolderId,
-        ImmutableSet.of(addedItem.files).mapItem((file) => file.summary.id));
+        ImmutableSet
+            .of(addedItem.files)
+            .mapItem((file) => `${id}/${file.summary.name}`));
 
     const contentPromises = addedItem.files.map((file) => {
-      return this.createAddedItem_(file, addedItem.summary.id, itemsDataGraph);
+      return this.createAddedItem_(file, id, itemsDataGraph);
     });
     return Promise.all([
       itemsDataGraph.set(newFolder.getId(), newFolder),
@@ -205,7 +209,7 @@ export class DriveSearch extends BaseThemedElement2 {
         selectedFolder.setItems(
             selectedFolder
                 .getItems()
-                .addAll(addedItems.map((addedItem) => addedItem.summary.id))));
+                .addAll(addedItems.map((addedItem) => `${selectedId}/${addedItem.summary.name}`))));
 
     const dispatcher = Persona.getValue($.host.dispatcher, this);
     if (!dispatcher) {
