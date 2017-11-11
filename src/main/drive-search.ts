@@ -7,10 +7,9 @@ import {
   IterableOfType,
   NullableType,
   StringType} from 'external/gs_tools/src/check';
-import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
-import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableList } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
 import { BooleanParser, EnumParser, StringParser } from 'external/gs_tools/src/parse';
 import {
@@ -29,13 +28,10 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { DriveFile } from '../data/drive-file';
-import { DriveFolder } from '../data/drive-folder';
+import { DriveService } from '../data/drive-service';
 import { EditableFolderImpl } from '../data/editable-folder-impl';
 import { $items } from '../data/item-graph';
-import { ItemImpl } from '../data/item-impl';
-import { convertToItemType } from '../data/item-type';
-import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../import/drive';
+import { ApiDriveFileSummary, ApiDriveType } from '../import/drive';
 import { DriveStorage } from '../import/drive-storage';
 import { SearchItem } from '../main/search-item';
 import { $selectedFolder } from '../main/selected-folder-graph';
@@ -135,40 +131,6 @@ export class DriveSearch extends BaseThemedElement2 {
     super(themeService);
   }
 
-  private async createAddedItem_(
-      addedItem: ApiDriveFile,
-      parentFolderId: string,
-      itemsDataGraph: DataGraph<ItemImpl>): Promise<any> {
-    const apiType = addedItem.summary.type;
-    const itemName = addedItem.summary.name;
-    const id = `${parentFolderId}/${itemName}`;
-    if (apiType !== ApiDriveType.FOLDER) {
-      const newFile = DriveFile.newInstance(
-          id,
-          itemName,
-          parentFolderId,
-          convertToItemType(apiType),
-          addedItem.content || '');
-      return itemsDataGraph.set(newFile.getId(), newFile);
-    }
-
-    const newFolder = DriveFolder.newInstance(
-        id,
-        addedItem.summary.name,
-        parentFolderId,
-        ImmutableSet
-            .of(addedItem.files)
-            .mapItem((file) => `${id}/${file.summary.name}`));
-
-    const contentPromises = addedItem.files.map((file) => {
-      return this.createAddedItem_(file, id, itemsDataGraph);
-    });
-    return Promise.all([
-      itemsDataGraph.set(newFolder.getId(), newFolder),
-      ...contentPromises,
-    ]);
-  }
-
   @onDom.event($.input.el, 'change')
   async onInputChange_(): Promise<void> {
     const query = Persona.getValue($.input.value, this);
@@ -183,25 +145,28 @@ export class DriveSearch extends BaseThemedElement2 {
       return;
     }
 
-    const addedItems = items.filter((item) => !!item.selected);
-    const addedItemPromises = addedItems.map((item) => DriveStorage.read(item.summary.id));
-
     const time = Graph.getTimestamp();
-    const [selectedFolder, itemsDataGraph, addedItemData] = await Promise.all([
+    const [selectedFolder, itemsDataGraph] = await Promise.all([
       Graph.get($selectedFolder, time),
       Graph.get($items, time),
-      Promise.all(addedItemPromises),
     ]);
-
-    const selectedId = selectedFolder.getId();
 
     if (!(selectedFolder instanceof EditableFolderImpl)) {
       throw Errors.assert('selectedFolder').should('be editable').butWas(selectedFolder);
     }
 
-    await Promise.all(addedItemData.map((data) => {
-      return this.createAddedItem_(data, selectedId, itemsDataGraph);
-    }));
+    const selectedId = selectedFolder.getId();
+    const addedItems = items.filter((item) => !!item.selected);
+    const addedDriveItemPromises = addedItems
+        .map((item) => DriveService.recursiveGet(item.summary.id, selectedId));
+    const addedDriveItems = await Promise.all(addedDriveItemPromises);
+
+    // Stores all the drive items.
+    for (const driveBatch of addedDriveItems) {
+      for (const addedItem of driveBatch) {
+        itemsDataGraph.set(addedItem.getId(), addedItem);
+      }
+    }
 
     // Now add the folders to the selected folder.
     await itemsDataGraph.set(

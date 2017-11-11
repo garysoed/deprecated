@@ -6,8 +6,8 @@ import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
+import { DriveService } from '../data/drive-service';
 import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { ThothFolder } from '../data/thoth-folder';
@@ -111,116 +111,6 @@ describe('main.DriveSearch', () => {
     TestDispose.add(search);
   });
 
-  describe('createAddedItem_', () => {
-    it(`should recursively add the folder contents`, async () => {
-      const parentFolderId = 'parentFolderId';
-
-      const nameRoot = 'nameRoot';
-      const pathRoot = `${parentFolderId}/${nameRoot}`;
-
-      const name1 = 'name1';
-      const content1 = 'content1';
-      const path1 = `${parentFolderId}/${nameRoot}/${name1}`;
-
-      const nameSub = 'nameSub';
-      const pathSub = `${parentFolderId}/${nameRoot}/${nameSub}`;
-
-      const name21 = 'name21';
-      const content21 = 'content21';
-      const path21 = `${parentFolderId}/${nameRoot}/${nameSub}/${name21}`;
-
-      const name22 = 'name22';
-      const content22 = 'content22';
-      const path22 = `${parentFolderId}/${nameRoot}/${nameSub}/${name22}`;
-
-      const addedItem = {
-        files: [
-          {
-            content: content1,
-            files: [],
-            summary: {id: 'id1', name: name1, type: ApiDriveType.MARKDOWN},
-          },
-          {
-            files: [
-              {
-                content: content21,
-                files: [],
-                summary: {id: 'id21', name: name21, type: ApiDriveType.MARKDOWN},
-              },
-              {
-                content: content22,
-                files: [],
-                summary: {id: 'id22', name: name22, type: ApiDriveType.MARKDOWN},
-              },
-            ],
-            summary: {id: 'idSub', name: nameSub, type: ApiDriveType.FOLDER},
-          },
-        ],
-        summary: {id: 'idRoot', name: nameRoot, type: ApiDriveType.FOLDER},
-      };
-
-      const itemsDataGraph = new FakeDataGraph<ItemImpl>();
-
-      await search['createAddedItem_'](addedItem, parentFolderId, itemsDataGraph);
-      const [rootFolder, file1, subFolder, file21, file22] = await Promise.all([
-        itemsDataGraph.get(pathRoot),
-        itemsDataGraph.get(path1),
-        itemsDataGraph.get(pathSub),
-        itemsDataGraph.get(path21),
-        itemsDataGraph.get(path22),
-      ]);
-
-      assert(rootFolder!.getId()).to.equal(pathRoot);
-      assert(rootFolder!.getName()).to.equal(nameRoot);
-      assert(rootFolder!.getParentId()).to.equal(parentFolderId);
-      assert((rootFolder as DriveFolder).getItems()).to.haveElements([path1, pathSub]);
-
-      assert(file1!.getId()).to.equal(path1);
-      assert(file1!.getName()).to.equal(name1);
-      assert(file1!.getParentId()).to.equal(pathRoot);
-      assert((file1 as DriveFile).getContent()).to.equal(content1);
-
-      assert(subFolder!.getId()).to.equal(pathSub);
-      assert(subFolder!.getName()).to.equal(nameSub);
-      assert(subFolder!.getParentId()).to.equal(pathRoot);
-      assert((subFolder as DriveFolder).getItems()).to.haveElements([path21, path22]);
-
-      assert(file21!.getId()).to.equal(path21);
-      assert(file21!.getName()).to.equal(name21);
-      assert(file21!.getParentId()).to.equal(pathSub);
-      assert((file21 as DriveFile).getContent()).to.equal(content21);
-
-      assert(file22!.getId()).to.equal(path22);
-      assert(file22!.getName()).to.equal(name22);
-      assert(file22!.getParentId()).to.equal(pathSub);
-      assert((file22 as DriveFile).getContent()).to.equal(content22);
-    });
-
-    it(`should handle files correctly`, async () => {
-      const name = 'name1';
-      const content = 'content1';
-
-      const addedItem = {
-        content: content,
-        files: [],
-        summary: {id: 'id', name: name, type: ApiDriveType.MARKDOWN},
-      };
-
-      const parentFolderId = 'parentFolderId';
-      const itemsDataGraph = new FakeDataGraph<ItemImpl>();
-
-      await search['createAddedItem_'](addedItem, parentFolderId, itemsDataGraph);
-      const [file] = await Promise.all([
-        itemsDataGraph.get(`${parentFolderId}/${name}`),
-      ]);
-
-      assert(file!.getId()).to.equal(`${parentFolderId}/${name}`);
-      assert(file!.getName()).to.equal(name);
-      assert(file!.getParentId()).to.equal(parentFolderId);
-      assert((file as DriveFile).getContent()).to.equal(content);
-    });
-  });
-
   describe('onInputChange_', () => {
     it(`should update the provider correctly`, async () => {
       const query = 'query';
@@ -252,9 +142,20 @@ describe('main.DriveSearch', () => {
           ThothFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
 
       const id1 = 'id1';
-      const id2 = 'id2';
       const name1 = 'name1';
+      const mockItem1 = jasmine.createSpyObj('Item1', ['getId']);
+      mockItem1.getId.and.returnValue(id1);
+      const id11 = 'id11';
+      const mockItem11 = jasmine.createSpyObj('Item11', ['getId']);
+      mockItem11.getId.and.returnValue(id11);
+      const id12 = 'id12';
+      const mockItem12 = jasmine.createSpyObj('Item12', ['getId']);
+      mockItem12.getId.and.returnValue(id12);
+      const id2 = 'id2';
       const name2 = 'name2';
+      const mockItem2 = jasmine.createSpyObj('Item2', ['getId']);
+      mockItem2.getId.and.returnValue(id2);
+
       const idUnadded = 'idUnadded';
       const mockDispatcher = jasmine.createSpy('Dispatcher');
 
@@ -266,29 +167,27 @@ describe('main.DriveSearch', () => {
           ]))
           .when($.host.dispatcher, search).return(mockDispatcher);
 
-      const data1 = Mocks.object('data1');
-      const data2 = Mocks.object('data2');
-      Fakes.build(spyOn(DriveStorage, 'read'))
-          .when(id1).resolve(data1)
-          .when(id2).resolve(data2);
 
-      spyOn(search, 'createAddedItem_').and.returnValue(Promise.resolve());
+      Fakes.build(spyOn(DriveService, 'recursiveGet'))
+          .when(id1).resolve(ImmutableList.of([mockItem1, mockItem11, mockItem12]))
+          .when(id2).resolve(ImmutableList.of([mockItem2]));
 
       await search.onOkButtonAction_();
       assert(mockDispatcher).to.haveBeenCalledWith('th-item-added', {});
-      const selectedFolder = await itemsDataGraph.get(idSelected);
 
+      const selectedFolder = await itemsDataGraph.get(idSelected);
       assert((selectedFolder as ThothFolder).getItems()).to.haveElements([
         `${idSelected}/${name1}`,
         `${idSelected}/${name2}`,
       ]);
 
-      assert(search['createAddedItem_']).to.haveBeenCalledWith(data1, idSelected, itemsDataGraph);
-      assert(search['createAddedItem_']).to.haveBeenCalledWith(data2, idSelected, itemsDataGraph);
+      assert(await itemsDataGraph.get(id1)).to.equal(mockItem1);
+      assert(await itemsDataGraph.get(id11)).to.equal(mockItem11);
+      assert(await itemsDataGraph.get(id12)).to.equal(mockItem12);
+      assert(await itemsDataGraph.get(id2)).to.equal(mockItem2);
 
-      assert(DriveStorage.read).to.haveBeenCalledWith(id1);
-      assert(DriveStorage.read).to.haveBeenCalledWith(id2);
-      assert(DriveStorage.read).toNot.haveBeenCalledWith(idUnadded);
+      assert(DriveService.recursiveGet).to.haveBeenCalledWith(id1, idSelected);
+      assert(DriveService.recursiveGet).to.haveBeenCalledWith(id2, idSelected);
     });
 
     it(`should reject if dispatcher cannot be found`, async () => {
@@ -306,7 +205,7 @@ describe('main.DriveSearch', () => {
           .when($.results.children, search).return(ImmutableList.of([]))
           .when($.host.dispatcher, search).return(null);
 
-      spyOn(search, 'createAddedItem_').and.returnValue(Promise.resolve());
+      spyOn(DriveService, 'recursiveGet').and.returnValue(Promise.resolve(ImmutableList.of([])));
 
       await assert(search.onOkButtonAction_()).to.rejectWithError(/exist/);
     });
@@ -337,7 +236,7 @@ describe('main.DriveSearch', () => {
           .when(id1).resolve(data1)
           .when(id2).resolve(data2);
 
-      spyOn(search, 'createAddedItem_').and.returnValue(Promise.resolve());
+      spyOn(DriveService, 'recursiveGet').and.returnValue(Promise.resolve(ImmutableList.of([])));
 
       await assert(search.onOkButtonAction_()).to.rejectWithError(/selectedFolder/);
     });
@@ -352,10 +251,10 @@ describe('main.DriveSearch', () => {
 
       spyOn(Persona, 'getValue').and.returnValue(null);
       spyOn(DriveStorage, 'read');
-      spyOn(search, 'createAddedItem_').and.returnValue(Promise.resolve());
+      spyOn(DriveService, 'recursiveGet').and.returnValue(Promise.resolve(ImmutableList.of([])));
 
       await search.onOkButtonAction_();
-      assert(search['createAddedItem_']).toNot.haveBeenCalled();
+      assert(DriveService.recursiveGet).toNot.haveBeenCalled();
       assert(DriveStorage.read).toNot.haveBeenCalled();
       assert(Persona.getValue).to.haveBeenCalledWith($.results.children, search);
     });

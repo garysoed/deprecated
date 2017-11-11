@@ -6,5 +6,6 @@ thoth(
     deps = [
         # "@gs_tools//src",
         "@gs_ui//src",
+        "//src/import",
         "//src/render",
     ])

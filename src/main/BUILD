@@ -10,5 +10,4 @@ thoth(
         "//src/data",
         "//src/import",
         "//src/render",
-        "//types/showdown",
     ])
