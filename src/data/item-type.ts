@@ -6,6 +6,7 @@ export enum ItemType {
   UNKNOWN,
   FOLDER,
   FILE,
+  PREVIEW,
   UNHANDLED_FILE,
 }
 
