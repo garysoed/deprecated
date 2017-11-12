@@ -6,8 +6,8 @@ import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
+import { DriveService, ItemService } from '../data';
 import { DriveFolder } from '../data/drive-folder';
-import { DriveService } from '../data/drive-service';
 import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { ThothFolder } from '../data/thoth-folder';
@@ -172,19 +172,22 @@ describe('main.DriveSearch', () => {
           .when(id1).resolve(ImmutableList.of([mockItem1, mockItem11, mockItem12]))
           .when(id2).resolve(ImmutableList.of([mockItem2]));
 
+      const saveSpy = spyOn(ItemService, 'save');
+      const time = Graph.getTimestamp();
+
       await search.onOkButtonAction_();
       assert(mockDispatcher).to.haveBeenCalledWith('th-item-added', {});
 
-      const selectedFolder = await itemsDataGraph.get(idSelected);
+      const selectedFolder = saveSpy.calls.argsFor(4)[1];
       assert((selectedFolder as ThothFolder).getItems()).to.haveElements([
         `${idSelected}/${name1}`,
         `${idSelected}/${name2}`,
       ]);
 
-      assert(await itemsDataGraph.get(id1)).to.equal(mockItem1);
-      assert(await itemsDataGraph.get(id11)).to.equal(mockItem11);
-      assert(await itemsDataGraph.get(id12)).to.equal(mockItem12);
-      assert(await itemsDataGraph.get(id2)).to.equal(mockItem2);
+      assert(ItemService.save).to.haveBeenCalledWith(time, mockItem1);
+      assert(ItemService.save).to.haveBeenCalledWith(time, mockItem11);
+      assert(ItemService.save).to.haveBeenCalledWith(time, mockItem12);
+      assert(ItemService.save).to.haveBeenCalledWith(time, mockItem2);
 
       assert(DriveService.recursiveGet).to.haveBeenCalledWith(id1, idSelected);
       assert(DriveService.recursiveGet).to.haveBeenCalledWith(id2, idSelected);

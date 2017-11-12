@@ -28,9 +28,8 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { DriveService } from '../data/drive-service';
+import { DriveService, ItemService } from '../data';
 import { EditableFolderImpl } from '../data/editable-folder-impl';
-import { $items } from '../data/item-graph';
 import { ApiDriveFileSummary, ApiDriveType } from '../import/drive';
 import { DriveStorage } from '../import/drive-storage';
 import { SearchItem } from '../main/search-item';
@@ -146,9 +145,8 @@ export class DriveSearch extends BaseThemedElement2 {
     }
 
     const time = Graph.getTimestamp();
-    const [selectedFolder, itemsDataGraph] = await Promise.all([
+    const [selectedFolder] = await Promise.all([
       Graph.get($selectedFolder, time),
-      Graph.get($items, time),
     ]);
 
     if (!(selectedFolder instanceof EditableFolderImpl)) {
@@ -164,13 +162,13 @@ export class DriveSearch extends BaseThemedElement2 {
     // Stores all the drive items.
     for (const driveBatch of addedDriveItems) {
       for (const addedItem of driveBatch) {
-        itemsDataGraph.set(addedItem.getId(), addedItem);
+        ItemService.save(time, addedItem);
       }
     }
 
     // Now add the folders to the selected folder.
-    await itemsDataGraph.set(
-        selectedId,
+    ItemService.save(
+        time,
         selectedFolder.setItems(
             selectedFolder
                 .getItems()

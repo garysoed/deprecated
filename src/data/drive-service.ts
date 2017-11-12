@@ -1,3 +1,6 @@
+/**
+ * Handles access to the Drive API, converting Drive API format to Thoth data format.
+ */
 import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { DriveFile } from '../data/drive-file';
