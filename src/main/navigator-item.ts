@@ -25,6 +25,7 @@ import { FileImpl } from '../data/file-impl';
 import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { ItemType } from '../data/item-type';
+import { RenderService } from '../render';
 
 export const $ = resolveSelectors({
   host: {
@@ -86,14 +87,16 @@ export class NavigatorItem extends BaseThemedElement2 {
   async onPreviewButtonClick_(event: MouseEvent): Promise<void> {
     event.stopPropagation();
 
-    const item = await Graph.get($item, Graph.getTimestamp(), this);
+    const time = Graph.getTimestamp();
+    const item = await Graph.get($item, time, this);
     if (!(item instanceof FileImpl)) {
       return;
     }
 
+    RenderService.render(item.getId(), time);
+
     // TODO: Handle folders: Recursively renders all its items, navigate to one called index.md.
 
-    console.log(item.getPreview());
   }
 
   @nodeOut($item)
@@ -115,7 +118,7 @@ export class NavigatorItem extends BaseThemedElement2 {
         return 'folder';
       case ItemType.FILE:
         return 'web';
-      case ItemType.UNHANDLED_FILE:
+      case ItemType.UNHANDLED_ITEM:
         return 'insert_drive_file';
       default:
         return 'help';

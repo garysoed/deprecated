@@ -7,5 +7,9 @@ export abstract class EditableFolderImpl extends FolderImpl {
     return {name: this.getName()};
   }
 
+  isEditable(): boolean {
+    return true;
+  }
+
   abstract setItems(newItems: ImmutableSet<string>): this;
 }

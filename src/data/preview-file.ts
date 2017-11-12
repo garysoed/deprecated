@@ -23,7 +23,7 @@ export abstract class PreviewFile extends FileImpl {
       originalId: string): PreviewFile {
     return DataModels.newInstance(
         PreviewFile,
-        getInitMap_(id, name, parentId, ItemType.PREVIEW, content)
+        getInitMap_(id, name, parentId, ItemType.PREVIEW_FILE, content)
             .set('originalId_', originalId));
   }
 }

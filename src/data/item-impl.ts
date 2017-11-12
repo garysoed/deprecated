@@ -32,4 +32,8 @@ export abstract class ItemImpl implements DataModel<{ name: string }>, Item {
   abstract getSearchIndex(): {name: string};
 
   abstract getType(): ItemType;
+
+  isEditable(): boolean {
+    return false;
+  }
 }

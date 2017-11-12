@@ -6,8 +6,9 @@ export enum ItemType {
   UNKNOWN,
   FOLDER,
   FILE,
-  PREVIEW,
-  UNHANDLED_FILE,
+  PREVIEW_FILE,
+  PREVIEW_FOLDER,
+  UNHANDLED_ITEM,
 }
 
 const HANDLED_FILE_TYPES = ImmutableSet.of([
@@ -22,5 +23,5 @@ export function convertToItemType(apiType: ApiDriveType): ItemType {
     return ItemType.FOLDER;
   }
 
-  return HANDLED_FILE_TYPES.has(apiType) ? ItemType.FILE : ItemType.UNHANDLED_FILE;
+  return HANDLED_FILE_TYPES.has(apiType) ? ItemType.FILE : ItemType.UNHANDLED_ITEM;
 }
