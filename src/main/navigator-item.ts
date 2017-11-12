@@ -94,9 +94,6 @@ export class NavigatorItem extends BaseThemedElement2 {
     }
 
     RenderService.render(item.getId(), time);
-
-    // TODO: Handle folders: Recursively renders all its items, navigate to one called index.md.
-
   }
 
   @nodeOut($item)

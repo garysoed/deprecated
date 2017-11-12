@@ -2,14 +2,14 @@ import { InstanceofType } from 'external/gs_tools/src/check';
 import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
-import { $location } from 'external/gs_tools/src/ui';
+import { $location, navigateToHash } from 'external/gs_tools/src/ui';
 
 import { FolderImpl } from '../data/folder-impl';
 import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { ThothFolder } from '../data/thoth-folder';
 
-export const ROOT_ID = '(root)';
+export const ROOT_ID = '/(root)';
 
 export const ROOT_ITEM = ThothFolder.newInstance(
     ROOT_ID,
@@ -20,13 +20,19 @@ export const ROOT_ITEM = ThothFolder.newInstance(
 export async function providesSelectedFolder(
     location: string,
     itemGraph: DataGraph<ItemImpl>): Promise<FolderImpl> {
-  const id = location.substr(1) || ROOT_ID;
-  const [item, rootItem] = await Promise.all([itemGraph.get(id), itemGraph.get(ROOT_ID)]);
+  const id = location.substr(1);
+  if (!id) {
+    navigateToHash(ROOT_ID);
+    return ROOT_ITEM;
+  }
+
+  const item = await itemGraph.get(id);
 
   if (item instanceof FolderImpl) {
     return item;
-  } else if (rootItem instanceof FolderImpl) {
-    return rootItem;
+  } else if (id !== ROOT_ID) {
+    navigateToHash(ROOT_ID);
+    return ROOT_ITEM;
   } else {
     return ROOT_ITEM;
   }

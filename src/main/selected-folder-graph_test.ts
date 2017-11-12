@@ -24,23 +24,22 @@ describe('main.providesSelectedFolder', () => {
       assert(await providesSelectedFolder(location, mockGraph)).to.equal(item);
     });
 
-    it(`should resolve with the saved root folder if the item is not a folder`, async () => {
+    it(`should redirect to ROOT_ID and resolve with saved root folder if item is not a folder and` +
+        ` ID is not ROOT_ID`, async () => {
       const id = 'id';
       const location = `/${id}`;
       const item = Mocks.object('item');
 
-      const rootItem = Mocks.object('rootItem');
-      Object.setPrototypeOf(rootItem, FolderImpl.prototype);
-
       const mockGraph = jasmine.createSpyObj('Graph', ['get']);
       Fakes.build(mockGraph.get)
-          .when(id).resolve(item)
-          .when(ROOT_ID).resolve(rootItem);
+          .when(id).resolve(item);
 
-      assert(await providesSelectedFolder(location, mockGraph)).to.equal(rootItem);
+      assert(await providesSelectedFolder(location, mockGraph)).to.equal(ROOT_ITEM);
+      assert(window.location.hash).to.equal(`#${ROOT_ID}`);
     });
 
-    it(`should resolve with ROOT_ITEM if item and root folder are not folders`, async () => {
+    it(`should redirect to ROOT_ID and resolve with saved root folder if item is not a folder and` +
+        ` ID is ROOT_ID`, async () => {
       const id = 'id';
       const location = `/${id}`;
       const item = Mocks.object('item');
@@ -54,14 +53,12 @@ describe('main.providesSelectedFolder', () => {
       assert(await providesSelectedFolder(location, mockGraph)).to.equal(ROOT_ITEM);
     });
 
-    it(`should resolve with ROOT_ID if location is not specified`, async () => {
-      const item = Mocks.object('item');
-      Object.setPrototypeOf(item, FolderImpl.prototype);
+    it(`should resolve with ROOT_ITEM and navigate to ROOT_ID if location is not specified`,
+        async () => {
       const mockGraph = jasmine.createSpyObj('Graph', ['get']);
-      mockGraph.get.and.returnValue(Promise.resolve(item));
 
-      assert(await providesSelectedFolder('', mockGraph)).to.equal(item);
-      assert(mockGraph.get).to.haveBeenCalledWith(ROOT_ID);
+      assert(await providesSelectedFolder('', mockGraph)).to.equal(ROOT_ITEM);
+      assert(window.location.hash).to.equal(`#${ROOT_ID}`);
     });
   });
 });
