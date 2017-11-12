@@ -4,14 +4,13 @@ import { ApiDriveType } from '../import/drive';
 
 export enum ItemType {
   UNKNOWN,
-  FOLDER,
-  FILE,
-  PREVIEW_FILE,
-  PREVIEW_FOLDER,
+  ASSET,
+  RENDER,
   UNHANDLED_ITEM,
 }
 
 const HANDLED_FILE_TYPES = ImmutableSet.of([
+  ApiDriveType.FOLDER,
   ApiDriveType.MARKDOWN,
 ]);
 export function convertToItemType(apiType: ApiDriveType): ItemType {
@@ -19,9 +18,5 @@ export function convertToItemType(apiType: ApiDriveType): ItemType {
     return ItemType.UNKNOWN;
   }
 
-  if (apiType === ApiDriveType.FOLDER) {
-    return ItemType.FOLDER;
-  }
-
-  return HANDLED_FILE_TYPES.has(apiType) ? ItemType.FILE : ItemType.UNHANDLED_ITEM;
+  return HANDLED_FILE_TYPES.has(apiType) ? ItemType.ASSET : ItemType.UNHANDLED_ITEM;
 }

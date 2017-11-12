@@ -5,7 +5,10 @@ import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { DriveFile } from '../data/drive-file';
+import { DriveFolder } from '../data/drive-folder';
 import { ItemType } from '../data/item-type';
+import { PreviewFile } from '../data/preview-file';
+import { PreviewFolder } from '../data/preview-folder';
 import { ThothFolder } from '../data/thoth-folder';
 import { $item, NavigatorItem } from '../main/navigator-item';
 
@@ -50,9 +53,30 @@ describe('main.NavigatorItem', () => {
       assert(item.renderIcon_(selectedItem)).to.equal('help');
     });
 
-    it(`should return "web" if the type is FILE`, () => {
+    it(`should return "palette" if the type is RENDER file`, () => {
       const selectedItem =
-          DriveFile.newInstance('id', 'name', 'parentId', ItemType.FILE, 'content');
+          PreviewFile.newInstance('id', 'name', 'parentId', 'content', 'originalId');
+
+      assert(item.renderIcon_(selectedItem)).to.equal('palette');
+    });
+
+    it(`should return "folder" if the type is RENDER folder`, () => {
+      const selectedItem =
+          PreviewFolder.newInstance('id', 'name', 'parentId', ImmutableSet.of([]), 'originalId');
+
+      assert(item.renderIcon_(selectedItem)).to.equal('folder');
+    });
+
+    it(`should return "folder" if the type is ASSET folder`, () => {
+      const selectedItem =
+          DriveFolder.newInstance('id', 'name', 'parentId', ImmutableSet.of([]));
+
+      assert(item.renderIcon_(selectedItem)).to.equal('folder');
+    });
+
+    it(`should return "web" if the type is ASSET file`, () => {
+      const selectedItem =
+          DriveFile.newInstance('id', 'name', 'parentId', ItemType.ASSET, 'content');
 
       assert(item.renderIcon_(selectedItem)).to.equal('web');
     });

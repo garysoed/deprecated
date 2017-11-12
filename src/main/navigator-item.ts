@@ -22,6 +22,7 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
 import { FileImpl } from '../data/file-impl';
+import { FolderImpl } from '../data/folder-impl';
 import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { ItemType } from '../data/item-type';
@@ -110,11 +111,13 @@ export class NavigatorItem extends BaseThemedElement2 {
       return '';
     }
 
+    const isFolder = item instanceof FolderImpl;
+
     switch (item.getType()) {
-      case ItemType.FOLDER:
-        return 'folder';
-      case ItemType.FILE:
-        return 'web';
+      case ItemType.ASSET:
+        return isFolder ? 'folder' : 'web';
+      case ItemType.RENDER:
+        return isFolder ? 'folder' : 'palette';
       case ItemType.UNHANDLED_ITEM:
         return 'insert_drive_file';
       default:

@@ -10,8 +10,9 @@ export function getInitMap_(
     id: string,
     name: string,
     parentId: string | null,
+    type: ItemType,
     items: Iterable<string>): ImmutableMap<string | symbol, any> {
-  return getInitItemMap_(id, name, parentId, ItemType.FOLDER).set('items_', items);
+  return getInitItemMap_(id, name, parentId, type).set('items_', items);
 }
 
 export abstract class FolderImpl extends ItemImpl implements Folder {

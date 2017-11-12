@@ -2,6 +2,7 @@ import { DataModels, field } from 'external/gs_tools/src/datamodel';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { StringParser } from 'external/gs_tools/src/parse';
 
+import { ItemType } from '../data';
 import { FolderImpl, getInitMap_ } from '../data/folder-impl';
 
 export abstract class PreviewFolder extends FolderImpl {
@@ -21,7 +22,7 @@ export abstract class PreviewFolder extends FolderImpl {
       originalId: string): PreviewFolder {
     return DataModels.newInstance(
         PreviewFolder,
-        getInitMap_(id, name, parentId, items)
+        getInitMap_(id, name, parentId, ItemType.RENDER, items)
             .set('originalId_', originalId));
   }
 }
