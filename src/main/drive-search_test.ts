@@ -19,7 +19,7 @@ import {
   driveItemsGetter,
   driveItemsSetter,
   DriveSearch } from '../main/drive-search';
-import { $selectedFolder } from '../main/selected-folder-graph';
+import { $selectedItem } from '../main/selected-folder-graph';
 
 describe('driveItemsGetter', () => {
   it(`should return the correct item`, () => {
@@ -131,14 +131,14 @@ describe('main.DriveSearch', () => {
 
   describe('onOkButtonAction_', () => {
     it(`should save the new folders and files correctly`, async () => {
-      Graph.clearNodesForTests([$items, $selectedFolder]);
+      Graph.clearNodesForTests([$items, $selectedItem]);
 
       const itemsDataGraph = new FakeDataGraph<ItemImpl>();
       Graph.createProvider($items, itemsDataGraph);
 
       const idSelected = 'idSelected';
       Graph.createProvider(
-          $selectedFolder,
+          $selectedItem,
           ThothFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
 
       const id1 = 'id1';
@@ -194,14 +194,14 @@ describe('main.DriveSearch', () => {
     });
 
     it(`should reject if dispatcher cannot be found`, async () => {
-      Graph.clearNodesForTests([$items, $selectedFolder]);
+      Graph.clearNodesForTests([$items, $selectedItem]);
 
       const itemsDataGraph = new FakeDataGraph<ItemImpl>();
       Graph.createProvider($items, itemsDataGraph);
 
       const idSelected = 'idSelected';
       Graph.createProvider(
-          $selectedFolder,
+          $selectedItem,
           ThothFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
 
       Fakes.build(spyOn(Persona, 'getValue'))
@@ -214,14 +214,14 @@ describe('main.DriveSearch', () => {
     });
 
     it(`should reject if the current selected folder is not editable`, async () => {
-      Graph.clearNodesForTests([$items, $selectedFolder]);
+      Graph.clearNodesForTests([$items, $selectedItem]);
 
       const itemsDataGraph = new FakeDataGraph<ItemImpl>();
       Graph.createProvider($items, itemsDataGraph);
 
       const idSelected = 'idSelected';
       Graph.createProvider(
-          $selectedFolder,
+          $selectedItem,
           DriveFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
 
       const id1 = 'id1';
@@ -245,11 +245,11 @@ describe('main.DriveSearch', () => {
     });
 
     it(`should do nothing if there are no items selected`, async () => {
-      Graph.clearNodesForTests([$items, $selectedFolder]);
+      Graph.clearNodesForTests([$items, $selectedItem]);
 
       Graph.createProvider($items, new FakeDataGraph<ItemImpl>());
       Graph.createProvider(
-          $selectedFolder,
+          $selectedItem,
           ThothFolder.newInstance('idSelected', 'test', null, ImmutableSet.of([])));
 
       spyOn(Persona, 'getValue').and.returnValue(null);

@@ -23,24 +23,28 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { CrumbData } from 'external/gs_ui/src/routing';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { FolderImpl } from '../data/folder-impl';
+import { Previewer } from 'src/main/previewer';
+import { ItemType } from '../data';
 import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { DriveSearch } from '../main/drive-search';
 import { Navigator } from '../main/navigator';
-import { $selectedFolder } from '../main/selected-folder-graph';
+import { $selectedItem } from '../main/selected-folder-graph';
 
-enum ContentTypes {
+export enum ContentType {
   ADD,
   NAVIGATE,
+  PREVIEW,
 }
 
-function contentSwitchFactory(document: Document, type: ContentTypes): HTMLElement {
+function contentSwitchFactory(document: Document, type: ContentType): HTMLElement {
   switch (type) {
-    case ContentTypes.ADD:
+    case ContentType.ADD:
       return document.createElement('th-drive-search');
-    case ContentTypes.NAVIGATE:
+    case ContentType.NAVIGATE:
       return document.createElement('th-navigator');
+    case ContentType.PREVIEW:
+      return document.createElement('th-previewer');
   }
 
   throw new Error('unimplemented');
@@ -63,16 +67,16 @@ export const $ = resolveSelectors({
     switch: switchSelector(
         contentSwitchFactory,
         slotSelector(elementSelector('content.el'), 'content'),
-        EnumType(ContentTypes),
-        ContentTypes.NAVIGATE),
+        EnumType(ContentType),
+        ContentType.NAVIGATE),
   },
 });
 
-const $contentType = instanceId('contentType', EnumType(ContentTypes));
-const $contentTypeProvider = Graph.createProvider($contentType, ContentTypes.NAVIGATE);
+const $contentType = instanceId('contentType', EnumType(ContentType));
+const $contentTypeProvider = Graph.createProvider($contentType, ContentType.NAVIGATE);
 
 @component({
-  dependencies: [DriveSearch, Navigator],
+  dependencies: [DriveSearch, Navigator, Previewer],
   tag: 'th-root-view',
   templateKey: 'src/main/root-view',
 })
@@ -83,26 +87,31 @@ export class RootView extends BaseThemedElement2 {
 
   @onDom.event($.content.el, 'th-add')
   onContentAdd_(): void {
-    $contentTypeProvider(ContentTypes.ADD, this);
+    $contentTypeProvider(ContentType.ADD, this);
   }
 
   @onDom.event($.content.el, 'th-item-added')
   onContentItemAdded_(): void {
-    $contentTypeProvider(ContentTypes.NAVIGATE, this);
+    $contentTypeProvider(ContentType.NAVIGATE, this);
   }
 
   @render.switch($.content.switch)
-  renderContentSwitch_(@nodeIn($contentType) contentType: ContentTypes): ContentTypes {
-    return contentType;
+  renderContentSwitch_(
+      @nodeIn($contentType) contentType: ContentType,
+      @nodeIn($selectedItem) selectedItem: ItemImpl | null): ContentType {
+    if (!selectedItem) {
+      return contentType;
+    }
+    return selectedItem.getType() === ItemType.RENDER ? ContentType.PREVIEW : contentType;
   }
 
   @render.attribute($.breadcrumb.crumb)
   async renderCrumbs_(
-      @nodeIn($selectedFolder) folder: FolderImpl,
+      @nodeIn($selectedItem) selectedItem: ItemImpl | null,
       @nodeIn($items) items: DataGraph<ItemImpl>):
       Promise<ImmutableList<CrumbData>> {
     const itemArray: ItemImpl[] = [];
-    let current: ItemImpl | null = folder;
+    let current: ItemImpl | null = selectedItem;
     while (current) {
       itemArray.push(current);
       const parentId: string | null = current.getParentId();

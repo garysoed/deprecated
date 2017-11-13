@@ -17,9 +17,10 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { Folder } from '../data/interfaces';
+import { FolderImpl } from '../data/folder-impl';
+import { ItemImpl } from '../data/item-impl';
 import { NavigatorItem } from '../main/navigator-item';
-import { $selectedFolder } from '../main/selected-folder-graph';
+import { $selectedItem } from '../main/selected-folder-graph';
 
 export function itemsFactory(document: Document): HTMLElement {
   return document.createElement('th-navigator-item');
@@ -79,7 +80,10 @@ export class Navigator extends BaseThemedElement2 {
   }
 
   @render.children($.items.children)
-  renderItems_(@nodeIn($selectedFolder) selectedFolder: Folder): ImmutableList<string> {
-    return ImmutableList.of(selectedFolder.getItems());
+  renderItems_(@nodeIn($selectedItem) selectedItem: ItemImpl | null): ImmutableList<string> {
+    if (!(selectedItem instanceof FolderImpl)) {
+      return ImmutableList.of([]);
+    }
+    return ImmutableList.of(selectedItem.getItems());
   }
 }

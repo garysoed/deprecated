@@ -1,7 +1,11 @@
 import { assert, Fakes, Mocks, TestBase, TestDispose } from '../test-base';
 TestBase.setup();
 
-import { RootView } from '../main/root-view';
+import { ImmutableSet } from 'external/gs_tools/src/immutable';
+
+import { PreviewFile } from '../data/preview-file';
+import { ThothFolder } from '../data/thoth-folder';
+import { ContentType, RootView } from '../main/root-view';
 
 
 describe('main.RootView', () => {
@@ -10,6 +14,29 @@ describe('main.RootView', () => {
   beforeEach(() => {
     view = new RootView(Mocks.object('ThemeService'));
     TestDispose.add(view);
+  });
+
+  describe('renderContentSwitch_', () => {
+    it(`should return the correct content type if the selected item type is not RENDER`, () => {
+      const contentType = ContentType.ADD;
+      const selectedItem = ThothFolder.newInstance('id', 'name', null, ImmutableSet.of([]));
+
+      assert(view.renderContentSwitch_(contentType, selectedItem)).to.equal(contentType);
+    });
+
+    it(`should return PREVIEW if the selected item type is RENDER`, () => {
+      const contentType = ContentType.ADD;
+      const selectedItem = PreviewFile
+          .newInstance('id', 'name', 'parentId', 'content', 'originalId');
+
+      assert(view.renderContentSwitch_(contentType, selectedItem)).to.equal(ContentType.PREVIEW);
+    });
+
+    it(`should return the content type if the selected item does not exist`, () => {
+      const contentType = ContentType.ADD;
+
+      assert(view.renderContentSwitch_(contentType, null)).to.equal(contentType);
+    });
   });
 
   describe('renderCrumbs_', () => {

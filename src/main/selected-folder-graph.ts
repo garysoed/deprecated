@@ -4,7 +4,6 @@ import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { $location, navigateToHash } from 'external/gs_tools/src/ui';
 
-import { FolderImpl } from '../data/folder-impl';
 import { $items } from '../data/item-graph';
 import { ItemImpl } from '../data/item-impl';
 import { ThothFolder } from '../data/thoth-folder';
@@ -19,7 +18,7 @@ export const ROOT_ITEM = ThothFolder.newInstance(
 
 export async function providesSelectedFolder(
     location: string,
-    itemGraph: DataGraph<ItemImpl>): Promise<FolderImpl> {
+    itemGraph: DataGraph<ItemImpl>): Promise<ItemImpl> {
   if (!location) {
     navigateToHash(ROOT_ID);
     return ROOT_ITEM;
@@ -27,7 +26,7 @@ export async function providesSelectedFolder(
 
   const item = await itemGraph.get(location);
 
-  if (item instanceof FolderImpl) {
+  if (item instanceof ItemImpl) {
     return item;
   } else if (location !== ROOT_ID) {
     navigateToHash(ROOT_ID);
@@ -37,12 +36,12 @@ export async function providesSelectedFolder(
   }
 }
 
-export const $selectedFolder = staticId('selectedFolder', InstanceofType(FolderImpl));
+export const $selectedItem = staticId('selectedFolder', InstanceofType(ItemImpl));
 Graph.registerProvider(
-    $selectedFolder,
+    $selectedItem,
     providesSelectedFolder,
     $location.path,
     $items);
 Graph.onReady(null, $items, () => {
-  Graph.refresh($selectedFolder);
+  Graph.refresh($selectedItem);
 });

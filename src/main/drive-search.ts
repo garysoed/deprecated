@@ -33,8 +33,7 @@ import { EditableFolderImpl } from '../data/editable-folder-impl';
 import { ApiDriveFileSummary, ApiDriveType } from '../import/drive';
 import { DriveStorage } from '../import/drive-storage';
 import { SearchItem } from '../main/search-item';
-import { $selectedFolder } from '../main/selected-folder-graph';
-
+import { $selectedItem } from '../main/selected-folder-graph';
 
 const DriveFileSummaryType = HasPropertiesType<ApiDriveFileSummary>({
   id: StringType,
@@ -145,15 +144,15 @@ export class DriveSearch extends BaseThemedElement2 {
     }
 
     const time = Graph.getTimestamp();
-    const [selectedFolder] = await Promise.all([
-      Graph.get($selectedFolder, time),
+    const [selectedItem] = await Promise.all([
+      Graph.get($selectedItem, time),
     ]);
 
-    if (!(selectedFolder instanceof EditableFolderImpl)) {
-      throw Errors.assert('selectedFolder').should('be editable').butWas(selectedFolder);
+    if (!(selectedItem instanceof EditableFolderImpl)) {
+      throw Errors.assert('selectedFolder').should('be editable').butWas(selectedItem);
     }
 
-    const selectedId = selectedFolder.getId();
+    const selectedId = selectedItem.getId();
     const addedItems = items.filter((item) => !!item.selected);
     const addedDriveItemPromises = addedItems
         .map((item) => DriveService.recursiveGet(item.summary.id, selectedId));
@@ -169,8 +168,8 @@ export class DriveSearch extends BaseThemedElement2 {
     // Now add the folders to the selected folder.
     ItemService.save(
         time,
-        selectedFolder.setItems(
-            selectedFolder
+        selectedItem.setItems(
+            selectedItem
                 .getItems()
                 .addAll(addedItems.map((addedItem) => `${selectedId}/${addedItem.summary.name}`))));
 
