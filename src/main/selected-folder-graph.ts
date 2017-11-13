@@ -20,17 +20,16 @@ export const ROOT_ITEM = ThothFolder.newInstance(
 export async function providesSelectedFolder(
     location: string,
     itemGraph: DataGraph<ItemImpl>): Promise<FolderImpl> {
-  const id = location.substr(1);
-  if (!id) {
+  if (!location) {
     navigateToHash(ROOT_ID);
     return ROOT_ITEM;
   }
 
-  const item = await itemGraph.get(id);
+  const item = await itemGraph.get(location);
 
   if (item instanceof FolderImpl) {
     return item;
-  } else if (id !== ROOT_ID) {
+  } else if (location !== ROOT_ID) {
     navigateToHash(ROOT_ID);
     return ROOT_ITEM;
   } else {

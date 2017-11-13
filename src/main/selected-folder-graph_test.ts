@@ -9,7 +9,7 @@ describe('main.providesSelectedFolder', () => {
   describe('providesSelectedFolder', () => {
     it(`should resolve with the correct folder`, async () => {
       const id = 'id';
-      const location = `/${id}`;
+      const location = `${id}`;
       const item = Mocks.object('item');
       Object.setPrototypeOf(item, FolderImpl.prototype);
 
@@ -27,7 +27,7 @@ describe('main.providesSelectedFolder', () => {
     it(`should redirect to ROOT_ID and resolve with saved root folder if item is not a folder and` +
         ` ID is not ROOT_ID`, async () => {
       const id = 'id';
-      const location = `/${id}`;
+      const location = `${id}`;
       const item = Mocks.object('item');
 
       const mockGraph = jasmine.createSpyObj('Graph', ['get']);
@@ -41,7 +41,7 @@ describe('main.providesSelectedFolder', () => {
     it(`should redirect to ROOT_ID and resolve with saved root folder if item is not a folder and` +
         ` ID is ROOT_ID`, async () => {
       const id = 'id';
-      const location = `/${id}`;
+      const location = `${id}`;
       const item = Mocks.object('item');
       const rootItem = Mocks.object('rootItem');
 
