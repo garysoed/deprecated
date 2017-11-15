@@ -20,9 +20,22 @@ ts_library(
     ]
 )
 
+ts_library(
+    name = "preview_lib_js",
+    srcs = [],
+    deps = [
+        "//src/preview",
+    ],
+)
+
 ts_binary(
     name = "bin_js",
     deps = [":lib_js"],
+)
+
+ts_binary(
+    name = "preview_bin_js",
+    deps = [":preview_lib_js"],
 )
 
 filegroup(
@@ -39,6 +52,12 @@ webpack_binary(
     entry = "src/main/main.js",
 )
 
+webpack_binary(
+    name = "preview_pack_js",
+    package = ":preview_bin_js",
+    entry = "src/preview/main.js",
+)
+
 genrule(
     name = "pack",
     srcs = [
@@ -46,6 +65,16 @@ genrule(
         "//:pack_template",
     ],
     outs = ["pack.js"],
+    cmd = "awk 'FNR==1{print \"\"}1' $(SRCS) > $@",
+)
+
+genrule(
+    name = "preview_pack",
+    srcs = [
+        "//:pack_js",
+        "//:pack_template",
+    ],
+    outs = ["preview_pack.js"],
     cmd = "awk 'FNR==1{print \"\"}1' $(SRCS) > $@",
 )
 
