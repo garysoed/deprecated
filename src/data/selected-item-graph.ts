@@ -4,7 +4,9 @@ import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { $location, navigateToHash } from 'external/gs_tools/src/ui';
 
-import { $items, ItemImpl, ThothFolder } from '../data';
+import { $items } from '../data/item-graph';
+import { ItemImpl } from '../data/item-impl';
+import { ThothFolder } from '../data/thoth-folder';
 
 export const ROOT_ID = '/(root)';
 

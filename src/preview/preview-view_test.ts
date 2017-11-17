@@ -4,8 +4,7 @@ TestBase.setup();
 import { Graph } from 'external/gs_tools/src/graph';
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { DriveFile, ItemType, PreviewFile } from '../data';
-import { $selectedItem } from '../main/selected-folder-graph';
+import { $selectedItem, DriveFile, ItemType, PreviewFile } from '../data';
 import { PreviewView } from '../preview/preview-view';
 
 

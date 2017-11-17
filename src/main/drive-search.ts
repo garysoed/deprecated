@@ -28,10 +28,9 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { DriveService, EditableFolderImpl, ItemService } from '../data';
+import { $selectedItem, DriveService, EditableFolderImpl, ItemService } from '../data';
 import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../import';
 import { SearchItem } from '../main/search-item';
-import { $selectedItem } from '../main/selected-folder-graph';
 
 const DriveFileSummaryType = HasPropertiesType<ApiDriveFileSummary>({
   id: StringType,

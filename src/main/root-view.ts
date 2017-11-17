@@ -23,16 +23,13 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { CrumbData } from 'external/gs_ui/src/routing';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { Previewer } from 'src/main/previewer';
-import { $items, ItemImpl, ItemType } from '../data';
+import { $items, $selectedItem, ItemImpl } from '../data';
 import { DriveSearch } from '../main/drive-search';
 import { Navigator } from '../main/navigator';
-import { $selectedItem } from '../main/selected-folder-graph';
 
 export enum ContentType {
   ADD,
   NAVIGATE,
-  PREVIEW,
 }
 
 function contentSwitchFactory(document: Document, type: ContentType): HTMLElement {
@@ -41,8 +38,6 @@ function contentSwitchFactory(document: Document, type: ContentType): HTMLElemen
       return document.createElement('th-drive-search');
     case ContentType.NAVIGATE:
       return document.createElement('th-navigator');
-    case ContentType.PREVIEW:
-      return document.createElement('th-previewer');
   }
 
   throw new Error('unimplemented');
@@ -74,7 +69,7 @@ const $contentType = instanceId('contentType', EnumType(ContentType));
 const $contentTypeProvider = Graph.createProvider($contentType, ContentType.NAVIGATE);
 
 @component({
-  dependencies: [DriveSearch, Navigator, Previewer],
+  dependencies: [DriveSearch, Navigator],
   tag: 'th-root-view',
   templateKey: 'src/main/root-view',
 })
@@ -95,12 +90,8 @@ export class RootView extends BaseThemedElement2 {
 
   @render.switch($.content.switch)
   renderContentSwitch_(
-      @nodeIn($contentType) contentType: ContentType,
-      @nodeIn($selectedItem) selectedItem: ItemImpl | null): ContentType {
-    if (!selectedItem) {
-      return contentType;
-    }
-    return selectedItem.getType() === ItemType.RENDER ? ContentType.PREVIEW : contentType;
+      @nodeIn($contentType) contentType: ContentType): ContentType {
+    return contentType;
   }
 
   @render.attribute($.breadcrumb.crumb)

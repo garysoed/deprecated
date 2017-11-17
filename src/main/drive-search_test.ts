@@ -6,7 +6,14 @@ import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { $items, DriveFolder, DriveService, ItemImpl, ItemService, ThothFolder } from '../data';
+import {
+  $items,
+  $selectedItem,
+  DriveFolder,
+  DriveService,
+  ItemImpl,
+  ItemService,
+  ThothFolder } from '../data';
 import { ApiDriveType, DriveStorage } from '../import';
 import {
   $,
@@ -14,7 +21,6 @@ import {
   driveItemsGetter,
   driveItemsSetter,
   DriveSearch } from '../main/drive-search';
-import { $selectedItem } from '../main/selected-folder-graph';
 
 describe('driveItemsGetter', () => {
   it(`should return the correct item`, () => {

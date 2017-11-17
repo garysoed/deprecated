@@ -17,9 +17,8 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { FolderImpl, ItemImpl } from '../data';
+import { $selectedItem, FolderImpl, ItemImpl } from '../data';
 import { NavigatorItem } from '../main/navigator-item';
-import { $selectedItem } from '../main/selected-folder-graph';
 
 export function itemsFactory(document: Document): HTMLElement {
   return document.createElement('th-navigator-item');

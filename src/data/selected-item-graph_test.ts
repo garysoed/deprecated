@@ -2,7 +2,7 @@ import { assert, Fakes, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
 import { FolderImpl } from '../data';
-import { providesSelectedFolder, ROOT_ID, ROOT_ITEM } from '../main/selected-folder-graph';
+import { providesSelectedFolder, ROOT_ID, ROOT_ITEM } from '../data/selected-item-graph';
 
 
 describe('main.providesSelectedFolder', () => {
