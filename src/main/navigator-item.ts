@@ -16,16 +16,12 @@ import {
     render,
     resolveSelectors,
     shadowHostSelector} from 'external/gs_tools/src/persona';
-
 import { navigateToHash } from 'external/gs_tools/src/ui';
+
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { FileImpl } from '../data/file-impl';
-import { FolderImpl } from '../data/folder-impl';
-import { $items } from '../data/item-graph';
-import { ItemImpl } from '../data/item-impl';
-import { ItemType } from '../data/item-type';
+import { $items, FileImpl, FolderImpl, ItemImpl, ItemType } from '../data';
 import { RenderService } from '../render';
 
 export const $ = resolveSelectors({

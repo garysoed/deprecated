@@ -2,7 +2,7 @@ import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { GapiLibrary } from 'external/gs_tools/src/net';
 import { Storage } from 'external/gs_tools/src/store';
 
-import { drive } from '../api/drive';
+import { drive } from '../api';
 import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../import/drive';
 
 type ListQueryConfig = {

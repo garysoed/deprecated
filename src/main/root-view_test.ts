@@ -3,8 +3,7 @@ TestBase.setup();
 
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { PreviewFile } from '../data/preview-file';
-import { ThothFolder } from '../data/thoth-folder';
+import { PreviewFile, ThothFolder } from '../data';
 import { ContentType, RootView } from '../main/root-view';
 
 

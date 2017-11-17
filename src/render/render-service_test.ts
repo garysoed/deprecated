@@ -113,7 +113,7 @@ describe('render.RenderServiceClass', () => {
       const renderedContent = 'renderedContent';
       spyOn(ShowdownService, 'render').and.returnValue(renderedContent);
 
-      const originalItem = DriveFile.newInstance(id, 'name', 'parentId', ItemType.FILE, content);
+      const originalItem = DriveFile.newInstance(id, 'name', 'parentId', ItemType.ASSET, content);
       const parentItem = ThothFolder.newInstance(parentId, 'parent', null, ImmutableSet.of([]));
       const itemGraph = new FakeDataGraph<ItemImpl>();
       itemGraph.set(id, originalItem);

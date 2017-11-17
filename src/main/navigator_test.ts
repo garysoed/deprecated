@@ -4,9 +4,7 @@ TestBase.setup();
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { ItemType } from '../data';
-import { DriveFile } from '../data/drive-file';
-import { ThothFolder } from '../data/thoth-folder';
+import { DriveFile, ItemType, ThothFolder } from '../data';
 import { $, Navigator } from '../main/navigator';
 
 describe('main.Navigator', () => {

@@ -4,12 +4,7 @@ TestBase.setup();
 import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { DriveFile } from '../data/drive-file';
-import { DriveFolder } from '../data/drive-folder';
-import { ItemType } from '../data/item-type';
-import { PreviewFile } from '../data/preview-file';
-import { PreviewFolder } from '../data/preview-folder';
-import { ThothFolder } from '../data/thoth-folder';
+import { DriveFile, DriveFolder, ItemType, PreviewFile, PreviewFolder, ThothFolder } from '../data';
 import { $item, NavigatorItem } from '../main/navigator-item';
 
 describe('main.NavigatorItem', () => {

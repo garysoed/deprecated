@@ -6,8 +6,7 @@ import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
 import { convertToItemType } from '../data/item-type';
-import { ApiDriveType } from '../import/drive';
-import { DriveStorage } from '../import/drive-storage';
+import { ApiDriveType, DriveStorage } from '../import';
 
 export class DriveServiceImpl {
   async recursiveGet(id: string, containerPath: string):

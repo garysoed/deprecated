@@ -2,12 +2,14 @@ import { Errors } from 'external/gs_tools/src/error';
 import { Graph, GraphTime } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { $items, ItemService } from '../data';
-import { EditableFolderImpl } from '../data/editable-folder-impl';
-import { FileImpl } from '../data/file-impl';
-import { FolderImpl } from '../data/folder-impl';
-import { PreviewFile } from '../data/preview-file';
-import { PreviewFolder } from '../data/preview-folder';
+import {
+  $items,
+  EditableFolderImpl,
+  FileImpl,
+  FolderImpl,
+  ItemService,
+  PreviewFile,
+  PreviewFolder } from '../data';
 import { ShowdownService } from '../render/showdown-service';
 
 export class RenderServiceClass {

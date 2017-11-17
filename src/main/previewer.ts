@@ -13,8 +13,7 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { ItemImpl } from '../data/item-impl';
-import { PreviewFile } from '../data/preview-file';
+import { ItemImpl, PreviewFile } from '../data';
 import { $selectedItem } from '../main/selected-folder-graph';
 
 export const $ = resolveSelectors({

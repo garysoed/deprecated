@@ -1,6 +1,6 @@
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { ApiDriveType } from '../import/drive';
+import { ApiDriveType } from '../import';
 
 export enum ItemType {
   UNKNOWN,

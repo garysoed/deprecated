@@ -8,7 +8,7 @@ import {
   shadowHostSelector,
 } from 'external/gs_tools/src/persona';
 
-import { PreviewFile } from '../data/preview-file';
+import { PreviewFile } from '../data';
 import { $selectedItem } from '../main/selected-folder-graph';
 
 const $ = resolveSelectors({

@@ -2,8 +2,8 @@ import { Serializable } from 'external/gs_tools/src/data';
 import { DataModels } from 'external/gs_tools/src/datamodel';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { ItemType } from '../data';
 import { FolderImpl, getInitMap_ } from '../data/folder-impl';
+import { ItemType } from '../data/item-type';
 
 @Serializable('data.DriveFolder')
 export abstract class DriveFolder extends FolderImpl {

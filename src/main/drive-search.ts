@@ -28,10 +28,8 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { DriveService, ItemService } from '../data';
-import { EditableFolderImpl } from '../data/editable-folder-impl';
-import { ApiDriveFileSummary, ApiDriveType } from '../import/drive';
-import { DriveStorage } from '../import/drive-storage';
+import { DriveService, EditableFolderImpl, ItemService } from '../data';
+import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../import';
 import { SearchItem } from '../main/search-item';
 import { $selectedItem } from '../main/selected-folder-graph';
 

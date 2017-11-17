@@ -1,9 +1,9 @@
 import { assert, Mocks, TestBase, TestDispose } from '../test-base';
 TestBase.setup();
 
-import { $selected, SearchItem, selectedProvider } from '../main/search-item';
-
 import { Graph } from 'external/gs_tools/src/graph';
+
+import { $selected, SearchItem, selectedProvider } from '../main/search-item';
 
 
 describe('main.SearchItem', () => {

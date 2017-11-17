@@ -6,13 +6,8 @@ import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { DriveService, ItemService } from '../data';
-import { DriveFolder } from '../data/drive-folder';
-import { $items } from '../data/item-graph';
-import { ItemImpl } from '../data/item-impl';
-import { ThothFolder } from '../data/thoth-folder';
-import { ApiDriveType } from '../import/drive';
-import { DriveStorage } from '../import/drive-storage';
+import { $items, DriveFolder, DriveService, ItemImpl, ItemService, ThothFolder } from '../data';
+import { ApiDriveType, DriveStorage } from '../import';
 import {
   $,
   $driveItems,

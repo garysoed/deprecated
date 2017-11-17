@@ -1,9 +1,7 @@
 import { assert, Mocks, TestBase, TestDispose } from '../test-base';
 TestBase.setup();
 
-import { ItemType } from '../data';
-import { DriveFile } from '../data/drive-file';
-import { PreviewFile } from '../data/preview-file';
+import { DriveFile, ItemType, PreviewFile } from '../data';
 import { Previewer } from '../main/previewer';
 
 

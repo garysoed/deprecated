@@ -2,9 +2,9 @@ import { Serializable } from 'external/gs_tools/src/data';
 import { DataModels } from 'external/gs_tools/src/datamodel';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { ItemType } from '../data';
 import { EditableFolderImpl } from '../data/editable-folder-impl';
 import { getInitMap_ } from '../data/folder-impl';
+import { ItemType } from '../data/item-type';
 
 @Serializable('data.ThothFolder')
 export abstract class ThothFolder extends EditableFolderImpl {

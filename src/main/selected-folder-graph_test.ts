@@ -1,7 +1,7 @@
 import { assert, Fakes, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
-import { FolderImpl } from '../data/folder-impl';
+import { FolderImpl } from '../data';
 import { providesSelectedFolder, ROOT_ID, ROOT_ITEM } from '../main/selected-folder-graph';
 
 

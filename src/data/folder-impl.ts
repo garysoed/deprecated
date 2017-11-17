@@ -1,7 +1,7 @@
 import { field } from 'external/gs_tools/src/datamodel';
 import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
-
 import { SetParser, StringParser } from 'external/gs_tools/src/parse';
+
 import { Folder } from '../data/interfaces';
 import { getInitMap_ as getInitItemMap_, ItemImpl } from '../data/item-impl';
 import { ItemType } from '../data/item-type';

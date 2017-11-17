@@ -1,13 +1,10 @@
 import { assert, Fakes, TestBase } from '../test-base';
 TestBase.setup();
 
-
 import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
 import { DriveServiceImpl } from '../data/drive-service';
-import { ApiDriveType } from '../import/drive';
-import { DriveStorage } from '../import/drive-storage';
-
+import { ApiDriveType, DriveStorage } from '../import';
 
 describe('data.DriveServiceImpl', () => {
   let service: DriveServiceImpl;

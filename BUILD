@@ -97,13 +97,18 @@ test_suite(
         "//src/data:lint",
         "//src/import:lint",
         "//src/main:lint",
+        "//src/preview:lint",
+        "//src/render:lint",
     ]
 )
 
 karma_run(
     name = "test",
     srcs = [
+        "//src/data:test_src",
         "//src/import:test_src",
         "//src/main:test_src",
+        "//src/preview:test_src",
+        "//src/render:test_src",
     ]
 )

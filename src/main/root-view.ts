@@ -24,9 +24,7 @@ import { CrumbData } from 'external/gs_ui/src/routing';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
 import { Previewer } from 'src/main/previewer';
-import { ItemType } from '../data';
-import { $items } from '../data/item-graph';
-import { ItemImpl } from '../data/item-impl';
+import { $items, ItemImpl, ItemType } from '../data';
 import { DriveSearch } from '../main/drive-search';
 import { Navigator } from '../main/navigator';
 import { $selectedItem } from '../main/selected-folder-graph';
