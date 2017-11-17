@@ -20,7 +20,7 @@ describe('preview.PreviewView', () => {
   });
 
   describe('onHostConnected_', () => {
-    fit(`should listen to the graph and initialize correctly`, () => {
+    it(`should listen to the graph and initialize correctly`, () => {
       const onReadySpy = spyOn(Graph, 'onReady');
       const onChangedSpy = spyOn(view, 'onSelectedItemChanged_');
 
@@ -35,7 +35,7 @@ describe('preview.PreviewView', () => {
   });
 
   describe('onSelectedItemChanged_', () => {
-    fit(`should update the shadow root correctly`, async () => {
+    it(`should update the shadow root correctly`, async () => {
       const shadowRoot = Mocks.object('shadowRoot');
       spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
 
@@ -49,7 +49,7 @@ describe('preview.PreviewView', () => {
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 
-    fit(`should set the innerHTML to "" if selected item is not a preview file`, async () => {
+    it(`should set the innerHTML to "" if selected item is not a preview file`, async () => {
       const shadowRoot = Mocks.object('shadowRoot');
       spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
 
@@ -62,7 +62,7 @@ describe('preview.PreviewView', () => {
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 
-    fit(`should not reject if there are no shadow roots`, async () => {
+    it(`should not reject if there are no shadow roots`, async () => {
       spyOn(Persona, 'getShadowRoot').and.returnValue(null);
 
       await view['onSelectedItemChanged_']();
