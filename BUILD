@@ -46,6 +46,14 @@ filegroup(
     ]
 )
 
+filegroup(
+    name = "preview_pack_template",
+    srcs = [
+        "@gs_ui//:pack_template",
+        "//src/preview:template",
+    ]
+)
+
 webpack_binary(
     name = "pack_js",
     package = ":bin_js",
@@ -71,8 +79,8 @@ genrule(
 genrule(
     name = "preview_pack",
     srcs = [
-        "//:pack_js",
-        "//:pack_template",
+        "//:preview_pack_js",
+        "//:preview_pack_template",
     ],
     outs = ["preview_pack.js"],
     cmd = "awk 'FNR==1{print \"\"}1' $(SRCS) > $@",
