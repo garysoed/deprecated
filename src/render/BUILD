@@ -7,5 +7,6 @@ thoth(
         # "@gs_tools//src",
         # "@gs_ui//src",
         "//src/data",
+        "//types/handlebars",
         "//types/showdown",
     ])

@@ -4,6 +4,7 @@
   "description": "Thoth is a file based wiki page generator.",
   "main": "index.js",
   "dependencies": {
+    "@types/handlebars": "^4.0.36",
     "@types/showdown": "^1.7.1",
     "gs-tools": "github:garysoed/gs-tools",
     "gs-ui": "github:garysoed/gs-ui",

@@ -5,6 +5,7 @@ import { Templates } from 'external/gs_tools/src/webc';
 
 import { PreviewView } from '../preview/preview-view';
 
+// Only used to load the dependency.
 [PreviewView].forEach(() => undefined);
 window.addEventListener('load', () => {
   Persona.registerAll(Injector.newInstance(), Templates.newInstance());

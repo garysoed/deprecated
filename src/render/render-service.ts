@@ -10,6 +10,7 @@ import {
   ItemService,
   PreviewFile,
   PreviewFolder } from '../data';
+import { HandlebarsService } from '../render/handlebars-service';
 import { ShowdownService } from '../render/showdown-service';
 
 export class RenderServiceClass {
@@ -70,7 +71,7 @@ export class RenderServiceClass {
           previewId,
           previewName,
           parentId,
-          ShowdownService.render(item.getContent()),
+          HandlebarsService.render(ShowdownService.render(item.getContent())),
           id);
     } else {
       throw Errors.assert(`Item for ID [${id}]`).shouldBe('a File or Folder').butWas(item);

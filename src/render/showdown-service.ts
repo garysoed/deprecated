@@ -1,6 +1,6 @@
 import { cache } from 'external/gs_tools/src/data';
 
-export class ShowdownHandlerClass {
+export class ShowdownServiceClass {
   @cache()
   private getConverter_(): showdown.Converter {
     return new showdown.Converter();
@@ -11,4 +11,4 @@ export class ShowdownHandlerClass {
   }
 }
 
-export const ShowdownService = new ShowdownHandlerClass();
+export const ShowdownService = new ShowdownServiceClass();

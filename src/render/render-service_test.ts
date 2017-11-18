@@ -12,6 +12,7 @@ import { ItemImpl } from '../data/item-impl';
 import { PreviewFile } from '../data/preview-file';
 import { PreviewFolder } from '../data/preview-folder';
 import { ThothFolder } from '../data/thoth-folder';
+import { HandlebarsService } from '../render/handlebars-service';
 import { RenderServiceClass } from '../render/render-service';
 import { ShowdownService } from '../render/showdown-service';
 
@@ -110,8 +111,10 @@ describe('render.RenderServiceClass', () => {
       const previewId = `${parentId}/${previewName}`;
       const content = 'content';
 
-      const renderedContent = 'renderedContent';
-      spyOn(ShowdownService, 'render').and.returnValue(renderedContent);
+      const handlebarsContent = 'handlebarsContent';
+      const showdownContent = 'showdownContent';
+      spyOn(ShowdownService, 'render').and.returnValue(showdownContent);
+      spyOn(HandlebarsService, 'render').and.returnValue(handlebarsContent);
 
       const originalItem = DriveFile.newInstance(id, 'name', 'parentId', ItemType.ASSET, content);
       const parentItem = ThothFolder.newInstance(parentId, 'parent', null, ImmutableSet.of([]));
@@ -138,7 +141,7 @@ describe('render.RenderServiceClass', () => {
       assert(item.getId()).to.equal(previewId);
       assert(item.getName()).to.equal(previewName);
       assert(item.getParentId()).to.equal(parentId);
-      assert(item.getContent()).to.equal(renderedContent);
+      assert(item.getContent()).to.equal(handlebarsContent);
       assert(item.getOriginalId()).to.equal(id);
 
       const actualParentItem: ThothFolder = spySave.calls.argsFor(0)[2];
@@ -147,6 +150,7 @@ describe('render.RenderServiceClass', () => {
       assert(ItemService.findFirstEditableAncestorPath).to.haveBeenCalledWith(id, time);
       assert(service.getPreviewId).to.haveBeenCalledWith(id, time);
       assert(ShowdownService.render).to.haveBeenCalledWith(content);
+      assert(HandlebarsService.render).to.haveBeenCalledWith(showdownContent);
     });
 
     it(`should reject if the item type is not a file or a folder`, async () => {
