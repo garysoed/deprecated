@@ -4,8 +4,9 @@ TestBase.setup();
 import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { DriveFile, DriveFolder, ItemType, PreviewFile, PreviewFolder, ThothFolder } from '../data';
+import { DriveFile, DriveFolder, DriveService, ItemService, ItemType, PreviewFile, PreviewFolder, ThothFolder } from '../data';
 import { $item, NavigatorItem } from '../main/navigator-item';
+import { RenderService } from '../render';
 
 describe('main.NavigatorItem', () => {
   let item: NavigatorItem;
@@ -40,10 +41,132 @@ describe('main.NavigatorItem', () => {
     });
   });
 
+  describe('onPreviewButtonAction_', () => {
+    it(`should render the item correctly`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      const id = 'id';
+      const driveItem = DriveFile
+          .newInstance(id, 'name', 'parentId', ItemType.ASSET, 'content', 'driveId');
+      Graph.clearNodesForTests([$item]);
+      Graph.createProvider($item, driveItem);
+
+      const time = Graph.getTimestamp();
+      spyOn(RenderService, 'render');
+
+      await item.onPreviewButtonAction_(mockEvent);
+      assert(RenderService.render).to.haveBeenCalledWith(id, time);
+    });
+
+    it(`should not reject if the item is not a FileImpl`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      const id = 'id';
+      const driveItem = ThothFolder.newInstance(id, 'name', 'parentId', ImmutableSet.of([]));
+      Graph.clearNodesForTests([$item]);
+      Graph.createProvider($item, driveItem);
+
+      spyOn(RenderService, 'render');
+
+      await item.onPreviewButtonAction_(mockEvent);
+      assert(RenderService.render).toNot.haveBeenCalled();
+    });
+  });
+
+  describe('onRefreshButtonAction_', () => {
+    it(`should get and save the items again for files`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+
+      const item1 = Mocks.object('item1');
+      const item2 = Mocks.object('item2');
+      spyOn(DriveService, 'recursiveGet').and.returnValue(Promise.resolve(ImmutableSet.of([
+        item1,
+        item2,
+      ])));
+      spyOn(ItemService, 'save');
+
+      const parentId = 'parentId';
+      const driveId = 'driveId';
+      const driveItem = DriveFile
+          .newInstance('id', 'name', parentId, ItemType.ASSET, 'content', driveId);
+      Graph.clearNodesForTests([$item]);
+      Graph.createProvider($item, driveItem);
+
+      const time = Graph.getTimestamp();
+
+      await item.onRefreshButtonAction_(mockEvent);
+      assert(ItemService.save).to.haveBeenCalledWith(time, item1);
+      assert(ItemService.save).to.haveBeenCalledWith(time, item2);
+      assert(DriveService.recursiveGet).to.haveBeenCalledWith(driveId, parentId);
+      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+    });
+
+    it(`should get and save the items again for folders`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+
+      const item1 = Mocks.object('item1');
+      const item2 = Mocks.object('item2');
+      spyOn(DriveService, 'recursiveGet').and.returnValue(Promise.resolve(ImmutableSet.of([
+        item1,
+        item2,
+      ])));
+      spyOn(ItemService, 'save');
+
+      const parentId = 'parentId';
+      const driveId = 'driveId';
+      const driveItem = DriveFolder
+          .newInstance('id', 'name', parentId, ImmutableSet.of([]), driveId);
+      Graph.clearNodesForTests([$item]);
+      Graph.createProvider($item, driveItem);
+
+      const time = Graph.getTimestamp();
+
+      await item.onRefreshButtonAction_(mockEvent);
+      assert(ItemService.save).to.haveBeenCalledWith(time, item1);
+      assert(ItemService.save).to.haveBeenCalledWith(time, item2);
+      assert(DriveService.recursiveGet).to.haveBeenCalledWith(driveId, parentId);
+      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+    });
+
+    it(`should not reject if the item has no parent IDs`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+
+      const item1 = Mocks.object('item1');
+      const item2 = Mocks.object('item2');
+      spyOn(DriveService, 'recursiveGet').and.returnValue(Promise.resolve(ImmutableSet.of([
+        item1,
+        item2,
+      ])));
+      spyOn(ItemService, 'save');
+
+      const driveId = 'driveId';
+      const driveItem = DriveFolder
+          .newInstance('id', 'name', null, ImmutableSet.of([]), driveId);
+      Graph.clearNodesForTests([$item]);
+      Graph.createProvider($item, driveItem);
+
+      await assert(item.onRefreshButtonAction_(mockEvent)).to.rejectWithError(/should exist/);
+      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+    });
+
+    it(`should not reject if the item is not a DriveFile or DriveFolder`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+
+      spyOn(ItemService, 'save');
+
+      const parentId = 'parentId';
+      const driveItem = ThothFolder.newInstance('id', 'name', parentId, ImmutableSet.of([]));
+      Graph.clearNodesForTests([$item]);
+      Graph.createProvider($item, driveItem);
+
+      await item.onRefreshButtonAction_(mockEvent);
+      assert(ItemService.save).toNot.haveBeenCalled();
+      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+    });
+  });
+
   describe('renderIcon_', () => {
     it(`should return "help" if the type is UNKNOWN`, () => {
       const selectedItem =
-          DriveFile.newInstance('id', 'name', 'parentId', ItemType.UNKNOWN, 'content');
+          DriveFile.newInstance('id', 'name', 'parentId', ItemType.UNKNOWN, 'content', 'driveId');
 
       assert(item.renderIcon_(selectedItem)).to.equal('help');
     });
@@ -64,14 +187,14 @@ describe('main.NavigatorItem', () => {
 
     it(`should return "folder" if the type is ASSET folder`, () => {
       const selectedItem =
-          DriveFolder.newInstance('id', 'name', 'parentId', ImmutableSet.of([]));
+          DriveFolder.newInstance('id', 'name', 'parentId', ImmutableSet.of([]), 'driveId');
 
       assert(item.renderIcon_(selectedItem)).to.equal('folder');
     });
 
     it(`should return "web" if the type is ASSET file`, () => {
       const selectedItem =
-          DriveFile.newInstance('id', 'name', 'parentId', ItemType.ASSET, 'content');
+          DriveFile.newInstance('id', 'name', 'parentId', ItemType.ASSET, 'content', 'driveId');
 
       assert(item.renderIcon_(selectedItem)).to.equal('web');
     });

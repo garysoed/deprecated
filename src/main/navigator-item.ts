@@ -21,8 +21,18 @@ import { navigateToHash } from 'external/gs_tools/src/ui';
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { $items, FileImpl, FolderImpl, ItemImpl, ItemType } from '../data';
+import {
+  $items,
+  DriveFile,
+  DriveFolder,
+  DriveService,
+  FileImpl,
+  FolderImpl,
+  ItemImpl,
+  ItemService,
+  ItemType} from '../data';
 import { RenderService } from '../render';
+import { Errors } from "external/gs_tools/src/error";
 
 export const $ = resolveSelectors({
   host: {
@@ -53,6 +63,9 @@ export const $ = resolveSelectors({
   previewButton: {
     el: elementSelector('#previewButton', ElementWithTagType('gs-basic-button')),
   },
+  refreshButton: {
+    el: elementSelector('#refreshButton', ElementWithTagType('gs-basic-button')),
+  },
 });
 
 export const $item = instanceId('item', NullableType(InstanceofType(ItemImpl)));
@@ -69,6 +82,12 @@ export class NavigatorItem extends BaseThemedElement2 {
     super(themeService);
   }
 
+  @onDom.event($.previewButton.el, 'click')
+  @onDom.event($.refreshButton.el, 'click')
+  onActionButtonClick_(event: MouseEvent): void {
+    event.stopPropagation();
+  }
+
   @onDom.event($.host.el, 'click')
   async onHostClick_(): Promise<void> {
     const time = Graph.getTimestamp();
@@ -80,8 +99,8 @@ export class NavigatorItem extends BaseThemedElement2 {
     navigateToHash(item.getId());
   }
 
-  @onDom.event($.previewButton.el, 'click')
-  async onPreviewButtonClick_(event: MouseEvent): Promise<void> {
+  @onDom.event($.previewButton.el, 'gs-action')
+  async onPreviewButtonAction_(event: MouseEvent): Promise<void> {
     event.stopPropagation();
 
     const time = Graph.getTimestamp();
@@ -91,6 +110,25 @@ export class NavigatorItem extends BaseThemedElement2 {
     }
 
     RenderService.render(item.getId(), time);
+  }
+
+  @onDom.event($.refreshButton.el, 'gs-action')
+  async onRefreshButtonAction_(event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+
+    const time = Graph.getTimestamp();
+    const item = await Graph.get($item, time, this);
+    if (!(item instanceof DriveFile) && !(item instanceof DriveFolder)) {
+      return;
+    }
+
+    const parentId = item.getParentId();
+    if (!parentId) {
+      throw Errors.assert('parentId').shouldExist().butWas(parentId);
+    }
+
+    const files = await DriveService.recursiveGet(item.getDriveId(), parentId);
+    files.mapItem((file) => ItemService.save(time, file));
   }
 
   @nodeOut($item)

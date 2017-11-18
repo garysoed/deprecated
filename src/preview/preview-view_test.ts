@@ -50,7 +50,8 @@ describe('preview.PreviewView', () => {
       const shadowRoot = Mocks.object('shadowRoot');
       spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
 
-      const item = DriveFile.newInstance('id', 'name', 'parentId', ItemType.ASSET, 'content');
+      const item = DriveFile
+          .newInstance('id', 'name', 'parentId', ItemType.ASSET, 'content', 'driveId');
       spyOn(Graph, 'get').and.returnValue(Promise.resolve(item));
 
       await view['onSelectedItemChanged_']();

@@ -62,7 +62,8 @@ describe('render.RenderServiceClass', () => {
       const previewId = `${parentId}/${previewName}`;
 
       const childId = 'childId';
-      const originalItem = DriveFolder.newInstance(id, 'name', null, ImmutableSet.of([childId]));
+      const originalItem = DriveFolder
+            .newInstance(id, 'name', null, ImmutableSet.of([childId]), 'driveId');
 
       const previewChildId = 'previewChildId';
       const previewChildItem = PreviewFile.newInstance(previewId, 'name', id, 'content', childId);
@@ -116,7 +117,8 @@ describe('render.RenderServiceClass', () => {
       spyOn(ShowdownService, 'render').and.returnValue(showdownContent);
       spyOn(HandlebarsService, 'render').and.returnValue(handlebarsContent);
 
-      const originalItem = DriveFile.newInstance(id, 'name', 'parentId', ItemType.ASSET, content);
+      const originalItem = DriveFile
+            .newInstance(id, 'name', 'parentId', ItemType.ASSET, content, 'driveId');
       const parentItem = ThothFolder.newInstance(parentId, 'parent', null, ImmutableSet.of([]));
       const itemGraph = new FakeDataGraph<ItemImpl>();
       itemGraph.set(id, originalItem);
@@ -192,7 +194,8 @@ describe('render.RenderServiceClass', () => {
       spyOn(ShowdownService, 'render').and.returnValue(renderedContent);
 
       const originalItem = Mocks.object('originalItem');
-      const parentItem = DriveFolder.newInstance(parentId, 'parent', null, ImmutableSet.of([]));
+      const parentItem = DriveFolder
+            .newInstance(parentId, 'parent', null, ImmutableSet.of([]), 'driveId');
       const itemGraph = new FakeDataGraph<ItemImpl>();
       itemGraph.set(id, originalItem);
       itemGraph.set(parentId, parentItem);
@@ -219,7 +222,8 @@ describe('render.RenderServiceClass', () => {
       const renderedContent = 'renderedContent';
       spyOn(ShowdownService, 'render').and.returnValue(renderedContent);
 
-      const parentItem = DriveFolder.newInstance(parentId, 'parent', null, ImmutableSet.of([]));
+      const parentItem = DriveFolder
+            .newInstance(parentId, 'parent', null, ImmutableSet.of([]), 'driveId');
       const itemGraph = new FakeDataGraph<ItemImpl>();
       itemGraph.set(parentId, parentItem);
 
@@ -241,7 +245,7 @@ describe('render.RenderServiceClass', () => {
 
       const childId = 'childId';
       const previewItem = DriveFolder
-          .newInstance(previewId, 'name', null, ImmutableSet.of([childId]));
+          .newInstance(previewId, 'name', null, ImmutableSet.of([childId]), 'driveId');
       const itemGraph = new FakeDataGraph<ItemImpl>();
       itemGraph.set(previewId, previewItem);
 

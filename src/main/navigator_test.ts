@@ -46,7 +46,7 @@ describe('main.Navigator', () => {
 
     it(`should return no items if the selected item is not a folder`, () => {
       const selectedItem = DriveFile
-          .newInstance('id', 'name', 'parentId', ItemType.ASSET, 'content');
+          .newInstance('id', 'name', 'parentId', ItemType.ASSET, 'content', 'driveId');
 
       assert(navigator.renderItems_(selectedItem)).to.haveElements([]);
     });

@@ -38,8 +38,8 @@ describe('data.ItemServiceClass', () => {
 
       const item1 = ThothFolder.newInstance(id1, 'name1', null, ImmutableSet.of([id2]));
       const item2 = ThothFolder.newInstance(id2, 'name2', id1, ImmutableSet.of([id3]));
-      const item3 = DriveFolder.newInstance(id3, 'name3', id2, ImmutableSet.of([id4]));
-      const item4 = DriveFile.newInstance(id4, 'name4', id3, ItemType.ASSET, 'content4');
+      const item3 = DriveFolder.newInstance(id3, 'name3', id2, ImmutableSet.of([id4]), 'driveId');
+      const item4 = DriveFile.newInstance(id4, 'name4', id3, ItemType.ASSET, 'content4', 'driveId');
 
       const itemsGraph = new FakeDataGraph<ItemImpl>();
       itemsGraph.set(id1, item1);
@@ -58,8 +58,8 @@ describe('data.ItemServiceClass', () => {
       const id1 = 'id1';
       const id2 = 'id2';
 
-      const item1 = DriveFolder.newInstance(id1, 'name1', null, ImmutableSet.of([id2]));
-      const item2 = DriveFile.newInstance(id2, 'name2', id1, ItemType.ASSET, 'content2');
+      const item1 = DriveFolder.newInstance(id1, 'name1', null, ImmutableSet.of([id2]), 'driveId');
+      const item2 = DriveFile.newInstance(id2, 'name2', id1, ItemType.ASSET, 'content2', 'driveId');
 
       const itemsGraph = new FakeDataGraph<ItemImpl>();
       itemsGraph.set(id1, item1);

@@ -9,31 +9,33 @@ import { convertToItemType } from '../data/item-type';
 import { ApiDriveType, DriveStorage } from '../import';
 
 export class DriveServiceImpl {
-  async recursiveGet(id: string, containerPath: string):
+  async recursiveGet(driveId: string, containerPath: string):
       Promise<ImmutableList<DriveFile | DriveFolder>> {
-    const apiDriveItem = await DriveStorage.read(id);
+    const apiDriveItem = await DriveStorage.read(driveId);
     const {type: apiType, name: apiName} = apiDriveItem.summary;
-    const driveItemId = `${containerPath}/${apiName}`;
+    const id = `${containerPath}/${apiName}`;
 
     if (apiType !== ApiDriveType.FOLDER) {
       const newFile = DriveFile.newInstance(
-          driveItemId,
+          id,
           apiName,
           containerPath,
           convertToItemType(apiType),
-          apiDriveItem.content || '');
+          apiDriveItem.content || '',
+          driveId);
       return ImmutableList.of([newFile]);
     }
 
     const newFolder = DriveFolder.newInstance(
-        driveItemId,
+        id,
         apiName,
         containerPath,
         ImmutableSet
             .of(apiDriveItem.files)
-            .mapItem((file) => `${driveItemId}/${file.summary.name}`));
+            .mapItem((file) => `${id}/${file.summary.name}`),
+        driveId);
     const contentPromises = apiDriveItem.files.map((file) => {
-      return this.recursiveGet(file.summary.id, driveItemId);
+      return this.recursiveGet(file.summary.id, id);
     });
     const contents = await Promise.all(contentPromises);
 

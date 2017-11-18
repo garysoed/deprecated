@@ -223,7 +223,7 @@ describe('main.DriveSearch', () => {
       const idSelected = 'idSelected';
       Graph.createProvider(
           $selectedItem,
-          DriveFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
+          DriveFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([]), 'driveId'));
 
       const id1 = 'id1';
       const id2 = 'id2';

@@ -36,7 +36,7 @@
 
   :host(:hover), :host(:focus) {
     --contentFG: var(--gsColorActionFocusFG);
-    --contentRight: calc(2 * var(--gsSizePadding) + var(--gsLineHeight));
+    --contentRight: calc(2 * (2 * var(--gsSizePadding) + var(--gsLineHeight)));
     cursor: pointer;
   }
 </style>
@@ -47,6 +47,9 @@
     <div id="name"></div>
   </div>
   <div fill-parent flex-justify="flex-end" gs-theme="normal" gs-highlight id="actions" layout="row">
+    <gs-basic-button id="refreshButton">
+      <gs-icon>refresh</gs-icon>
+    </gs-basic-button>
     <gs-basic-button id="previewButton">
       <gs-icon>remove_red_eye</gs-icon>
     </gs-basic-button>
