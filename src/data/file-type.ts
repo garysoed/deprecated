@@ -2,21 +2,20 @@ import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { ApiDriveType } from '../import';
 
-export enum ItemType {
+export enum FileType {
   UNKNOWN,
   ASSET,
   RENDER,
-  UNHANDLED_ITEM,
 }
 
 const HANDLED_FILE_TYPES = ImmutableSet.of([
   ApiDriveType.FOLDER,
   ApiDriveType.MARKDOWN,
 ]);
-export function convertToItemType(apiType: ApiDriveType): ItemType {
+export function convertToItemType(apiType: ApiDriveType): FileType {
   if (apiType === ApiDriveType.UNKNOWN) {
-    return ItemType.UNKNOWN;
+    return FileType.UNKNOWN;
   }
 
-  return HANDLED_FILE_TYPES.has(apiType) ? ItemType.ASSET : ItemType.UNHANDLED_ITEM;
+  return HANDLED_FILE_TYPES.has(apiType) ? FileType.ASSET : FileType.UNKNOWN;
 }

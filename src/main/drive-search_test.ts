@@ -11,7 +11,7 @@ import {
   $selectedItem,
   DriveFolder,
   DriveService,
-  ItemImpl,
+  Item,
   ItemService,
   ThothFolder } from '../data';
 import { ApiDriveType, DriveStorage } from '../import';
@@ -134,7 +134,7 @@ describe('main.DriveSearch', () => {
     it(`should save the new folders and files correctly`, async () => {
       Graph.clearNodesForTests([$items, $selectedItem]);
 
-      const itemsDataGraph = new FakeDataGraph<ItemImpl>();
+      const itemsDataGraph = new FakeDataGraph<Item>();
       Graph.createProvider($items, itemsDataGraph);
 
       const idSelected = 'idSelected';
@@ -197,7 +197,7 @@ describe('main.DriveSearch', () => {
     it(`should reject if dispatcher cannot be found`, async () => {
       Graph.clearNodesForTests([$items, $selectedItem]);
 
-      const itemsDataGraph = new FakeDataGraph<ItemImpl>();
+      const itemsDataGraph = new FakeDataGraph<Item>();
       Graph.createProvider($items, itemsDataGraph);
 
       const idSelected = 'idSelected';
@@ -217,7 +217,7 @@ describe('main.DriveSearch', () => {
     it(`should reject if the current selected folder is not editable`, async () => {
       Graph.clearNodesForTests([$items, $selectedItem]);
 
-      const itemsDataGraph = new FakeDataGraph<ItemImpl>();
+      const itemsDataGraph = new FakeDataGraph<Item>();
       Graph.createProvider($items, itemsDataGraph);
 
       const idSelected = 'idSelected';
@@ -248,7 +248,7 @@ describe('main.DriveSearch', () => {
     it(`should do nothing if there are no items selected`, async () => {
       Graph.clearNodesForTests([$items, $selectedItem]);
 
-      Graph.createProvider($items, new FakeDataGraph<ItemImpl>());
+      Graph.createProvider($items, new FakeDataGraph<Item>());
       Graph.createProvider(
           $selectedItem,
           ThothFolder.newInstance('idSelected', 'test', null, ImmutableSet.of([])));

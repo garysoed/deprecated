@@ -17,7 +17,7 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { $selectedItem, FolderImpl, ItemImpl } from '../data';
+import { $selectedItem, Folder, Item } from '../data';
 import { NavigatorItem } from '../main/navigator-item';
 
 export function itemsFactory(document: Document): HTMLElement {
@@ -78,8 +78,8 @@ export class Navigator extends BaseThemedElement2 {
   }
 
   @render.children($.items.children)
-  renderItems_(@nodeIn($selectedItem) selectedItem: ItemImpl | null): ImmutableList<string> {
-    if (!(selectedItem instanceof FolderImpl)) {
+  renderItems_(@nodeIn($selectedItem) selectedItem: Item | null): ImmutableList<string> {
+    if (!(selectedItem instanceof Folder)) {
       return ImmutableList.of([]);
     }
     return ImmutableList.of(selectedItem.getItems());

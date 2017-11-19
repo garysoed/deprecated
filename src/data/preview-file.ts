@@ -2,8 +2,8 @@ import { Serializable } from 'external/gs_tools/src/data';
 import { DataModels, field } from 'external/gs_tools/src/datamodel';
 import { StringParser } from 'external/gs_tools/src/parse';
 
-import { FileImpl, getInitMap_ } from '../data/file-impl';
-import { ItemType } from '../data/item-type';
+import { FileImpl, getInitMap_ } from '../data/file';
+import { FileType } from '../data/file-type';
 
 @Serializable('data.PreviewFile')
 export abstract class PreviewFile extends FileImpl {
@@ -23,6 +23,7 @@ export abstract class PreviewFile extends FileImpl {
       originalId: string): PreviewFile {
     return DataModels.newInstance(
         PreviewFile,
-        getInitMap_(id, name, parentId, ItemType.RENDER, content).set('originalId_', originalId));
+        getInitMap_(id, name, parentId, FileType.RENDER, content)
+            .set('originalId_', originalId));
   }
 }

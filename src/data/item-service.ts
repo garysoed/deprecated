@@ -4,8 +4,9 @@
 import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Graph, GraphTime } from 'external/gs_tools/src/graph';
 
+import { Item } from '../data/item';
 import { $items } from '../data/item-graph';
-import { ItemImpl } from '../data/item-impl';
+import { ThothFolder } from '../data/thoth-folder';
 
 export class ItemServiceClass {
   async findFirstEditableAncestorPath(id: string, time: GraphTime): Promise<string[] | null> {
@@ -27,13 +28,13 @@ export class ItemServiceClass {
   private async findFirstEditableAncestorPathHelper_(
       id: string,
       paths: string[],
-      itemsGraph: DataGraph<ItemImpl>): Promise<string[]> {
+      itemsGraph: DataGraph<Item>): Promise<string[]> {
     const item = await itemsGraph.get(id);
     if (item === null) {
       return [];
     }
 
-    if (item.isEditable()) {
+    if (item instanceof ThothFolder) {
       return [item.getId(), ...paths];
     }
 
@@ -57,7 +58,7 @@ export class ItemServiceClass {
     return '(root)';
   }
 
-  async save(time: GraphTime, ...items: ItemImpl[]): Promise<void> {
+  async save(time: GraphTime, ...items: Item[]): Promise<void> {
     const itemsGraph = await Graph.get($items, time);
     for (const item of items) {
       itemsGraph.set(item.getId(), item);

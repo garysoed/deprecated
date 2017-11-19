@@ -4,7 +4,15 @@ TestBase.setup();
 import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { DriveFile, DriveFolder, DriveService, ItemService, ItemType, PreviewFile, PreviewFolder, ThothFolder } from '../data';
+import {
+  DriveFile,
+  DriveFolder,
+  DriveService,
+  FileType,
+  ItemService,
+  PreviewFile,
+  PreviewFolder,
+  ThothFolder } from '../data';
 import { $item, NavigatorItem } from '../main/navigator-item';
 import { RenderService } from '../render';
 
@@ -46,7 +54,7 @@ describe('main.NavigatorItem', () => {
       const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
       const id = 'id';
       const driveItem = DriveFile
-          .newInstance(id, 'name', 'parentId', ItemType.ASSET, 'content', 'driveId');
+          .newInstance(id, 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
       Graph.clearNodesForTests([$item]);
       Graph.createProvider($item, driveItem);
 
@@ -86,7 +94,7 @@ describe('main.NavigatorItem', () => {
       const parentId = 'parentId';
       const driveId = 'driveId';
       const driveItem = DriveFile
-          .newInstance('id', 'name', parentId, ItemType.ASSET, 'content', driveId);
+          .newInstance('id', 'name', parentId, FileType.ASSET, 'content', driveId);
       Graph.clearNodesForTests([$item]);
       Graph.createProvider($item, driveItem);
 
@@ -166,7 +174,7 @@ describe('main.NavigatorItem', () => {
   describe('renderIcon_', () => {
     it(`should return "help" if the type is UNKNOWN`, () => {
       const selectedItem =
-          DriveFile.newInstance('id', 'name', 'parentId', ItemType.UNKNOWN, 'content', 'driveId');
+          DriveFile.newInstance('id', 'name', 'parentId', FileType.UNKNOWN, 'content', 'driveId');
 
       assert(item.renderIcon_(selectedItem)).to.equal('help');
     });
@@ -194,7 +202,7 @@ describe('main.NavigatorItem', () => {
 
     it(`should return "web" if the type is ASSET file`, () => {
       const selectedItem =
-          DriveFile.newInstance('id', 'name', 'parentId', ItemType.ASSET, 'content', 'driveId');
+          DriveFile.newInstance('id', 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
 
       assert(item.renderIcon_(selectedItem)).to.equal('web');
     });

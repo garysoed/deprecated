@@ -4,12 +4,12 @@ import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import {
   $items,
-  EditableFolderImpl,
   FileImpl,
-  FolderImpl,
+  Folder,
   ItemService,
   PreviewFile,
-  PreviewFolder } from '../data';
+  PreviewFolder,
+  ThothFolder } from '../data';
 import { HandlebarsService } from '../render/handlebars-service';
 import { ShowdownService } from '../render/showdown-service';
 
@@ -48,7 +48,7 @@ export class RenderServiceClass {
     }
     const parentId = editableAncestorPath[0];
     const parentItem = await itemsGraph.get(parentId);
-    if (!(parentItem instanceof EditableFolderImpl)) {
+    if (!(parentItem instanceof ThothFolder)) {
       throw Errors.assert(`Parent item [${parentId}]`)
           .shouldBe('an editable folder')
           .butWas(parentItem);
@@ -56,7 +56,7 @@ export class RenderServiceClass {
 
     const previewName = ItemService.getNameFromId(previewId);
     let previewItem: PreviewFile | PreviewFolder;
-    if (item instanceof FolderImpl) {
+    if (item instanceof Folder) {
       const renderedFolderContents = await Promise.all([
         ...item.getItems().mapItem((itemId) => this.getPreviewId(itemId, time)),
       ]);

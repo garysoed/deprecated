@@ -28,7 +28,7 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { $selectedItem, DriveService, EditableFolderImpl, ItemService } from '../data';
+import { $selectedItem, DriveService, ItemService, ThothFolder } from '../data';
 import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../import';
 import { SearchItem } from '../main/search-item';
 
@@ -145,7 +145,7 @@ export class DriveSearch extends BaseThemedElement2 {
       Graph.get($selectedItem, time),
     ]);
 
-    if (!(selectedItem instanceof EditableFolderImpl)) {
+    if (!(selectedItem instanceof ThothFolder)) {
       throw Errors.assert('selectedFolder').should('be editable').butWas(selectedItem);
     }
 

@@ -3,11 +3,10 @@ import { DataModels, field } from 'external/gs_tools/src/datamodel';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { StringParser } from 'external/gs_tools/src/parse';
 
-import { FolderImpl, getInitMap_ } from '../data/folder-impl';
-import { ItemType } from '../data/item-type';
+import { Folder, getInitMap_ } from '../data/folder';
 
 @Serializable('data.DriveFolder')
-export abstract class DriveFolder extends FolderImpl {
+export abstract class DriveFolder extends Folder {
   @field('driveId', StringParser) readonly driveId_: string;
 
   abstract getDriveId(): string;
@@ -28,7 +27,7 @@ export abstract class DriveFolder extends FolderImpl {
       driveId: string): DriveFolder {
     return DataModels.newInstance(
         DriveFolder,
-        getInitMap_(id, name, parentId, ItemType.ASSET, items)
+        getInitMap_(id, name, parentId, items)
             .set('driveId_', driveId));
   }
 }

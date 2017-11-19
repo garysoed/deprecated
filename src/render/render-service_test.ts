@@ -6,12 +6,15 @@ import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { DriveFile } from 'src/data/drive-file';
-import { $items, ItemService, ItemType } from '../data';
-import { DriveFolder } from '../data/drive-folder';
-import { ItemImpl } from '../data/item-impl';
-import { PreviewFile } from '../data/preview-file';
-import { PreviewFolder } from '../data/preview-folder';
-import { ThothFolder } from '../data/thoth-folder';
+import {
+  $items,
+  DriveFolder,
+  FileType,
+  Item,
+  ItemService,
+  PreviewFile,
+  PreviewFolder,
+  ThothFolder } from '../data';
 import { HandlebarsService } from '../render/handlebars-service';
 import { RenderServiceClass } from '../render/render-service';
 import { ShowdownService } from '../render/showdown-service';
@@ -68,7 +71,7 @@ describe('render.RenderServiceClass', () => {
       const previewChildId = 'previewChildId';
       const previewChildItem = PreviewFile.newInstance(previewId, 'name', id, 'content', childId);
       const parentItem = ThothFolder.newInstance(parentId, 'parent', null, ImmutableSet.of([]));
-      const itemGraph = new FakeDataGraph<ItemImpl>();
+      const itemGraph = new FakeDataGraph<Item>();
       itemGraph.set(id, originalItem);
       itemGraph.set(previewChildId, previewChildItem);
       itemGraph.set(parentId, parentItem);
@@ -118,9 +121,9 @@ describe('render.RenderServiceClass', () => {
       spyOn(HandlebarsService, 'render').and.returnValue(handlebarsContent);
 
       const originalItem = DriveFile
-            .newInstance(id, 'name', 'parentId', ItemType.ASSET, content, 'driveId');
+            .newInstance(id, 'name', 'parentId', FileType.ASSET, content, 'driveId');
       const parentItem = ThothFolder.newInstance(parentId, 'parent', null, ImmutableSet.of([]));
-      const itemGraph = new FakeDataGraph<ItemImpl>();
+      const itemGraph = new FakeDataGraph<Item>();
       itemGraph.set(id, originalItem);
       itemGraph.set(parentId, parentItem);
 
@@ -167,7 +170,7 @@ describe('render.RenderServiceClass', () => {
 
       const originalItem = Mocks.object('originalItem');
       const parentItem = ThothFolder.newInstance(parentId, 'parent', null, ImmutableSet.of([]));
-      const itemGraph = new FakeDataGraph<ItemImpl>();
+      const itemGraph = new FakeDataGraph<Item>();
       itemGraph.set(id, originalItem);
       itemGraph.set(parentId, parentItem);
 
@@ -196,7 +199,7 @@ describe('render.RenderServiceClass', () => {
       const originalItem = Mocks.object('originalItem');
       const parentItem = DriveFolder
             .newInstance(parentId, 'parent', null, ImmutableSet.of([]), 'driveId');
-      const itemGraph = new FakeDataGraph<ItemImpl>();
+      const itemGraph = new FakeDataGraph<Item>();
       itemGraph.set(id, originalItem);
       itemGraph.set(parentId, parentItem);
 
@@ -224,7 +227,7 @@ describe('render.RenderServiceClass', () => {
 
       const parentItem = DriveFolder
             .newInstance(parentId, 'parent', null, ImmutableSet.of([]), 'driveId');
-      const itemGraph = new FakeDataGraph<ItemImpl>();
+      const itemGraph = new FakeDataGraph<Item>();
       itemGraph.set(parentId, parentItem);
 
       Graph.clearNodesForTests([$items]);
@@ -246,7 +249,7 @@ describe('render.RenderServiceClass', () => {
       const childId = 'childId';
       const previewItem = DriveFolder
           .newInstance(previewId, 'name', null, ImmutableSet.of([childId]), 'driveId');
-      const itemGraph = new FakeDataGraph<ItemImpl>();
+      const itemGraph = new FakeDataGraph<Item>();
       itemGraph.set(previewId, previewItem);
 
       Graph.clearNodesForTests([$items]);

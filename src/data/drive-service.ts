@@ -5,7 +5,7 @@ import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
-import { convertToItemType } from '../data/item-type';
+import { convertToItemType } from '../data/file-type';
 import { ApiDriveType, DriveStorage } from '../import';
 
 export class DriveServiceImpl {

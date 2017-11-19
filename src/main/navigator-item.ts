@@ -4,6 +4,7 @@ import {
   NullableType,
   StringType } from 'external/gs_tools/src/check';
 import { DataGraph } from 'external/gs_tools/src/datamodel';
+import { Errors } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn, nodeOut } from 'external/gs_tools/src/graph';
 import { inject } from 'external/gs_tools/src/inject';
 import { StringParser } from 'external/gs_tools/src/parse';
@@ -27,12 +28,10 @@ import {
   DriveFolder,
   DriveService,
   FileImpl,
-  FolderImpl,
-  ItemImpl,
-  ItemService,
-  ItemType} from '../data';
+  FileType,
+  Item,
+  ItemService} from '../data';
 import { RenderService } from '../render';
-import { Errors } from "external/gs_tools/src/error";
 
 export const $ = resolveSelectors({
   host: {
@@ -68,7 +67,7 @@ export const $ = resolveSelectors({
   },
 });
 
-export const $item = instanceId('item', NullableType(InstanceofType(ItemImpl)));
+export const $item = instanceId('item', NullableType(InstanceofType(Item)));
 
 @component({
   inputs: [
@@ -134,33 +133,38 @@ export class NavigatorItem extends BaseThemedElement2 {
   @nodeOut($item)
   providesItem(
       @nodeIn($.host.itemid.getId()) itemId: string,
-      @nodeIn($items) itemsGraph: DataGraph<ItemImpl>): Promise<ItemImpl | null> {
+      @nodeIn($items) itemsGraph: DataGraph<Item>): Promise<Item | null> {
     return itemsGraph.get(itemId);
   }
 
   @render.innerText($.icon.innerText)
   renderIcon_(
-      @nodeIn($item) item: ItemImpl | null): string {
+      @nodeIn($item) item: Item | null): string {
     if (!item) {
       return '';
     }
 
-    const isFolder = item instanceof FolderImpl;
-
-    switch (item.getType()) {
-      case ItemType.ASSET:
-        return isFolder ? 'folder' : 'web';
-      case ItemType.RENDER:
-        return isFolder ? 'folder' : 'palette';
-      case ItemType.UNHANDLED_ITEM:
-        return 'insert_drive_file';
-      default:
-        return 'help';
+    if (item instanceof FileImpl) {
+      switch (item.getType()) {
+        case FileType.ASSET:
+          return 'web';
+        case FileType.RENDER:
+          return 'palette';
+        default:
+          return 'help';
+      }
+    } else {
+      if (item instanceof DriveFolder) {
+        // TODO: Use special icon.
+        return 'folder';
+      } else {
+        return 'folder';
+      }
     }
   }
 
   @render.innerText($.name.innerText)
-  renderName_(@nodeIn($item) item: ItemImpl | null): string {
+  renderName_(@nodeIn($item) item: Item | null): string {
     if (!item) {
       return '';
     }

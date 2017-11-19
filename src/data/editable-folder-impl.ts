@@ -1,14 +1,10 @@
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { FolderImpl } from '../data/folder-impl';
+import { Folder } from '../data/folder';
 
-export abstract class EditableFolderImpl extends FolderImpl {
+export abstract class EditableFolder extends Folder {
   getSearchIndex(): {name: string} {
     return {name: this.getName()};
-  }
-
-  isEditable(): boolean {
-    return true;
   }
 
   abstract setItems(newItems: ImmutableSet<string>): this;

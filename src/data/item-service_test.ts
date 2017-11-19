@@ -5,13 +5,8 @@ import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
 import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { ItemType } from '../data';
-import { DriveFile } from '../data/drive-file';
-import { DriveFolder } from '../data/drive-folder';
-import { $items } from '../data/item-graph';
-import { ItemImpl } from '../data/item-impl';
+import { $items, DriveFile, DriveFolder, FileType, Item, ThothFolder } from '../data';
 import { ItemServiceClass } from '../data/item-service';
-import { ThothFolder } from '../data/thoth-folder';
 
 
 describe('data.ItemServiceClass', () => {
@@ -39,9 +34,9 @@ describe('data.ItemServiceClass', () => {
       const item1 = ThothFolder.newInstance(id1, 'name1', null, ImmutableSet.of([id2]));
       const item2 = ThothFolder.newInstance(id2, 'name2', id1, ImmutableSet.of([id3]));
       const item3 = DriveFolder.newInstance(id3, 'name3', id2, ImmutableSet.of([id4]), 'driveId');
-      const item4 = DriveFile.newInstance(id4, 'name4', id3, ItemType.ASSET, 'content4', 'driveId');
+      const item4 = DriveFile.newInstance(id4, 'name4', id3, FileType.ASSET, 'content4', 'driveId');
 
-      const itemsGraph = new FakeDataGraph<ItemImpl>();
+      const itemsGraph = new FakeDataGraph<Item>();
       itemsGraph.set(id1, item1);
       itemsGraph.set(id2, item2);
       itemsGraph.set(id3, item3);
@@ -59,9 +54,9 @@ describe('data.ItemServiceClass', () => {
       const id2 = 'id2';
 
       const item1 = DriveFolder.newInstance(id1, 'name1', null, ImmutableSet.of([id2]), 'driveId');
-      const item2 = DriveFile.newInstance(id2, 'name2', id1, ItemType.ASSET, 'content2', 'driveId');
+      const item2 = DriveFile.newInstance(id2, 'name2', id1, FileType.ASSET, 'content2', 'driveId');
 
-      const itemsGraph = new FakeDataGraph<ItemImpl>();
+      const itemsGraph = new FakeDataGraph<Item>();
       itemsGraph.set(id1, item1);
       itemsGraph.set(id2, item2);
 
@@ -76,7 +71,7 @@ describe('data.ItemServiceClass', () => {
       const id = 'id';
       const item = ThothFolder.newInstance(id, 'name', null, ImmutableSet.of([]));
 
-      const itemsGraph = new FakeDataGraph<ItemImpl>();
+      const itemsGraph = new FakeDataGraph<Item>();
       itemsGraph.set(id, item);
 
       Graph.clearNodesForTests([$items]);
@@ -88,7 +83,7 @@ describe('data.ItemServiceClass', () => {
 
     it(`should resolve with null if the item cannot be found`, async () => {
       const id = 'id';
-      const itemsGraph = new FakeDataGraph<ItemImpl>();
+      const itemsGraph = new FakeDataGraph<Item>();
 
       Graph.clearNodesForTests([$items]);
       Graph.createProvider($items, itemsGraph);

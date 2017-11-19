@@ -23,7 +23,7 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { CrumbData } from 'external/gs_ui/src/routing';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { $items, $selectedItem, ItemImpl } from '../data';
+import { $items, $selectedItem, Item } from '../data';
 import { DriveSearch } from '../main/drive-search';
 import { Navigator } from '../main/navigator';
 
@@ -96,11 +96,11 @@ export class RootView extends BaseThemedElement2 {
 
   @render.attribute($.breadcrumb.crumb)
   async renderCrumbs_(
-      @nodeIn($selectedItem) selectedItem: ItemImpl | null,
-      @nodeIn($items) items: DataGraph<ItemImpl>):
+      @nodeIn($selectedItem) selectedItem: Item | null,
+      @nodeIn($items) items: DataGraph<Item>):
       Promise<ImmutableList<CrumbData>> {
-    const itemArray: ItemImpl[] = [];
-    let current: ItemImpl | null = selectedItem;
+    const itemArray: Item[] = [];
+    let current: Item | null = selectedItem;
     while (current) {
       itemArray.push(current);
       const parentId: string | null = current.getParentId();

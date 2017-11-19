@@ -1,7 +1,7 @@
 import { assert, Fakes, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
-import { FolderImpl } from '../data';
+import { Folder } from '../data';
 import { providesSelectedFolder, ROOT_ID, ROOT_ITEM } from '../data/selected-item-graph';
 
 
@@ -11,10 +11,10 @@ describe('main.providesSelectedFolder', () => {
       const id = 'id';
       const location = `${id}`;
       const item = Mocks.object('item');
-      Object.setPrototypeOf(item, FolderImpl.prototype);
+      Object.setPrototypeOf(item, Folder.prototype);
 
       const rootItem = Mocks.object('rootItem');
-      Object.setPrototypeOf(rootItem, FolderImpl.prototype);
+      Object.setPrototypeOf(rootItem, Folder.prototype);
 
       const mockGraph = jasmine.createSpyObj('Graph', ['get']);
       Fakes.build(mockGraph.get)

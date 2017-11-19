@@ -2,8 +2,8 @@ import { Serializable } from 'external/gs_tools/src/data';
 import { DataModels, field } from 'external/gs_tools/src/datamodel';
 import { StringParser } from 'external/gs_tools/src/parse';
 
-import { FileImpl, getInitMap_ } from '../data/file-impl';
-import { ItemType } from '../data/item-type';
+import { FileImpl, getInitMap_ } from '../data/file';
+import { FileType } from '../data/file-type';
 
 @Serializable('data.DriveFile')
 export abstract class DriveFile extends FileImpl {
@@ -23,7 +23,7 @@ export abstract class DriveFile extends FileImpl {
       id: string,
       name: string,
       parentId: string,
-      type: ItemType,
+      type: FileType,
       content: string,
       driveId: string): DriveFile {
     return DataModels.newInstance(

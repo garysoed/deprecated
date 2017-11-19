@@ -4,7 +4,7 @@ TestBase.setup();
 import { Graph } from 'external/gs_tools/src/graph';
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { $selectedItem, DriveFile, ItemType, PreviewFile } from '../data';
+import { $selectedItem, DriveFile, FileType, PreviewFile } from '../data';
 import { PreviewView } from '../preview/preview-view';
 
 
@@ -51,7 +51,7 @@ describe('preview.PreviewView', () => {
       spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
 
       const item = DriveFile
-          .newInstance('id', 'name', 'parentId', ItemType.ASSET, 'content', 'driveId');
+          .newInstance('id', 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
       spyOn(Graph, 'get').and.returnValue(Promise.resolve(item));
 
       await view['onSelectedItemChanged_']();
