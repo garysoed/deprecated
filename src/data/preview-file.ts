@@ -1,29 +1,31 @@
 import { Serializable } from 'external/gs_tools/src/data';
-import { DataModels, field } from 'external/gs_tools/src/datamodel';
+import { DataModel, DataModels, field } from 'external/gs_tools/src/datamodel';
+import { ImmutableMap } from 'external/gs_tools/src/immutable';
 import { StringParser } from 'external/gs_tools/src/parse';
 
-import { File, getInitMap_ } from '../data/file';
-import { FileType } from '../data/file-type';
-
 @Serializable('data.PreviewFile')
-export abstract class PreviewFile extends File {
-  @field('originalId', StringParser) readonly originalId_: string;
+export abstract class PreviewFile implements DataModel<{ id: string }> {
+  @field('content', StringParser) readonly content_: string;
+  @field('id', StringParser) readonly id_: string;
 
-  abstract getOriginalId(): string;
+  abstract getContent(): string;
 
-  toString(): string {
-    return `PreviewFile(${this.name_})`;
+  abstract getId(): string;
+
+  getSearchIndex(): {id: string} {
+    return {id: this.id_};
   }
 
-  static newInstance(
-      id: string,
-      name: string,
-      parentId: string,
-      content: string,
-      originalId: string): PreviewFile {
+  toString(): string {
+    return `PreviewFile(${this.id_})`;
+  }
+
+  static newInstance(id: string, content: string): PreviewFile {
     return DataModels.newInstance(
         PreviewFile,
-        getInitMap_(id, name, parentId, FileType.RENDER, content)
-            .set('originalId_', originalId));
+        ImmutableMap.of([
+          ['id_', id],
+          ['content_', content],
+        ]));
   }
 }

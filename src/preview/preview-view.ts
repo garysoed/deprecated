@@ -7,8 +7,9 @@ import {
   resolveSelectors,
   shadowHostSelector,
 } from 'external/gs_tools/src/persona';
+import { $location } from 'external/gs_tools/src/ui';
 
-import { $selectedItem, PreviewFile } from '../data';
+import { ItemService } from '../data';
 
 const $ = resolveSelectors({
   host: {
@@ -23,22 +24,23 @@ const $ = resolveSelectors({
 export class PreviewView extends BaseDisposable {
   @onDom.event($.host.el, 'gs-connected')
   onHostConnected_(): void {
-    Graph.onReady(null, $selectedItem, () => this.onSelectedItemChanged_());
-    this.onSelectedItemChanged_();
+    Graph.onReady(null, $location.path, () => this.onLocationChanged_());
+    this.onLocationChanged_();
   }
 
-  private async onSelectedItemChanged_(): Promise<void> {
+  private async onLocationChanged_(): Promise<void> {
     const shadowRoot = Persona.getShadowRoot(this);
     if (!shadowRoot) {
       return;
     }
 
     const time = Graph.getTimestamp();
-    const selectedItem = await Graph.get($selectedItem, time);
-    if (!(selectedItem instanceof PreviewFile)) {
+    const selectedItemId = await Graph.get($location.path, time);
+    const previewItem = await ItemService.getPreview(time, selectedItemId);
+    if (previewItem === null) {
       shadowRoot!.innerHTML = '';
       return;
     }
-    shadowRoot.innerHTML = selectedItem.getContent();
+    shadowRoot.innerHTML = previewItem.getContent();
   }
 }

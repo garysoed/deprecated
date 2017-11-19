@@ -59,11 +59,11 @@ export const $ = resolveSelectors({
         StringType,
         ''),
   },
-  previewButton: {
-    el: elementSelector('#previewButton', ElementWithTagType('gs-basic-button')),
-  },
   refreshButton: {
     el: elementSelector('#refreshButton', ElementWithTagType('gs-basic-button')),
+  },
+  renderButton: {
+    el: elementSelector('#renderButton', ElementWithTagType('gs-basic-button')),
   },
 });
 
@@ -81,7 +81,7 @@ export class NavigatorItem extends BaseThemedElement2 {
     super(themeService);
   }
 
-  @onDom.event($.previewButton.el, 'click')
+  @onDom.event($.renderButton.el, 'click')
   @onDom.event($.refreshButton.el, 'click')
   onActionButtonClick_(event: MouseEvent): void {
     event.stopPropagation();
@@ -96,19 +96,6 @@ export class NavigatorItem extends BaseThemedElement2 {
     }
 
     navigateToHash(item.getId());
-  }
-
-  @onDom.event($.previewButton.el, 'gs-action')
-  async onPreviewButtonAction_(event: MouseEvent): Promise<void> {
-    event.stopPropagation();
-
-    const time = Graph.getTimestamp();
-    const item = await Graph.get($item, time, this);
-    if (!(item instanceof File)) {
-      return;
-    }
-
-    RenderService.render(item.getId(), time);
   }
 
   @onDom.event($.refreshButton.el, 'gs-action')
@@ -130,6 +117,19 @@ export class NavigatorItem extends BaseThemedElement2 {
     files.mapItem((file) => ItemService.save(time, file));
   }
 
+  @onDom.event($.renderButton.el, 'gs-action')
+  async onRenderButtonAction_(event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+
+    const time = Graph.getTimestamp();
+    const item = await Graph.get($item, time, this);
+    if (item === null) {
+      return;
+    }
+
+    RenderService.render(item.getId(), time);
+  }
+
   @nodeOut($item)
   providesItem(
       @nodeIn($.host.itemid.getId()) itemId: string,
@@ -138,8 +138,7 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @render.innerText($.icon.innerText)
-  renderIcon_(
-      @nodeIn($item) item: Item | null): string {
+  renderIcon_(@nodeIn($item) item: Item | null): string {
     if (!item) {
       return '';
     }
@@ -148,8 +147,6 @@ export class NavigatorItem extends BaseThemedElement2 {
       switch (item.getType()) {
         case FileType.ASSET:
           return 'web';
-        case FileType.RENDER:
-          return 'palette';
         default:
           return 'help';
       }

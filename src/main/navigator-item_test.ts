@@ -10,8 +10,6 @@ import {
   DriveService,
   FileType,
   ItemService,
-  PreviewFile,
-  PreviewFolder,
   ThothFolder } from '../data';
 import { $item, NavigatorItem } from '../main/navigator-item';
 import { RenderService } from '../render';
@@ -46,36 +44,6 @@ describe('main.NavigatorItem', () => {
 
       await item.onHostClick_();
       assert(window.location.hash).to.equal('');
-    });
-  });
-
-  describe('onPreviewButtonAction_', () => {
-    it(`should render the item correctly`, async () => {
-      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
-      const id = 'id';
-      const driveItem = DriveFile
-          .newInstance(id, 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
-      Graph.clearNodesForTests([$item]);
-      Graph.createProvider($item, driveItem);
-
-      const time = Graph.getTimestamp();
-      spyOn(RenderService, 'render');
-
-      await item.onPreviewButtonAction_(mockEvent);
-      assert(RenderService.render).to.haveBeenCalledWith(id, time);
-    });
-
-    it(`should not reject if the item is not a FileImpl`, async () => {
-      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
-      const id = 'id';
-      const driveItem = ThothFolder.newInstance(id, 'name', 'parentId', ImmutableSet.of([]));
-      Graph.clearNodesForTests([$item]);
-      Graph.createProvider($item, driveItem);
-
-      spyOn(RenderService, 'render');
-
-      await item.onPreviewButtonAction_(mockEvent);
-      assert(RenderService.render).toNot.haveBeenCalled();
     });
   });
 
@@ -171,26 +139,40 @@ describe('main.NavigatorItem', () => {
     });
   });
 
+  describe('onRenderButtonAction_', () => {
+    it(`should render the item correctly`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      const id = 'id';
+      const driveItem = DriveFile
+          .newInstance(id, 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
+      Graph.clearNodesForTests([$item]);
+      Graph.createProvider($item, driveItem);
+
+      const time = Graph.getTimestamp();
+      spyOn(RenderService, 'render');
+
+      await item.onRenderButtonAction_(mockEvent);
+      assert(RenderService.render).to.haveBeenCalledWith(id, time);
+    });
+
+    it(`should not reject if the item is not a FileImpl`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      Graph.clearNodesForTests([$item]);
+      Graph.createProvider($item, null);
+
+      spyOn(RenderService, 'render');
+
+      await item.onRenderButtonAction_(mockEvent);
+      assert(RenderService.render).toNot.haveBeenCalled();
+    });
+  });
+
   describe('renderIcon_', () => {
     it(`should return "help" if the type is UNKNOWN`, () => {
       const selectedItem =
           DriveFile.newInstance('id', 'name', 'parentId', FileType.UNKNOWN, 'content', 'driveId');
 
       assert(item.renderIcon_(selectedItem)).to.equal('help');
-    });
-
-    it(`should return "palette" if the type is RENDER file`, () => {
-      const selectedItem =
-          PreviewFile.newInstance('id', 'name', 'parentId', 'content', 'originalId');
-
-      assert(item.renderIcon_(selectedItem)).to.equal('palette');
-    });
-
-    it(`should return "folder" if the type is RENDER folder`, () => {
-      const selectedItem =
-          PreviewFolder.newInstance('id', 'name', 'parentId', ImmutableSet.of([]), 'originalId');
-
-      assert(item.renderIcon_(selectedItem)).to.equal('folder');
     });
 
     it(`should return "folder" if the type is ASSET folder`, () => {

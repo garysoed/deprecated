@@ -9,6 +9,5 @@ export { Folder } from './folder';
 export { Item } from './item';
 export { ItemService } from './item-service';
 export { PreviewFile } from './preview-file';
-export { PreviewFolder } from './preview-folder';
 export { ThothFolder } from './thoth-folder';
 

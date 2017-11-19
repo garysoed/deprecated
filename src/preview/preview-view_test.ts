@@ -3,8 +3,9 @@ TestBase.setup();
 
 import { Graph } from 'external/gs_tools/src/graph';
 import { Persona } from 'external/gs_tools/src/persona';
+import { $location } from 'external/gs_tools/src/ui';
 
-import { $selectedItem, DriveFile, FileType, PreviewFile } from '../data';
+import { ItemService, PreviewFile } from '../data';
 import { PreviewView } from '../preview/preview-view';
 
 
@@ -19,51 +20,59 @@ describe('preview.PreviewView', () => {
   describe('onHostConnected_', () => {
     it(`should listen to the graph and initialize correctly`, () => {
       const onReadySpy = spyOn(Graph, 'onReady');
-      const onChangedSpy = spyOn(view, 'onSelectedItemChanged_');
+      const onChangedSpy = spyOn(view, 'onLocationChanged_');
 
       view.onHostConnected_();
-      assert(view['onSelectedItemChanged_']).to.haveBeenCalledWith();
+      assert(view['onLocationChanged_']).to.haveBeenCalledWith();
 
-      assert(Graph.onReady).to.haveBeenCalledWith(null, $selectedItem, Matchers.anyFunction());
+      assert(Graph.onReady).to.haveBeenCalledWith(null, $location.path, Matchers.anyFunction());
       onChangedSpy.calls.reset();
       onReadySpy.calls.argsFor(0)[2]();
-      assert(view['onSelectedItemChanged_']).to.haveBeenCalledWith();
+      assert(view['onLocationChanged_']).to.haveBeenCalledWith();
     });
   });
 
-  describe('onSelectedItemChanged_', () => {
+  describe('onLocationChanged_', () => {
     it(`should update the shadow root correctly`, async () => {
       const shadowRoot = Mocks.object('shadowRoot');
       spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
 
       const content = 'content';
-      const item = PreviewFile.newInstance('id', 'name', 'parentId', content, 'originalId');
-      spyOn(Graph, 'get').and.returnValue(Promise.resolve(item));
+      const selectedItemId = 'selectedItemId';
+      spyOn(Graph, 'get').and.returnValue(Promise.resolve(selectedItemId));
+      const item = PreviewFile.newInstance('id', content);
+      spyOn(ItemService, 'getPreview').and.returnValue(Promise.resolve(item));
 
-      await view['onSelectedItemChanged_']();
+      const time = Graph.getTimestamp();
+
+      await view['onLocationChanged_']();
       assert(shadowRoot.innerHTML).to.equal(content);
-      assert(Graph.get).to.haveBeenCalledWith($selectedItem, Graph.getTimestamp());
+      assert(Graph.get).to.haveBeenCalledWith($location.path, time);
+      assert(ItemService.getPreview).to.haveBeenCalledWith(time, selectedItemId);
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 
-    it(`should set the innerHTML to "" if selected item is not a preview file`, async () => {
+    it(`should set the innerHTML to "" if selected item doesn't exist`, async () => {
       const shadowRoot = Mocks.object('shadowRoot');
       spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
 
-      const item = DriveFile
-          .newInstance('id', 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
-      spyOn(Graph, 'get').and.returnValue(Promise.resolve(item));
+      const selectedItemId = 'selectedItemId';
+      spyOn(Graph, 'get').and.returnValue(Promise.resolve(selectedItemId));
+      spyOn(ItemService, 'getPreview').and.returnValue(Promise.resolve(null));
 
-      await view['onSelectedItemChanged_']();
+      const time = Graph.getTimestamp();
+
+      await view['onLocationChanged_']();
       assert(shadowRoot.innerHTML).to.equal('');
-      assert(Graph.get).to.haveBeenCalledWith($selectedItem, Graph.getTimestamp());
+      assert(Graph.get).to.haveBeenCalledWith($location.path, time);
+      assert(ItemService.getPreview).to.haveBeenCalledWith(time, selectedItemId);
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 
     it(`should not reject if there are no shadow roots`, async () => {
       spyOn(Persona, 'getShadowRoot').and.returnValue(null);
 
-      await view['onSelectedItemChanged_']();
+      await view['onLocationChanged_']();
     });
   });
 });

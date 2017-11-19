@@ -29,4 +29,4 @@ class ItemSearcher implements Searcher<Item> {
 export const $items = registerDataGraph<Item>(
     'items',
     new ItemSearcher(),
-    new LocalStorage<Item>(window, 'th', DataModelParser<Item>()));
+    new LocalStorage<Item>(window, 'th-i', DataModelParser<Item>()));

@@ -5,7 +5,8 @@ import { ApiDriveType } from '../import';
 export enum FileType {
   UNKNOWN,
   ASSET,
-  RENDER,
+  METADATA,
+  TEMPLATE,
 }
 
 const HANDLED_FILE_TYPES = ImmutableSet.of([
