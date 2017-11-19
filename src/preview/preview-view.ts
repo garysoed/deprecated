@@ -1,5 +1,6 @@
 import { BaseDisposable } from 'external/gs_tools/src/dispose';
 import { Graph } from 'external/gs_tools/src/graph';
+import { ImmutableList } from 'external/gs_tools/src/immutable';
 import {
   component,
   onDom,
@@ -42,5 +43,19 @@ export class PreviewView extends BaseDisposable {
       return;
     }
     shadowRoot.innerHTML = previewItem.getContent();
+    const scripts = ImmutableList.of(shadowRoot.querySelectorAll('script'));
+    for (const script of scripts) {
+      const src = script.src;
+      if (src) {
+        const code = await fetch(src);
+        const codeText = await code.text();
+        eval(codeText);
+      }
+
+      const content = script.innerText;
+      if (content) {
+        eval(content);
+      }
+    }
   }
 }

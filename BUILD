@@ -38,11 +38,17 @@ ts_binary(
     deps = [":preview_lib_js"],
 )
 
+ts_binary(
+    name = "render_bin_js",
+    deps = [":lib_js"],
+)
+
 filegroup(
     name = "pack_template",
     srcs = [
         "@gs_ui//:pack_template",
         "//src/main:template",
+        "//src/render:template",
     ]
 )
 
@@ -51,6 +57,14 @@ filegroup(
     srcs = [
         "@gs_ui//:pack_template",
         "//src/preview:template",
+    ]
+)
+
+filegroup(
+    name = "render_pack_template",
+    srcs = [
+        "@gs_ui//:pack_template",
+        "//src/render:template",
     ]
 )
 
@@ -64,6 +78,12 @@ webpack_binary(
     name = "preview_pack_js",
     package = ":preview_bin_js",
     entry = "src/preview/main.js",
+)
+
+webpack_binary(
+    name = "render_pack_js",
+    package = ":render_bin_js",
+    entry = "src/render/render-default-script.js",
 )
 
 genrule(
@@ -83,6 +103,16 @@ genrule(
         "//:preview_pack_template",
     ],
     outs = ["preview_pack.js"],
+    cmd = "awk 'FNR==1{print \"\"}1' $(SRCS) > $@",
+)
+
+genrule(
+    name = "render_pack",
+    srcs = [
+        "//:render_pack_js",
+        "//:render_pack_template",
+    ],
+    outs = ["render_pack.js"],
     cmd = "awk 'FNR==1{print \"\"}1' $(SRCS) > $@",
 )
 

@@ -1,6 +1,11 @@
+import { Templates } from 'external/gs_tools/src/webc';
+
 export class HandlebarsServiceClass {
-  render(template: string): string {
-    return Handlebars.compile(template)({});
+  private readonly templates_: Templates = Templates.newInstance();
+
+  render(content: string): string {
+    const template = this.templates_.getTemplate('src/render/render-default-template');
+    return Handlebars.compile(template)({$mainContent: content});
   }
 }
 
