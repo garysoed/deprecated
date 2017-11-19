@@ -2,11 +2,11 @@ import { Serializable } from 'external/gs_tools/src/data';
 import { DataModels, field } from 'external/gs_tools/src/datamodel';
 import { StringParser } from 'external/gs_tools/src/parse';
 
-import { FileImpl, getInitMap_ } from '../data/file';
+import { File, getInitMap_ } from '../data/file';
 import { FileType } from '../data/file-type';
 
 @Serializable('data.PreviewFile')
-export abstract class PreviewFile extends FileImpl {
+export abstract class PreviewFile extends File {
   @field('originalId', StringParser) readonly originalId_: string;
 
   abstract getOriginalId(): string;

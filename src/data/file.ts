@@ -16,7 +16,7 @@ export function getInitMap_(
       .set('type_', type);
 }
 
-export abstract class FileImpl extends Item {
+export abstract class File extends Item {
   @field('content', StringParser) readonly content_: string;
   @field('type', EnumParser(FileType)) readonly type_: FileType;
 

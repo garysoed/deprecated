@@ -27,7 +27,7 @@ import {
   DriveFile,
   DriveFolder,
   DriveService,
-  FileImpl,
+  File,
   FileType,
   Item,
   ItemService} from '../data';
@@ -104,7 +104,7 @@ export class NavigatorItem extends BaseThemedElement2 {
 
     const time = Graph.getTimestamp();
     const item = await Graph.get($item, time, this);
-    if (!(item instanceof FileImpl)) {
+    if (!(item instanceof File)) {
       return;
     }
 
@@ -144,7 +144,7 @@ export class NavigatorItem extends BaseThemedElement2 {
       return '';
     }
 
-    if (item instanceof FileImpl) {
+    if (item instanceof File) {
       switch (item.getType()) {
         case FileType.ASSET:
           return 'web';

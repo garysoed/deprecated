@@ -4,7 +4,7 @@ import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import {
   $items,
-  FileImpl,
+  File,
   Folder,
   ItemService,
   PreviewFile,
@@ -66,7 +66,7 @@ export class RenderServiceClass {
           parentId,
           ImmutableSet.of(renderedFolderContents),
           id);
-    } else if (item instanceof FileImpl) {
+    } else if (item instanceof File) {
       previewItem = PreviewFile.newInstance(
           previewId,
           previewName,

@@ -3,7 +3,7 @@ export { $selectedItem } from './selected-item-graph';
 export { DriveFile } from './drive-file';
 export { DriveFolder } from './drive-folder';
 export { DriveService } from './drive-service';
-export { FileImpl } from './file';
+export { File } from './file';
 export { FileType } from './file-type';
 export { Folder } from './folder';
 export { Item } from './item';

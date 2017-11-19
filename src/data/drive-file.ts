@@ -2,11 +2,11 @@ import { Serializable } from 'external/gs_tools/src/data';
 import { DataModels, field } from 'external/gs_tools/src/datamodel';
 import { StringParser } from 'external/gs_tools/src/parse';
 
-import { FileImpl, getInitMap_ } from '../data/file';
+import { File, getInitMap_ } from '../data/file';
 import { FileType } from '../data/file-type';
 
 @Serializable('data.DriveFile')
-export abstract class DriveFile extends FileImpl {
+export abstract class DriveFile extends File {
   @field('driveId', StringParser) readonly driveId_: string;
 
   abstract getDriveId(): string;
