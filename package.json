@@ -6,6 +6,7 @@
   "dependencies": {
     "@types/handlebars": "^4.0.36",
     "@types/showdown": "^1.7.1",
+    "express": "^4.16.2",
     "gs-tools": "github:garysoed/gs-tools",
     "gs-ui": "github:garysoed/gs-ui",
     "karma": "^1.7.1",

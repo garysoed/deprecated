@@ -5,4 +5,4 @@ const theme = Theme.newInstance(
     DefaultPalettes.get('green'),
     DefaultPalettes.get('orangepeel'));
 
-Main.newInstance({}, window['gs'].Templates.newInstance()).bootstrap(theme)
+Main.newInstance({}, window['gs'].Templates.newInstance()).bootstrap(theme);

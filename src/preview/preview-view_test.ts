@@ -1,70 +1,75 @@
-import { assert, Matchers, Mocks, TestBase, TestDispose } from '../test-base';
+import { assert, Mocks, TestBase, TestDispose } from '../test-base';
 TestBase.setup();
 
 import { Graph } from 'external/gs_tools/src/graph';
 import { Persona } from 'external/gs_tools/src/persona';
-import { $location } from 'external/gs_tools/src/ui';
 
 import { ItemService, PreviewFile } from '../data';
 import { PreviewView } from '../preview/preview-view';
 
 
 describe('preview.PreviewView', () => {
+  let fakeDocument: any;
+  let fakeWindow: any;
   let view: PreviewView;
 
   beforeEach(() => {
-    view = new PreviewView();
+    fakeDocument = Mocks.object('fakeDocument');
+    fakeWindow = Mocks.object('fakeWindow');
+    view = new PreviewView(fakeDocument, fakeWindow);
     TestDispose.add(view);
   });
 
   describe('onHostConnected_', () => {
-    it(`should listen to the graph and initialize correctly`, () => {
-      const onReadySpy = spyOn(Graph, 'onReady');
-      const onChangedSpy = spyOn(view, 'onLocationChanged_');
-
-      view.onHostConnected_();
-      assert(view['onLocationChanged_']).to.haveBeenCalledWith();
-
-      assert(Graph.onReady).to.haveBeenCalledWith(null, $location.path, Matchers.anyFunction());
-      onChangedSpy.calls.reset();
-      onReadySpy.calls.argsFor(0)[2]();
-      assert(view['onLocationChanged_']).to.haveBeenCalledWith();
-    });
-  });
-
-  describe('onLocationChanged_', () => {
     it(`should update the shadow root correctly`, async () => {
-      const shadowRoot = Mocks.object('shadowRoot');
-      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
+      const scriptEl1 = document.createElement('script');
+      const scriptEl2 = document.createElement('script');
+      const mockShadowRoot = jasmine.createSpyObj('ShadowRoot', ['querySelectorAll']);
+      mockShadowRoot.querySelectorAll.and.returnValue([scriptEl1, scriptEl2]);
+      spyOn(Persona, 'getShadowRoot').and.returnValue(mockShadowRoot);
 
       const content = 'content';
-      const selectedItemId = 'selectedItemId';
-      spyOn(Graph, 'get').and.returnValue(Promise.resolve(selectedItemId));
+      const baseUrl = 'baseUrl/';
+      fakeDocument.baseURI = baseUrl;
+
+      const selectedItemId = '/selectedItemId';
+      fakeWindow.location = {href: `baseUrl/selectedItemId`};
+
       const item = PreviewFile.newInstance('id', content);
       spyOn(ItemService, 'getPreview').and.returnValue(Promise.resolve(item));
 
       const time = Graph.getTimestamp();
 
-      await view['onLocationChanged_']();
-      assert(shadowRoot.innerHTML).to.equal(content);
-      assert(Graph.get).to.haveBeenCalledWith($location.path, time);
+      spyOn(view, 'processScript_');
+
+      await view.onHostConnected_();
+      assert(view['processScript_']).to.haveBeenCalledWith(scriptEl1);
+      assert(view['processScript_']).to.haveBeenCalledWith(scriptEl2);
+      assert(mockShadowRoot.querySelectorAll).to.haveBeenCalledWith('script');
+      assert(mockShadowRoot.innerHTML).to.equal(content);
       assert(ItemService.getPreview).to.haveBeenCalledWith(time, selectedItemId);
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 
     it(`should set the innerHTML to "" if selected item doesn't exist`, async () => {
-      const shadowRoot = Mocks.object('shadowRoot');
-      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
+      const mockShadowRoot = jasmine.createSpyObj('ShadowRoot', ['querySelectorAll']);
+      mockShadowRoot.querySelectorAll.and.returnValue([]);
+      spyOn(Persona, 'getShadowRoot').and.returnValue(mockShadowRoot);
 
-      const selectedItemId = 'selectedItemId';
-      spyOn(Graph, 'get').and.returnValue(Promise.resolve(selectedItemId));
+      const baseUrl = 'baseUrl/';
+      fakeDocument.baseURI = baseUrl;
+
+      const selectedItemId = '/selectedItemId';
+      fakeWindow.location = {href: `baseUrl/selectedItemId`};
       spyOn(ItemService, 'getPreview').and.returnValue(Promise.resolve(null));
 
       const time = Graph.getTimestamp();
 
-      await view['onLocationChanged_']();
-      assert(shadowRoot.innerHTML).to.equal('');
-      assert(Graph.get).to.haveBeenCalledWith($location.path, time);
+      spyOn(view, 'processScript_');
+
+      await view.onHostConnected_();
+      assert(mockShadowRoot.querySelectorAll).toNot.haveBeenCalled();
+      assert(mockShadowRoot.innerHTML).to.equal('');
       assert(ItemService.getPreview).to.haveBeenCalledWith(time, selectedItemId);
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
@@ -72,7 +77,7 @@ describe('preview.PreviewView', () => {
     it(`should not reject if there are no shadow roots`, async () => {
       spyOn(Persona, 'getShadowRoot').and.returnValue(null);
 
-      await view['onLocationChanged_']();
+      await view.onHostConnected_();
     });
   });
 });
