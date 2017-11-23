@@ -6,8 +6,8 @@ import { Folder, getInitMap_ } from '../data/folder';
 
 @Serializable('data.ThothFolder')
 export abstract class ThothFolder extends Folder {
-  getSearchIndex(): { name: string; } {
-    return {name: this.getName()};
+  getSearchIndex(): string {
+    return this.getName();
   }
 
   abstract setItems(newItems: ImmutableSet<string>): this;

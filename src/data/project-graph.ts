@@ -2,9 +2,9 @@ import { registerDataGraph, SimpleSearcher } from 'external/gs_tools/src/datamod
 import { DataModelParser } from 'external/gs_tools/src/parse';
 import { LocalStorage } from 'external/gs_tools/src/store';
 
-import { Item } from '../data/item';
+import { Project } from '../data/project';
 
-export const $items = registerDataGraph<Item>(
-    'items',
+export const $project = registerDataGraph<Project>(
+    'project',
     new SimpleSearcher(),
-    new LocalStorage<Item>(window, 'th-i', DataModelParser<Item>()));
+    new LocalStorage(window, 'th-p', DataModelParser<Project>()));

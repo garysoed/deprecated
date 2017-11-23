@@ -11,8 +11,8 @@ export abstract class DriveFolder extends Folder {
 
   abstract getDriveId(): string;
 
-  getSearchIndex(): { name: string; } {
-    return {name: this.getName()};
+  getSearchIndex(): string {
+    return this.getName();
   }
 
   toString(): string {

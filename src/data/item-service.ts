@@ -20,6 +20,11 @@ export class ItemServiceClass {
     return ROOT_FOLDER_ID;
   }
 
+  async newId(time: GraphTime): Promise<string> {
+    const itemsGraph = await Graph.get($items, time);
+    return itemsGraph.generateId();
+  }
+
   async save(time: GraphTime, ...items: Item[]): Promise<void> {
     const itemsGraph = await Graph.get($items, time);
     for (const item of items) {

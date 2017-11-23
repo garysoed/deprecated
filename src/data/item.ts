@@ -15,7 +15,7 @@ export function getInitMap_(id: string, name: string, parentId: string | null):
   ]);
 }
 
-export abstract class Item implements DataModel<{ name: string }> {
+export abstract class Item implements DataModel<string> {
   @field('id', StringParser) readonly id_: string;
   @field('name', StringParser) readonly name_: string;
   @field('parentId', StringParser) readonly parentId_: string | null;
@@ -28,7 +28,7 @@ export abstract class Item implements DataModel<{ name: string }> {
 
   abstract getParentId(): string | null;
 
-  abstract getSearchIndex(): {name: string};
+  abstract getSearchIndex(): string;
 
   static newId(): string {
     const id = ID_GENERATOR.generate(EXISTING_IDS);
