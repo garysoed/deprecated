@@ -113,7 +113,7 @@ export class NavigatorItem extends BaseThemedElement2 {
       throw Errors.assert('parentId').shouldExist().butWas(parentId);
     }
 
-    const files = await DriveService.recursiveGet(item.getDriveId(), parentId);
+    const files = await DriveService.recursiveGet(item.getDriveId(), parentId, time);
     files.mapItem((file) => ItemService.save(time, file));
   }
 

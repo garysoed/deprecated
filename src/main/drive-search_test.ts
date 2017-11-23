@@ -194,8 +194,8 @@ describe('main.DriveSearch', () => {
       assert(ItemService.save).to.haveBeenCalledWith(time, mockItem12);
       assert(ItemService.save).to.haveBeenCalledWith(time, mockItem2);
 
-      assert(DriveService.recursiveGet).to.haveBeenCalledWith(id1, idSelected);
-      assert(DriveService.recursiveGet).to.haveBeenCalledWith(id2, idSelected);
+      assert(DriveService.recursiveGet).to.haveBeenCalledWith(id1, idSelected, time);
+      assert(DriveService.recursiveGet).to.haveBeenCalledWith(id2, idSelected, time);
     });
 
     it(`should reject if dispatcher cannot be found`, async () => {

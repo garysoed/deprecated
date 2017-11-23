@@ -158,7 +158,7 @@ export class DriveSearch extends BaseThemedElement2 {
     const selectedId = selectedItem.getId();
     const addedItems = items.filter((item) => !!item.selected);
     const addedDriveItemPromises = addedItems
-        .map((item) => DriveService.recursiveGet(item.summary.id, selectedId));
+        .map((item) => DriveService.recursiveGet(item.summary.id, selectedId, time));
     const addedDriveItems = await Promise.all(addedDriveItemPromises);
 
     // Stores all the drive items.

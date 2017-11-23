@@ -71,7 +71,7 @@ describe('main.NavigatorItem', () => {
       await item.onRefreshButtonAction_(mockEvent);
       assert(ItemService.save).to.haveBeenCalledWith(time, item1);
       assert(ItemService.save).to.haveBeenCalledWith(time, item2);
-      assert(DriveService.recursiveGet).to.haveBeenCalledWith(driveId, parentId);
+      assert(DriveService.recursiveGet).to.haveBeenCalledWith(driveId, parentId, time);
       assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
     });
 
@@ -98,7 +98,7 @@ describe('main.NavigatorItem', () => {
       await item.onRefreshButtonAction_(mockEvent);
       assert(ItemService.save).to.haveBeenCalledWith(time, item1);
       assert(ItemService.save).to.haveBeenCalledWith(time, item2);
-      assert(DriveService.recursiveGet).to.haveBeenCalledWith(driveId, parentId);
+      assert(DriveService.recursiveGet).to.haveBeenCalledWith(driveId, parentId, time);
       assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
     });
 

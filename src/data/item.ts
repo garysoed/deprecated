@@ -1,10 +1,6 @@
 import { DataModel, field } from 'external/gs_tools/src/datamodel';
 import { ImmutableMap } from 'external/gs_tools/src/immutable';
 import { StringParser } from 'external/gs_tools/src/parse';
-import { SimpleIdGenerator } from 'external/gs_tools/src/random';
-
-const ID_GENERATOR = new SimpleIdGenerator();
-const EXISTING_IDS = new Set<string>();
 
 export function getInitMap_(id: string, name: string, parentId: string | null):
     ImmutableMap<string | symbol, any> {
@@ -29,10 +25,4 @@ export abstract class Item implements DataModel<string> {
   abstract getParentId(): string | null;
 
   abstract getSearchIndex(): string;
-
-  static newId(): string {
-    const id = ID_GENERATOR.generate(EXISTING_IDS);
-    EXISTING_IDS.add(id);
-    return id;
-  }
 }

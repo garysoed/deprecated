@@ -1,6 +1,8 @@
 import { assert, Fakes, TestBase } from '../test-base';
 TestBase.setup();
 
+import { Graph } from 'external/gs_tools/src/graph';
+
 import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
 import { DriveServiceImpl } from '../data/drive-service';
@@ -67,9 +69,10 @@ describe('data.DriveServiceImpl', () => {
           .when(idSub).resolve(rootItem.files[1])
           .when(id21).resolve(rootItem.files[1].files[0])
           .when(id22).resolve(rootItem.files[1].files[1]);
+      const time = Graph.getTimestamp();
 
       const [rootFolder, file1, subFolder, file21, file22] =
-          await service.recursiveGet(idRoot, containerPath);
+          await service.recursiveGet(idRoot, containerPath, time);
 
       assert(rootFolder.getDriveId()).to.equal(idRoot);
       assert(rootFolder.getName()).to.equal(nameRoot);
@@ -113,7 +116,9 @@ describe('data.DriveServiceImpl', () => {
 
       const containerId = 'containerId';
 
-      const [file] = await service.recursiveGet(id, containerId);
+      const time = Graph.getTimestamp();
+
+      const [file] = await service.recursiveGet(id, containerId, time);
       assert(file.getDriveId()).to.equal(id);
       assert(file.getName()).to.equal(name);
       assert(file.getParentId()).to.equal(containerId);
