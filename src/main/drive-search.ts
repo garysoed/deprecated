@@ -9,7 +9,7 @@ import {
   StringType} from 'external/gs_tools/src/check';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
-import { ImmutableList } from 'external/gs_tools/src/immutable';
+import { ImmutableList, ImmutableSet, Iterables } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
 import { BooleanParser, EnumParser, StringParser } from 'external/gs_tools/src/parse';
 import {
@@ -28,7 +28,13 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { $selectedItem, DriveService, ItemService, ThothFolder } from '../data';
+import {
+  $selectedItem,
+  DriveFile,
+  DriveFolder,
+  DriveService,
+  ItemService,
+  ThothFolder } from '../data';
 import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../import';
 import { SearchItem } from '../main/search-item';
 
@@ -156,9 +162,12 @@ export class DriveSearch extends BaseThemedElement2 {
     const addedDriveItems = await Promise.all(addedDriveItemPromises);
 
     // Stores all the drive items.
-    for (const driveBatch of addedDriveItems) {
-      for (const addedItem of driveBatch) {
-        ItemService.save(time, addedItem);
+    const itemsToAddToSelectedFolder: (DriveFolder | DriveFile)[] = [];
+    for (const addedItem of Iterables.flatten<DriveFile | DriveFolder>(addedDriveItems)) {
+      ItemService.save(time, addedItem);
+
+      if (addedItem.getParentId() === selectedId) {
+        itemsToAddToSelectedFolder.push(addedItem);
       }
     }
 
@@ -168,7 +177,7 @@ export class DriveSearch extends BaseThemedElement2 {
         selectedItem.setItems(
             selectedItem
                 .getItems()
-                .addAll(addedItems.map((addedItem) => `${selectedId}/${addedItem.summary.name}`))));
+                .addAll(ImmutableSet.of(itemsToAddToSelectedFolder.map((item) => item.getId())))));
 
     const dispatcher = Persona.getValue($.host.dispatcher, this);
     if (!dispatcher) {

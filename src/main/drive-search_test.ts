@@ -144,18 +144,22 @@ describe('main.DriveSearch', () => {
 
       const id1 = 'id1';
       const name1 = 'name1';
-      const mockItem1 = jasmine.createSpyObj('Item1', ['getId']);
+      const mockItem1 = jasmine.createSpyObj('Item1', ['getId', 'getParentId']);
       mockItem1.getId.and.returnValue(id1);
+      mockItem1.getParentId.and.returnValue(idSelected);
       const id11 = 'id11';
-      const mockItem11 = jasmine.createSpyObj('Item11', ['getId']);
+      const mockItem11 = jasmine.createSpyObj('Item11', ['getId', 'getParentId']);
       mockItem11.getId.and.returnValue(id11);
+      mockItem11.getParentId.and.returnValue(id1);
       const id12 = 'id12';
-      const mockItem12 = jasmine.createSpyObj('Item12', ['getId']);
+      const mockItem12 = jasmine.createSpyObj('Item12', ['getId', 'getParentId']);
       mockItem12.getId.and.returnValue(id12);
+      mockItem12.getParentId.and.returnValue(id1);
       const id2 = 'id2';
       const name2 = 'name2';
-      const mockItem2 = jasmine.createSpyObj('Item2', ['getId']);
+      const mockItem2 = jasmine.createSpyObj('Item2', ['getId', 'getParentId']);
       mockItem2.getId.and.returnValue(id2);
+      mockItem2.getParentId.and.returnValue(idSelected);
 
       const idUnadded = 'idUnadded';
       const mockDispatcher = jasmine.createSpy('Dispatcher');
@@ -181,8 +185,8 @@ describe('main.DriveSearch', () => {
 
       const selectedFolder = saveSpy.calls.argsFor(4)[1];
       assert((selectedFolder as ThothFolder).getItems()).to.haveElements([
-        `${idSelected}/${name1}`,
-        `${idSelected}/${name2}`,
+        id1,
+        id2,
       ]);
 
       assert(ItemService.save).to.haveBeenCalledWith(time, mockItem1);

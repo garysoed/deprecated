@@ -2,7 +2,7 @@ import { assert, Fakes, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
 import { Folder } from '../data';
-import { providesSelectedFolder, ROOT_ID, ROOT_ITEM } from '../data/selected-item-graph';
+import { providesSelectedItem, ROOT_ID, ROOT_ITEM } from '../data/selected-item-graph';
 
 
 describe('main.providesSelectedFolder', () => {
@@ -21,7 +21,7 @@ describe('main.providesSelectedFolder', () => {
           .when(id).resolve(item)
           .when(ROOT_ID).resolve(rootItem);
 
-      assert(await providesSelectedFolder(location, mockGraph)).to.equal(item);
+      assert(await providesSelectedItem(location, mockGraph)).to.equal(item);
     });
 
     it(`should redirect to ROOT_ID and resolve with saved root folder if item is not a folder and` +
@@ -34,7 +34,7 @@ describe('main.providesSelectedFolder', () => {
       Fakes.build(mockGraph.get)
           .when(id).resolve(item);
 
-      assert(await providesSelectedFolder(location, mockGraph)).to.equal(ROOT_ITEM);
+      assert(await providesSelectedItem(location, mockGraph)).to.equal(ROOT_ITEM);
       assert(window.location.hash).to.equal(`#${ROOT_ID}`);
     });
 
@@ -50,14 +50,14 @@ describe('main.providesSelectedFolder', () => {
           .when(id).resolve(item)
           .when(ROOT_ID).resolve(rootItem);
 
-      assert(await providesSelectedFolder(location, mockGraph)).to.equal(ROOT_ITEM);
+      assert(await providesSelectedItem(location, mockGraph)).to.equal(ROOT_ITEM);
     });
 
     it(`should resolve with ROOT_ITEM and navigate to ROOT_ID if location is not specified`,
         async () => {
       const mockGraph = jasmine.createSpyObj('Graph', ['get']);
 
-      assert(await providesSelectedFolder('', mockGraph)).to.equal(ROOT_ITEM);
+      assert(await providesSelectedItem('', mockGraph)).to.equal(ROOT_ITEM);
       assert(window.location.hash).to.equal(`#${ROOT_ID}`);
     });
   });

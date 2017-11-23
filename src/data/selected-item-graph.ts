@@ -16,7 +16,7 @@ export const ROOT_ITEM = ThothFolder.newInstance(
     null,
     ImmutableSet.of([]));
 
-export async function providesSelectedFolder(
+export async function providesSelectedItem(
     location: string,
     itemGraph: DataGraph<Item>): Promise<Item> {
   if (!location) {
@@ -36,10 +36,10 @@ export async function providesSelectedFolder(
   }
 }
 
-export const $selectedItem = staticId('selectedFolder', InstanceofType(Item));
+export const $selectedItem = staticId('selectedItem', InstanceofType(Item));
 Graph.registerProvider(
     $selectedItem,
-    providesSelectedFolder,
+    providesSelectedItem,
     $location.path,
     $items);
 Graph.onReady(null, $items, () => {
