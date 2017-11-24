@@ -24,15 +24,15 @@ describe('main.NavigatorItem', () => {
 
   describe('onHostClick_', () => {
     it(`should navigate to the correct item`, async () => {
-      const id = 'id';
+      const name = 'name';
       Graph.clearNodesForTests([$item]);
 
       Graph.createProvider(
           $item,
-          ThothFolder.newInstance(id, 'name', null, ImmutableSet.of([])));
+          ThothFolder.newInstance('id', name, null, ImmutableSet.of([])));
 
       await item.onHostClick_();
-      assert(window.location.hash).to.equal(`#/${id}`);
+      assert(window.location.hash).to.equal(`#/${name}`);
 
       window.location.hash = '';
     });

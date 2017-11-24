@@ -17,7 +17,7 @@ import {
     render,
     resolveSelectors,
     shadowHostSelector} from 'external/gs_tools/src/persona';
-import { navigateToHash } from 'external/gs_tools/src/ui';
+import { $location, navigateToHash } from 'external/gs_tools/src/ui';
 
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
@@ -90,12 +90,15 @@ export class NavigatorItem extends BaseThemedElement2 {
   @onDom.event($.host.el, 'click')
   async onHostClick_(): Promise<void> {
     const time = Graph.getTimestamp();
-    const item = await Graph.get($item, time, this);
+    const [item, path] = await Promise.all([
+      Graph.get($item, time, this),
+      Graph.get($location.path, time),
+    ]);
     if (!item) {
       return;
     }
 
-    navigateToHash(item.getId());
+    navigateToHash(`${path}/${item.getName()}`);
   }
 
   @onDom.event($.refreshButton.el, 'gs-action')
