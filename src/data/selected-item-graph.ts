@@ -1,38 +1,28 @@
 import { InstanceofType } from 'external/gs_tools/src/check';
-import { DataGraph } from 'external/gs_tools/src/datamodel';
-import { Graph, staticId } from 'external/gs_tools/src/graph';
-import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { $time, Graph, GraphTime, staticId } from 'external/gs_tools/src/graph';
 import { $location, navigateToHash } from 'external/gs_tools/src/ui';
 
 import { Item } from '../data/item';
 import { $items } from '../data/item-graph';
-import { ThothFolder } from '../data/thoth-folder';
+import { ItemService } from '../data/item-service';
 
-export const ROOT_ID = '/(root)';
+export const ROOT_PATH = '/(root)';
 
-export const ROOT_ITEM = ThothFolder.newInstance(
-    ROOT_ID,
-    '(root)',
-    null,
-    ImmutableSet.of([]));
-
-export async function providesSelectedItem(
-    location: string,
-    itemGraph: DataGraph<Item>): Promise<Item> {
+export async function providesSelectedItem(location: string, time: GraphTime): Promise<Item> {
   if (!location) {
-    navigateToHash(ROOT_ID);
-    return ROOT_ITEM;
+    navigateToHash(ROOT_PATH);
+    return ItemService.getRootFolder(time);
   }
 
-  const item = await itemGraph.get(location);
+  const item = await ItemService.getItemByPath(time, location);
 
   if (item instanceof Item) {
     return item;
-  } else if (location !== ROOT_ID) {
-    navigateToHash(ROOT_ID);
-    return ROOT_ITEM;
+  } else if (location !== ROOT_PATH) {
+    navigateToHash(ROOT_PATH);
+    return ItemService.getRootFolder(time);
   } else {
-    return ROOT_ITEM;
+    return ItemService.getRootFolder(time);
   }
 }
 
@@ -41,7 +31,7 @@ Graph.registerProvider(
     $selectedItem,
     providesSelectedItem,
     $location.path,
-    $items);
+    $time);
 Graph.onReady(null, $items, () => {
   Graph.refresh($selectedItem);
 });

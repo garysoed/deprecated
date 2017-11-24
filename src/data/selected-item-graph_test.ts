@@ -1,64 +1,69 @@
-import { assert, Fakes, Mocks, TestBase } from '../test-base';
+import { assert, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
-import { Folder } from '../data';
-import { providesSelectedItem, ROOT_ID, ROOT_ITEM } from '../data/selected-item-graph';
+import { Graph } from 'external/gs_tools/src/graph';
+
+import { Folder, ItemService } from '../data';
+import { providesSelectedItem, ROOT_PATH } from '../data/selected-item-graph';
 
 
 describe('main.providesSelectedFolder', () => {
   describe('providesSelectedFolder', () => {
     it(`should resolve with the correct folder`, async () => {
-      const id = 'id';
-      const location = `${id}`;
+      const path = 'path';
+
       const item = Mocks.object('item');
       Object.setPrototypeOf(item, Folder.prototype);
+      spyOn(ItemService, 'getItemByPath').and.returnValue(Promise.resolve(item));
 
-      const rootItem = Mocks.object('rootItem');
-      Object.setPrototypeOf(rootItem, Folder.prototype);
+      const time = Graph.getTimestamp();
 
-      const mockGraph = jasmine.createSpyObj('Graph', ['get']);
-      Fakes.build(mockGraph.get)
-          .when(id).resolve(item)
-          .when(ROOT_ID).resolve(rootItem);
-
-      assert(await providesSelectedItem(location, mockGraph)).to.equal(item);
+      assert(await providesSelectedItem(path, time)).to.equal(item);
+      assert(ItemService.getItemByPath).to.haveBeenCalledWith(time, path);
     });
 
-    it(`should redirect to ROOT_ID and resolve with saved root folder if item is not a folder and` +
-        ` ID is not ROOT_ID`, async () => {
-      const id = 'id';
-      const location = `${id}`;
-      const item = Mocks.object('item');
+    it(`should redirect to ROOT_PATH and resolve with saved root folder if item doesn't exist ` +
+        `and path is not ROOT_PATH`, async () => {
+      const path = 'path';
 
-      const mockGraph = jasmine.createSpyObj('Graph', ['get']);
-      Fakes.build(mockGraph.get)
-          .when(id).resolve(item);
+      const rootFolder = Mocks.object('rootFolder');
+      spyOn(ItemService, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
 
-      assert(await providesSelectedItem(location, mockGraph)).to.equal(ROOT_ITEM);
-      assert(window.location.hash).to.equal(`#${ROOT_ID}`);
+      spyOn(ItemService, 'getItemByPath').and.returnValue(Promise.resolve(null));
+
+      const time = Graph.getTimestamp();
+
+      assert(await providesSelectedItem(path, time)).to.equal(rootFolder);
+      assert(ItemService.getItemByPath).to.haveBeenCalledWith(time, path);
+      assert(ItemService.getRootFolder).to.haveBeenCalledWith(time);
+      assert(window.location.hash).to.equal(`#${ROOT_PATH}`);
     });
 
-    it(`should redirect to ROOT_ID and resolve with saved root folder if item is not a folder and` +
-        ` ID is ROOT_ID`, async () => {
-      const id = 'id';
-      const location = `${id}`;
-      const item = Mocks.object('item');
-      const rootItem = Mocks.object('rootItem');
+    it(`should redirect to ROOT_PATH and resolve with saved root folder if item doesn't exist and` +
+        ` path is ROOT_PATH`, async () => {
+      const path = ROOT_PATH;
 
-      const mockGraph = jasmine.createSpyObj('Graph', ['get']);
-      Fakes.build(mockGraph.get)
-          .when(id).resolve(item)
-          .when(ROOT_ID).resolve(rootItem);
+      const rootFolder = Mocks.object('rootFolder');
+      spyOn(ItemService, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
 
-      assert(await providesSelectedItem(location, mockGraph)).to.equal(ROOT_ITEM);
+      spyOn(ItemService, 'getItemByPath').and.returnValue(Promise.resolve(null));
+
+      const time = Graph.getTimestamp();
+
+      assert(await providesSelectedItem(path, time)).to.equal(rootFolder);
+      assert(ItemService.getItemByPath).to.haveBeenCalledWith(time, path);
+      assert(ItemService.getRootFolder).to.haveBeenCalledWith(time);
     });
 
-    it(`should resolve with ROOT_ITEM and navigate to ROOT_ID if location is not specified`,
+    it(`should resolve with root folder and navigate to ROOT_PATH if location is not specified`,
         async () => {
-      const mockGraph = jasmine.createSpyObj('Graph', ['get']);
+      const rootFolder = Mocks.object('rootFolder');
+      spyOn(ItemService, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
 
-      assert(await providesSelectedItem('', mockGraph)).to.equal(ROOT_ITEM);
-      assert(window.location.hash).to.equal(`#${ROOT_ID}`);
+      const time = Graph.getTimestamp();
+
+      assert(await providesSelectedItem('', time)).to.equal(rootFolder);
+      assert(ItemService.getRootFolder).to.haveBeenCalledWith(time);
     });
   });
 });

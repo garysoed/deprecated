@@ -29,4 +29,4 @@ class PreviewSearcher implements Searcher<PreviewFile> {
 export const $previews = registerDataGraph<PreviewFile>(
     'previews',
     new PreviewSearcher(),
-    new LocalStorage<PreviewFile>(window, 'th-p', DataModelParser<PreviewFile>()));
+    new LocalStorage<PreviewFile>(window, 'th-r', DataModelParser<PreviewFile>()));
