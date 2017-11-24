@@ -36,8 +36,46 @@
 
   :host(:hover), :host(:focus) {
     --contentFG: var(--gsColorActionFocusFG);
-    --contentRight: calc(2 * (2 * var(--gsSizePadding) + var(--gsLineHeight)));
+    --contentRight: calc(
+        (var(--viewableFlag) + var(--refreshableFlag) + var(--deleteableFlag) + 3) *
+        (2 * var(--gsSizePadding) + var(--gsLineHeight)));
     cursor: pointer;
+  }
+
+  :host {
+    --deletableDisplay: none;
+    --deleteableFlag: 0;
+    --refreshableDisplay: none;
+    --refreshableFlag: 0;
+    --viewableDisplay: none;
+    --viewableFlag: 0;
+  }
+
+  :host([deleteable="true"]) {
+    --deletableDisplay: block;
+    --deleteableFlag: 1;
+  }
+
+  :host([refreshable="true"]) {
+    --refreshableDisplay: block;
+    --refreshableFlag: 1;
+  }
+
+  :host([viewable="true"]) {
+    --viewableDisplay: block;
+    --viewableFlag: 1;
+  }
+
+  #deleteButton {
+    display: var(--deletableDisplay);
+  }
+
+  #refreshButton {
+    display: var(--refreshableDisplay);
+  }
+
+  #viewButton {
+    display: var(--viewableDisplay);
   }
 </style>
 
@@ -46,12 +84,30 @@
     <gs-icon id="icon"></gs-icon>
     <div id="name"></div>
   </div>
-  <div fill-parent flex-justify="flex-end" gs-theme="normal" gs-highlight id="actions" layout="row">
+  <div
+      fill-parent
+      flex-justify="flex-end"
+      gs-theme="normal"
+      gs-highlight
+      id="actions"
+      layout="row">
+    <gs-basic-button id="renameButton">
+      <gs-icon>mode_edit</gs-icon>
+    </gs-basic-button>
     <gs-basic-button id="refreshButton">
       <gs-icon>refresh</gs-icon>
     </gs-basic-button>
     <gs-basic-button id="renderButton">
       <gs-icon>palette</gs-icon>
+    </gs-basic-button>
+    <gs-basic-button id="viewButton">
+      <gs-icon>remove_red_eye</gs-icon>
+    </gs-basic-button>
+    <gs-basic-button id="downloadButton">
+      <gs-icon>file_download</gs-icon>
+    </gs-basic-button>
+    <gs-basic-button id="deleteButton">
+      <gs-icon>delete</gs-icon>
     </gs-basic-button>
   </div>
 </div>

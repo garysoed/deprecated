@@ -3,6 +3,7 @@ TestBase.setup();
 
 import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { $location } from 'external/gs_tools/src/ui';
 
 import {
   DriveFile,
@@ -25,14 +26,17 @@ describe('main.NavigatorItem', () => {
   describe('onHostClick_', () => {
     it(`should navigate to the correct item`, async () => {
       const name = 'name';
-      Graph.clearNodesForTests([$item]);
+      Graph.clearNodesForTests([$item, $location.path]);
+
+      const path = 'path';
+      Graph.createProvider($location.path, path);
 
       Graph.createProvider(
           $item,
           ThothFolder.newInstance('id', name, null, ImmutableSet.of([])));
 
       await item.onHostClick_();
-      assert(window.location.hash).to.equal(`#/${name}`);
+      assert(window.location.hash).to.equal(`#/${path}/${name}`);
 
       window.location.hash = '';
     });
@@ -167,6 +171,50 @@ describe('main.NavigatorItem', () => {
     });
   });
 
+  describe('renderDeleteable_', () => {
+    it(`should return true if the parent is ThothFolder`, async () => {
+      const parentId = 'parentId';
+      const driveItem = DriveFile
+          .newInstance('id', 'name', parentId, FileType.ASSET, 'content', 'driveId');
+
+      const parent = ThothFolder.newInstance('parentId', 'parentName', null, ImmutableSet.of([]));
+      spyOn(ItemService, 'getItem').and.returnValue(Promise.resolve(parent));
+      const time = Graph.getTimestamp();
+
+      assert(await item.renderDeleteable_(driveItem, time)).to.beTrue();
+      assert(ItemService.getItem).to.haveBeenCalledWith(parentId, time);
+    });
+
+    it(`should return false if the parent is not ThothFolder`, async () => {
+      const parentId = 'parentId';
+      const driveItem = DriveFile
+          .newInstance('id', 'name', parentId, FileType.ASSET, 'content', 'driveId');
+
+      const parent = DriveFolder
+          .newInstance('parentId', 'parentName', null, ImmutableSet.of([]), 'driveId');
+      spyOn(ItemService, 'getItem').and.returnValue(Promise.resolve(parent));
+      const time = Graph.getTimestamp();
+
+      assert(await item.renderDeleteable_(driveItem, time)).to.beFalse();
+      assert(ItemService.getItem).to.haveBeenCalledWith(parentId, time);
+    });
+
+    it(`should return false if there are no parent IDs`, async () => {
+      const driveItem = DriveFolder
+          .newInstance('id', 'name', null, ImmutableSet.of([]), 'driveId');
+
+      const time = Graph.getTimestamp();
+
+      assert(await item.renderDeleteable_(driveItem, time)).to.beFalse();
+    });
+
+    it(`should return false if the item is null`, async () => {
+      const time = Graph.getTimestamp();
+
+      assert(await item.renderDeleteable_(null, time)).to.beFalse();
+    });
+  });
+
   describe('renderIcon_', () => {
     it(`should return "help" if the type is UNKNOWN`, () => {
       const selectedItem =
@@ -204,6 +252,44 @@ describe('main.NavigatorItem', () => {
 
     it(`should resolve with '' if the item cannot be found`, () => {
       assert(item.renderName_(null)).to.equal('');
+    });
+  });
+
+  describe('renderRefreshable_', () => {
+    it(`should return true if item is a DriveFile`, () => {
+      const inItem = DriveFile
+          .newInstance('id', 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
+
+      assert(item.renderRefreshable_(inItem)).to.beTrue();
+    });
+
+    it(`should return true if item is a DriveFolder`, () => {
+      const inItem = DriveFolder
+          .newInstance('id', 'name', null, ImmutableSet.of([]), 'driveId');
+
+      assert(item.renderRefreshable_(inItem)).to.beTrue();
+    });
+
+    it(`should return false if item is not a DriveFile or DriveFolder`, () => {
+      const inItem = ThothFolder.newInstance('id', 'name', null, ImmutableSet.of([]));
+
+      assert(item.renderRefreshable_(inItem)).to.beFalse();
+    });
+  });
+
+  describe('renderViewable_', () => {
+    it(`should return true if item is a File`, () => {
+      const inItem = DriveFile
+          .newInstance('id', 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
+
+      assert(item.renderViewable_(inItem)).to.beTrue();
+    });
+
+    it(`should return false if item is a Folder`, () => {
+      const inItem = DriveFolder
+          .newInstance('id', 'name', null, ImmutableSet.of([]), 'driveId');
+
+      assert(item.renderViewable_(inItem)).to.beFalse();
     });
   });
 });

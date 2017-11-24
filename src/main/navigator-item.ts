@@ -1,13 +1,14 @@
 import {
+  BooleanType,
   ElementWithTagType,
   InstanceofType,
   NullableType,
-  StringType } from 'external/gs_tools/src/check';
+  StringType} from 'external/gs_tools/src/check';
 import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Errors } from 'external/gs_tools/src/error';
-import { Graph, instanceId, nodeIn, nodeOut } from 'external/gs_tools/src/graph';
+import { $time, Graph, GraphTime, instanceId, nodeIn, nodeOut } from 'external/gs_tools/src/graph';
 import { inject } from 'external/gs_tools/src/inject';
-import { StringParser } from 'external/gs_tools/src/parse';
+import { BooleanParser, StringParser } from 'external/gs_tools/src/parse';
 import {
     attributeSelector,
     component,
@@ -30,11 +31,18 @@ import {
   File,
   FileType,
   Item,
-  ItemService} from '../data';
+  ItemService,
+  ThothFolder} from '../data';
 import { RenderService } from '../render';
 
 export const $ = resolveSelectors({
   host: {
+    deleteable: attributeSelector(
+        elementSelector('host.el'),
+        'deleteable',
+        BooleanParser,
+        BooleanType,
+        false),
     el: shadowHostSelector,
     itemid: attributeSelector(
         elementSelector('host.el'),
@@ -42,6 +50,18 @@ export const $ = resolveSelectors({
         StringParser,
         StringType,
         ''),
+    refreshable: attributeSelector(
+        elementSelector('host.el'),
+        'refreshable',
+        BooleanParser,
+        BooleanType,
+        false),
+    viewable: attributeSelector(
+        elementSelector('host.el'),
+        'viewable',
+        BooleanParser,
+        BooleanType,
+        false),
   },
   icon: {
     el: elementSelector('#icon', ElementWithTagType('gs-icon')),
@@ -140,6 +160,23 @@ export class NavigatorItem extends BaseThemedElement2 {
     return itemsGraph.get(itemId);
   }
 
+  @render.attribute($.host.deleteable)
+  async renderDeleteable_(
+      @nodeIn($item) item: Item | null,
+      @nodeIn($time) time: GraphTime): Promise<boolean> {
+    if (!item) {
+      return false;
+    }
+
+    const parentId = item.getParentId();
+    if (!parentId) {
+      return false;
+    }
+
+    const parent = await ItemService.getItem(parentId, time);
+    return parent instanceof ThothFolder;
+  }
+
   @render.innerText($.icon.innerText)
   renderIcon_(@nodeIn($item) item: Item | null): string {
     if (!item) {
@@ -170,5 +207,15 @@ export class NavigatorItem extends BaseThemedElement2 {
     }
 
     return item.getName();
+  }
+
+  @render.attribute($.host.refreshable)
+  renderRefreshable_(@nodeIn($item) item: Item | null): boolean {
+    return item instanceof DriveFile || item instanceof DriveFolder;
+  }
+
+  @render.attribute($.host.viewable)
+  renderViewable_(@nodeIn($item) item: Item | null): boolean {
+    return item instanceof File;
   }
 }
