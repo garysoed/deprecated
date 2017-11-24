@@ -1,4 +1,4 @@
-import { assert, Mocks, TestBase, TestDispose } from '../test-base';
+import { assert, Matchers, Mocks, TestBase, TestDispose } from '../test-base';
 TestBase.setup();
 
 import { Graph } from 'external/gs_tools/src/graph';
@@ -12,7 +12,7 @@ import {
   FileType,
   ItemService,
   ThothFolder } from '../data';
-import { $item, NavigatorItem } from '../main/navigator-item';
+import { $, $item, $parent, NavigatorItem } from '../main/navigator-item';
 import { RenderService } from '../render';
 
 describe('main.NavigatorItem', () => {
@@ -21,6 +21,69 @@ describe('main.NavigatorItem', () => {
   beforeEach(() => {
     item = new NavigatorItem(Mocks.object('themeService'));
     TestDispose.add(item);
+  });
+
+  describe('onDeleteButtonAction_', () => {
+    it(`should delete the item correctly`, async () => {
+      const idOld = 'idOld';
+      const idDelete = 'idDelete';
+
+      Graph.clearNodesForTests([$parent, $.host.itemid.getId()]);
+      const parent = ThothFolder
+          .newInstance('idParent', 'name', null, ImmutableSet.of([idOld, idDelete]));
+      Graph.createProvider($parent, parent);
+      Graph.createProvider($.host.itemid.getId(), idDelete);
+
+      const saveSpy = spyOn(ItemService, 'save');
+
+      await item.onDeleteButtonAction_();
+      assert(ItemService.save).to.haveBeenCalledWith(Graph.getTimestamp(), Matchers.anyThing());
+
+      const newParent: ThothFolder = saveSpy.calls.argsFor(0)[1];
+      assert(newParent.getItems()).to.haveElements([idOld]);
+    });
+
+    it(`should not save if the parent is not a ThothFolder`, async () => {
+      const idDelete = 'idDelete';
+
+      Graph.clearNodesForTests([$parent, $.host.itemid.getId()]);
+      const parent = DriveFolder
+          .newInstance('idParent', 'name', null, ImmutableSet.of([]), 'driveId');
+      Graph.createProvider($parent, parent);
+      Graph.createProvider($.host.itemid.getId(), idDelete);
+
+      spyOn(ItemService, 'save');
+
+      await item.onDeleteButtonAction_();
+      assert(ItemService.save).toNot.haveBeenCalled();
+    });
+
+    it(`should not save if the parent is null`, async () => {
+      const idDelete = 'idDelete';
+
+      Graph.clearNodesForTests([$parent, $.host.itemid.getId()]);
+      Graph.createProvider($parent, null);
+      Graph.createProvider($.host.itemid.getId(), idDelete);
+
+      spyOn(ItemService, 'save');
+
+      await item.onDeleteButtonAction_();
+      assert(ItemService.save).toNot.haveBeenCalled();
+    });
+
+    it(`should not save if itemId does not exist`, async () => {
+      Graph.clearNodesForTests([$parent, $.host.itemid.getId()]);
+
+      const parent = ThothFolder
+          .newInstance('idParent', 'name', null, ImmutableSet.of([]));
+      Graph.createProvider($parent, parent);
+      Graph.createProvider($.host.itemid.getId(), '');
+
+      spyOn(ItemService, 'save');
+
+      await item.onDeleteButtonAction_();
+      assert(ItemService.save).toNot.haveBeenCalled();
+    });
   });
 
   describe('onHostClick_', () => {
@@ -171,8 +234,27 @@ describe('main.NavigatorItem', () => {
     });
   });
 
-  describe('renderDeleteable_', () => {
-    it(`should return true if the parent is ThothFolder`, async () => {
+  describe('providesItem', () => {
+    it(`should resolve with the correct item`, async () => {
+      const id = 'id';
+      const time = Graph.getTimestamp();
+      const selectedItem = DriveFile
+          .newInstance(id, 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
+      spyOn(ItemService, 'getItem').and.returnValue(Promise.resolve(selectedItem));
+
+      assert(await item.providesItem(id, time)).to.equal(selectedItem);
+      assert(ItemService.getItem).to.haveBeenCalledWith(id, time);
+    });
+
+    it(`should resolve with null if there are no item IDs`, async () => {
+      const time = Graph.getTimestamp();
+
+      assert(await item.providesItem(null, time)).to.equal(null);
+    });
+  });
+
+  describe('providesParent', () => {
+    it(`should return the correct parent`, async () => {
       const parentId = 'parentId';
       const driveItem = DriveFile
           .newInstance('id', 'name', parentId, FileType.ASSET, 'content', 'driveId');
@@ -181,37 +263,42 @@ describe('main.NavigatorItem', () => {
       spyOn(ItemService, 'getItem').and.returnValue(Promise.resolve(parent));
       const time = Graph.getTimestamp();
 
-      assert(await item.renderDeleteable_(driveItem, time)).to.beTrue();
+      assert(await item.providesParent(driveItem, time)).to.equal(parent);
       assert(ItemService.getItem).to.haveBeenCalledWith(parentId, time);
     });
 
-    it(`should return false if the parent is not ThothFolder`, async () => {
-      const parentId = 'parentId';
-      const driveItem = DriveFile
-          .newInstance('id', 'name', parentId, FileType.ASSET, 'content', 'driveId');
-
-      const parent = DriveFolder
-          .newInstance('parentId', 'parentName', null, ImmutableSet.of([]), 'driveId');
-      spyOn(ItemService, 'getItem').and.returnValue(Promise.resolve(parent));
-      const time = Graph.getTimestamp();
-
-      assert(await item.renderDeleteable_(driveItem, time)).to.beFalse();
-      assert(ItemService.getItem).to.haveBeenCalledWith(parentId, time);
-    });
-
-    it(`should return false if there are no parent IDs`, async () => {
+    it(`should return null if there are no parent IDs`, async () => {
       const driveItem = DriveFolder
           .newInstance('id', 'name', null, ImmutableSet.of([]), 'driveId');
 
       const time = Graph.getTimestamp();
 
-      assert(await item.renderDeleteable_(driveItem, time)).to.beFalse();
+      assert(await item.providesParent(driveItem, time)).to.beNull();
     });
 
-    it(`should return false if the item is null`, async () => {
+    it(`should return null if there are no items`, async () => {
       const time = Graph.getTimestamp();
 
-      assert(await item.renderDeleteable_(null, time)).to.beFalse();
+      assert(await item.providesParent(null, time)).to.beNull();
+    });
+  });
+
+  describe('renderDeleteable_', () => {
+    it(`should return true if the parent is ThothFolder`, () => {
+      const parent = ThothFolder.newInstance('id', 'name', null, ImmutableSet.of([]));
+
+      assert(item.renderDeleteable_(parent)).to.beTrue();
+    });
+
+    it(`should return false if the parent is not ThothFolder`, () => {
+      const parent = DriveFolder
+          .newInstance('parentId', 'parentName', null, ImmutableSet.of([]), 'driveId');
+
+      assert(item.renderDeleteable_(parent)).to.beFalse();
+    });
+
+    it(`should return false if the parent is null`, () => {
+      assert(item.renderDeleteable_(null)).to.beFalse();
     });
   });
 

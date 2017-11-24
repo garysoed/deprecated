@@ -4,7 +4,6 @@ import {
   InstanceofType,
   NullableType,
   StringType} from 'external/gs_tools/src/check';
-import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Errors } from 'external/gs_tools/src/error';
 import { $time, Graph, GraphTime, instanceId, nodeIn, nodeOut } from 'external/gs_tools/src/graph';
 import { inject } from 'external/gs_tools/src/inject';
@@ -24,7 +23,6 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
 import {
-  $items,
   DriveFile,
   DriveFolder,
   DriveService,
@@ -36,6 +34,9 @@ import {
 import { RenderService } from '../render';
 
 export const $ = resolveSelectors({
+  deleteButton: {
+    el: elementSelector('#deleteButton', ElementWithTagType('gs-basic-button')),
+  },
   host: {
     deleteable: attributeSelector(
         elementSelector('host.el'),
@@ -88,6 +89,7 @@ export const $ = resolveSelectors({
 });
 
 export const $item = instanceId('item', NullableType(InstanceofType(Item)));
+export const $parent = instanceId('parent', NullableType(InstanceofType(Item)));
 
 @component({
   inputs: [
@@ -101,10 +103,30 @@ export class NavigatorItem extends BaseThemedElement2 {
     super(themeService);
   }
 
+  @onDom.event($.deleteButton.el, 'click')
   @onDom.event($.renderButton.el, 'click')
   @onDom.event($.refreshButton.el, 'click')
   onActionButtonClick_(event: MouseEvent): void {
     event.stopPropagation();
+  }
+
+  @onDom.event($.deleteButton.el, 'gs-action')
+  async onDeleteButtonAction_(): Promise<void> {
+    const time = Graph.getTimestamp();
+    const [itemId, parent] = await Promise.all([
+      Graph.get($.host.itemid.getId(), time, this),
+      Graph.get($parent, time, this),
+    ]);
+
+    if (!itemId) {
+      return;
+    }
+
+    if (!(parent instanceof ThothFolder)) {
+      return;
+    }
+
+    ItemService.save(time, parent.setItems(parent.getItems().delete(itemId)));
   }
 
   @onDom.event($.host.el, 'click')
@@ -155,25 +177,32 @@ export class NavigatorItem extends BaseThemedElement2 {
 
   @nodeOut($item)
   providesItem(
-      @nodeIn($.host.itemid.getId()) itemId: string,
-      @nodeIn($items) itemsGraph: DataGraph<Item>): Promise<Item | null> {
-    return itemsGraph.get(itemId);
+      @nodeIn($.host.itemid.getId()) itemId: string | null,
+      @nodeIn($time) time: GraphTime): Promise<Item | null> {
+    if (!itemId) {
+      return Promise.resolve(null);
+    }
+    return ItemService.getItem(itemId, time);
   }
 
-  @render.attribute($.host.deleteable)
-  async renderDeleteable_(
+  @nodeOut($parent)
+  providesParent(
       @nodeIn($item) item: Item | null,
-      @nodeIn($time) time: GraphTime): Promise<boolean> {
+      @nodeIn($time) time: GraphTime): Promise<Item | null> {
     if (!item) {
-      return false;
+      return Promise.resolve(null);
     }
 
     const parentId = item.getParentId();
     if (!parentId) {
-      return false;
+      return Promise.resolve(null);
     }
 
-    const parent = await ItemService.getItem(parentId, time);
+    return ItemService.getItem(parentId, time);
+  }
+
+  @render.attribute($.host.deleteable)
+  renderDeleteable_(@nodeIn($parent) parent: Item | null): boolean {
     return parent instanceof ThothFolder;
   }
 
