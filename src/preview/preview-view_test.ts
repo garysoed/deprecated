@@ -4,7 +4,7 @@ TestBase.setup();
 import { Graph } from 'external/gs_tools/src/graph';
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { ItemService, PreviewFile } from '../data';
+import { $itemService, PreviewFile } from '../data';
 import { PreviewView } from '../preview/preview-view';
 
 
@@ -36,9 +36,9 @@ describe('preview.PreviewView', () => {
       fakeWindow.location = {href: `baseUrl/selectedItemId`};
 
       const item = PreviewFile.newInstance('id', content);
-      spyOn(ItemService, 'getPreview').and.returnValue(Promise.resolve(item));
-
-      const time = Graph.getTimestamp();
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getPreview']);
+      mockItemService.getPreview.and.returnValue(Promise.resolve(item));
+      Graph.setForTest($itemService, mockItemService);
 
       spyOn(view, 'processScript_');
 
@@ -47,7 +47,7 @@ describe('preview.PreviewView', () => {
       assert(view['processScript_']).to.haveBeenCalledWith(scriptEl2);
       assert(mockShadowRoot.querySelectorAll).to.haveBeenCalledWith('script');
       assert(mockShadowRoot.innerHTML).to.equal(content);
-      assert(ItemService.getPreview).to.haveBeenCalledWith(time, selectedItemId);
+      assert(mockItemService.getPreview).to.haveBeenCalledWith(selectedItemId);
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 
@@ -61,16 +61,17 @@ describe('preview.PreviewView', () => {
 
       const selectedItemId = '/selectedItemId';
       fakeWindow.location = {href: `baseUrl/selectedItemId`};
-      spyOn(ItemService, 'getPreview').and.returnValue(Promise.resolve(null));
 
-      const time = Graph.getTimestamp();
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getPreview']);
+      mockItemService.getPreview.and.returnValue(Promise.resolve(null));
+      Graph.setForTest($itemService, mockItemService);
 
       spyOn(view, 'processScript_');
 
       await view.onHostConnected_();
       assert(mockShadowRoot.querySelectorAll).toNot.haveBeenCalled();
       assert(mockShadowRoot.innerHTML).to.equal('');
-      assert(ItemService.getPreview).to.haveBeenCalledWith(time, selectedItemId);
+      assert(mockItemService.getPreview).to.haveBeenCalledWith(selectedItemId);
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 

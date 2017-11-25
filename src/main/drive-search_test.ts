@@ -1,18 +1,15 @@
 import { assert, Fakes, Mocks, TestBase, TestDispose } from '../test-base';
 TestBase.setup();
 
-import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
 import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
 import {
   $driveService,
-  $items,
   $itemService,
   $selectedItem,
   DriveFolder,
-  Item,
   ThothFolder} from '../data';
 import { ApiDriveType, DriveStorage } from '../import';
 import {
@@ -132,9 +129,6 @@ describe('main.DriveSearch', () => {
 
   describe('onOkButtonAction_', () => {
     it(`should save the new folders and files correctly`, async () => {
-      const itemsDataGraph = new FakeDataGraph<Item>();
-      Graph.setForTest($items, itemsDataGraph);
-
       const idSelected = 'idSelected';
       Graph.setForTest(
           $selectedItem,
@@ -198,9 +192,6 @@ describe('main.DriveSearch', () => {
     });
 
     it(`should reject if dispatcher cannot be found`, async () => {
-      const itemsDataGraph = new FakeDataGraph<Item>();
-      Graph.setForTest($items, itemsDataGraph);
-
       const idSelected = 'idSelected';
       Graph.setForTest(
           $selectedItem,
@@ -218,9 +209,6 @@ describe('main.DriveSearch', () => {
     });
 
     it(`should reject if the current selected folder is not editable`, async () => {
-      const itemsDataGraph = new FakeDataGraph<Item>();
-      Graph.setForTest($items, itemsDataGraph);
-
       const idSelected = 'idSelected';
       Graph.setForTest(
           $selectedItem,
@@ -249,7 +237,6 @@ describe('main.DriveSearch', () => {
     });
 
     it(`should do nothing if there are no items selected`, async () => {
-      Graph.setForTest($items, new FakeDataGraph<Item>());
       Graph.setForTest(
           $selectedItem,
           ThothFolder.newInstance('idSelected', 'test', null, ImmutableSet.of([])));

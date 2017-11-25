@@ -12,7 +12,6 @@ import { HandlebarsService } from '../render/handlebars-service';
 import { RenderService } from '../render/render-service';
 import { ShowdownService } from '../render/showdown-service';
 
-
 describe('render.RenderServiceClass', () => {
   let mockItemService: any;
   let service: RenderService;

@@ -27,18 +27,18 @@ describe('main.RootView', () => {
       mockFolderB.getParentId.and.returnValue(idA);
       mockFolderB.getName.and.returnValue('b');
 
-      const mockItemsGraph = jasmine.createSpyObj('ItemsGraph', ['get']);
-      Fakes.build(mockItemsGraph.get)
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getItem']);
+      Fakes.build(mockItemService.getItem)
           .when(idA).resolve(mockFolderA)
           .when(idRoot).resolve(mockFolderRoot);
 
-      assert(await view.renderCrumbs_(mockFolderB, mockItemsGraph)).to.haveElements([
+      assert(await view.renderCrumbs_(mockFolderB, mockItemService)).to.haveElements([
         {name: '(root)', url: '/(root)'},
         {name: 'a', url: '/(root)/a'},
         {name: 'b', url: '/(root)/a/b'},
       ]);
-      assert(mockItemsGraph.get).to.haveBeenCalledWith(idA);
-      assert(mockItemsGraph.get).to.haveBeenCalledWith(idRoot);
+      assert(mockItemService.getItem).to.haveBeenCalledWith(idA);
+      assert(mockItemService.getItem).to.haveBeenCalledWith(idRoot);
     });
   });
 });

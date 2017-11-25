@@ -2,11 +2,9 @@ import { assert, TestBase } from '../test-base';
 TestBase.setup();
 
 import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
-import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import {
-  $items,
   DriveFile,
   FileType,
   Item,
@@ -132,9 +130,6 @@ describe('data.ItemService', () => {
 
       const rootFolder = ThothFolder.newInstance(rootFolderId, 'name', null, ImmutableSet.of([]));
       itemsGraph.set(rootFolderId, rootFolder);
-
-      Graph.clearNodesForTests(ImmutableSet.of([$items]));
-      Graph.createProvider($items, itemsGraph);
 
       spyOn(service, 'save');
       mockProjectService.get.and.returnValue(Promise.resolve(mockProject));

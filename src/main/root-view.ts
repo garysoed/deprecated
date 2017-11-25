@@ -4,7 +4,6 @@ import {
   HasPropertiesType,
   IterableOfType,
   StringType } from 'external/gs_tools/src/check';
-import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
 import { ImmutableList } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
@@ -23,7 +22,7 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { CrumbData } from 'external/gs_ui/src/routing';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { $items, $selectedItem, Item } from '../data';
+import { $itemService, $selectedItem, Item, ItemService } from '../data';
 import { DriveSearch } from '../main/drive-search';
 import { Navigator } from '../main/navigator';
 
@@ -97,14 +96,14 @@ export class RootView extends BaseThemedElement2 {
   @render.attribute($.breadcrumb.crumb)
   async renderCrumbs_(
       @nodeIn($selectedItem) selectedItem: Item | null,
-      @nodeIn($items) items: DataGraph<Item>):
+      @nodeIn($itemService) itemService: ItemService):
       Promise<ImmutableList<CrumbData>> {
     const itemArray: Item[] = [];
     let current: Item | null = selectedItem;
     while (current) {
       itemArray.push(current);
       const parentId: string | null = current.getParentId();
-      current = await (parentId ? items.get(parentId) : Promise.resolve(null));
+      current = await (parentId ? itemService.getItem(parentId) : Promise.resolve(null));
     }
     const crumbs: CrumbData[] = [];
     let path = '';

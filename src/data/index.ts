@@ -1,4 +1,3 @@
-export { $items } from './item-graph';
 export { $selectedItem } from './selected-item-graph';
 export { DriveFile } from './drive-file';
 export { DriveFolder } from './drive-folder';
@@ -12,4 +11,3 @@ export { PreviewFile } from './preview-file';
 export { Project } from './project';
 export { $projectService, ProjectService } from './project-service';
 export { ThothFolder } from './thoth-folder';
-// TODO: Do not export the graphs
