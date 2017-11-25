@@ -4,16 +4,19 @@ import {
   InstanceofType,
   NullableType,
   StringType} from 'external/gs_tools/src/check';
+import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Errors } from 'external/gs_tools/src/error';
 import { $time, Graph, GraphTime, instanceId, nodeIn, nodeOut } from 'external/gs_tools/src/graph';
 import { inject } from 'external/gs_tools/src/inject';
 import { BooleanParser, StringParser } from 'external/gs_tools/src/parse';
 import {
     attributeSelector,
+    classSelector,
     component,
     elementSelector,
     innerTextSelector,
     onDom,
+    Persona,
     render,
     resolveSelectors,
     shadowHostSelector} from 'external/gs_tools/src/persona';
@@ -23,6 +26,7 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
 import {
+  $items,
   DriveFile,
   DriveFolder,
   DriveService,
@@ -34,6 +38,12 @@ import {
 import { RenderService } from '../render';
 
 export const $ = resolveSelectors({
+  content: {
+    class: {
+      editing: classSelector('editing', elementSelector('content.el')),
+    },
+    el: elementSelector('#content', InstanceofType(HTMLDivElement)),
+  },
   deleteButton: {
     el: elementSelector('#deleteButton', ElementWithTagType('gs-basic-button')),
   },
@@ -80,13 +90,28 @@ export const $ = resolveSelectors({
         StringType,
         ''),
   },
+  nameInput: {
+    el: elementSelector('#nameInput', ElementWithTagType('gs-text-input')),
+    value: attributeSelector(
+        elementSelector('nameInput.el'),
+        'value',
+        StringParser,
+        StringType,
+        ''),
+  },
   refreshButton: {
     el: elementSelector('#refreshButton', ElementWithTagType('gs-basic-button')),
+  },
+  renameButton: {
+    el: elementSelector('#renameButton', ElementWithTagType('gs-basic-button')),
   },
   renderButton: {
     el: elementSelector('#renderButton', ElementWithTagType('gs-basic-button')),
   },
 });
+
+export const $isEditing = instanceId('isEditing', BooleanType);
+const isEditingProvider = Graph.createProvider($isEditing, false);
 
 export const $item = instanceId('item', NullableType(InstanceofType(Item)));
 export const $parent = instanceId('parent', NullableType(InstanceofType(Item)));
@@ -104,6 +129,7 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @onDom.event($.deleteButton.el, 'click')
+  @onDom.event($.renameButton.el, 'click')
   @onDom.event($.renderButton.el, 'click')
   @onDom.event($.refreshButton.el, 'click')
   onActionButtonClick_(event: MouseEvent): void {
@@ -113,10 +139,7 @@ export class NavigatorItem extends BaseThemedElement2 {
   @onDom.event($.deleteButton.el, 'gs-action')
   async onDeleteButtonAction_(): Promise<void> {
     const time = Graph.getTimestamp();
-    const [itemId, parent] = await Promise.all([
-      Graph.get($.host.itemid.getId(), time, this),
-      Graph.get($parent, time, this),
-    ]);
+    const [itemId, parent] = await Graph.getAll(time, this, $.host.itemid.getId(), $parent);
 
     if (!itemId) {
       return;
@@ -132,10 +155,12 @@ export class NavigatorItem extends BaseThemedElement2 {
   @onDom.event($.host.el, 'click')
   async onHostClick_(): Promise<void> {
     const time = Graph.getTimestamp();
-    const [item, path] = await Promise.all([
-      Graph.get($item, time, this),
-      Graph.get($location.path, time),
-    ]);
+    const [item, path, isEditing]
+        = await Graph.getAll(time, this, $item, $location.path, $isEditing);
+    if (isEditing) {
+      return;
+    }
+
     if (!item) {
       return;
     }
@@ -162,6 +187,31 @@ export class NavigatorItem extends BaseThemedElement2 {
     files.mapItem((file) => ItemService.save(time, file));
   }
 
+  @onDom.event($.renameButton.el, 'gs-action')
+  async onRenameButtonAction_(): Promise<void> {
+    const time = Graph.getTimestamp();
+    const [isEditing, item] = await Graph.getAll(time, this, $isEditing, $item);
+    const shadowRoot = Persona.getShadowRoot(this);
+    if (!shadowRoot) {
+      return;
+    }
+
+    if (!item) {
+      return;
+    }
+
+    if (isEditing) {
+      const newName = $.nameInput.value.getValue(shadowRoot);
+      if (newName) {
+        ItemService.save(time, item.setName(newName));
+      }
+    } else {
+      $.nameInput.value.setValue(item.getName(), shadowRoot, time);
+    }
+
+    return isEditingProvider(!isEditing, this);
+  }
+
   @onDom.event($.renderButton.el, 'gs-action')
   async onRenderButtonAction_(event: MouseEvent): Promise<void> {
     event.stopPropagation();
@@ -177,12 +227,12 @@ export class NavigatorItem extends BaseThemedElement2 {
 
   @nodeOut($item)
   providesItem(
-      @nodeIn($.host.itemid.getId()) itemId: string | null,
-      @nodeIn($time) time: GraphTime): Promise<Item | null> {
+      @nodeIn($items) itemsGraph: DataGraph<Item | null>,
+      @nodeIn($.host.itemid.getId()) itemId: string | null): Promise<Item | null> {
     if (!itemId) {
       return Promise.resolve(null);
     }
-    return ItemService.getItem(itemId, time);
+    return itemsGraph.get(itemId);
   }
 
   @nodeOut($parent)
@@ -199,6 +249,11 @@ export class NavigatorItem extends BaseThemedElement2 {
     }
 
     return ItemService.getItem(parentId, time);
+  }
+
+  @render.class($.content.class.editing)
+  renderContentClassEditing_(@nodeIn($isEditing) isEditing: boolean): boolean {
+    return isEditing;
   }
 
   @render.attribute($.host.deleteable)

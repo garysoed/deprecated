@@ -14,6 +14,14 @@
     z-index: 1;
   }
 
+  #content.editing #nameInput {
+    display: block;
+  }
+
+  #content.editing #name {
+    display: none;
+  }
+
   #icon {
     padding: var(--gsSizePadding);
   }
@@ -70,6 +78,11 @@
     display: var(--deletableDisplay);
   }
 
+  #nameInput {
+    display: none;
+    margin-right: var(--gsSizePadding);
+  }
+
   #refreshButton {
     display: var(--refreshableDisplay);
   }
@@ -80,9 +93,10 @@
 </style>
 
 <div id="root">
-  <div fill-parent id="content" layout="row">
+  <div fill-parent flex-align="center" id="content" layout="row">
     <gs-icon id="icon"></gs-icon>
     <div id="name"></div>
+    <gs-text-input flex id="nameInput"></gs-text-input>
   </div>
   <div
       fill-parent

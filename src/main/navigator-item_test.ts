@@ -5,14 +5,17 @@ import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { $location } from 'external/gs_tools/src/ui';
 
+import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
+import { Persona } from 'external/gs_tools/src/persona';
 import {
   DriveFile,
   DriveFolder,
   DriveService,
   FileType,
+  Item,
   ItemService,
-  ThothFolder } from '../data';
-import { $, $item, $parent, NavigatorItem } from '../main/navigator-item';
+  ThothFolder} from '../data';
+import { $, $isEditing, $item, $parent, NavigatorItem } from '../main/navigator-item';
 import { RenderService } from '../render';
 
 describe('main.NavigatorItem', () => {
@@ -89,11 +92,11 @@ describe('main.NavigatorItem', () => {
   describe('onHostClick_', () => {
     it(`should navigate to the correct item`, async () => {
       const name = 'name';
-      Graph.clearNodesForTests([$item, $location.path]);
+      Graph.clearNodesForTests([$item, $location.path, $isEditing]);
 
       const path = 'path';
       Graph.createProvider($location.path, path);
-
+      Graph.createProvider($isEditing, false);
       Graph.createProvider(
           $item,
           ThothFolder.newInstance('id', name, null, ImmutableSet.of([])));
@@ -105,9 +108,20 @@ describe('main.NavigatorItem', () => {
     });
 
     it(`should do nothing if there are no items`, async () => {
-      Graph.clearNodesForTests([$item]);
+      Graph.clearNodesForTests([$item, $isEditing]);
 
       Graph.createProvider($item, null);
+      Graph.createProvider($isEditing, false);
+
+      await item.onHostClick_();
+      assert(window.location.hash).to.equal('');
+    });
+
+    it(`should do nothing if editing`, async () => {
+      Graph.clearNodesForTests([$item, $isEditing]);
+
+      Graph.createProvider($item, null);
+      Graph.createProvider($isEditing, true);
 
       await item.onHostClick_();
       assert(window.location.hash).to.equal('');
@@ -206,6 +220,117 @@ describe('main.NavigatorItem', () => {
     });
   });
 
+  describe('onRenameButtonAction_', () => {
+    it(`should set the input to the name and set the edit flag if not editing`, async () => {
+      const itemName = 'itemName';
+      const shadowRoot = Mocks.object('shadowRoot');
+      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
+
+      Graph.clearNodesForTests([$isEditing, $item]);
+
+      const selectedItem = ThothFolder.newInstance('id', itemName, null, ImmutableSet.of([]));
+      Graph.createProvider($isEditing, false);
+      Graph.createProvider($item, selectedItem);
+
+      spyOn($.nameInput.value, 'setValue');
+
+      const time = Graph.getTimestamp();
+
+      await item.onRenameButtonAction_();
+      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beTrue();
+      assert($.nameInput.value.setValue).to.haveBeenCalledWith(itemName, shadowRoot, time);
+      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
+    });
+
+    it(`should save the input name change and unset the edit flag if editing`, async () => {
+      const shadowRoot = Mocks.object('shadowRoot');
+      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
+
+      Graph.clearNodesForTests([$isEditing, $item]);
+
+      const selectedItem = ThothFolder.newInstance('id', 'itemName', null, ImmutableSet.of([]));
+      Graph.createProvider($isEditing, true);
+      Graph.createProvider($item, selectedItem);
+
+      const saveSpy = spyOn(ItemService, 'save');
+
+      const newName = 'newName';
+      spyOn($.nameInput.value, 'getValue').and.returnValue(newName);
+
+      const time = Graph.getTimestamp();
+
+      await item.onRenameButtonAction_();
+      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beFalse();
+
+      assert(ItemService.save).to.haveBeenCalledWith(time, Matchers.anyThing());
+      const newItem: Item = saveSpy.calls.argsFor(0)[1];
+      assert(newItem.getName()).to.equal(newName);
+      assert($.nameInput.value.getValue).to.haveBeenCalledWith(shadowRoot);
+      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
+    });
+
+    it(`should not save the new name if the new name is empty`, async () => {
+      const shadowRoot = Mocks.object('shadowRoot');
+      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
+
+      Graph.clearNodesForTests([$isEditing, $item]);
+
+      const selectedItem = ThothFolder.newInstance('id', 'itemName', null, ImmutableSet.of([]));
+      Graph.createProvider($isEditing, true);
+      Graph.createProvider($item, selectedItem);
+
+      spyOn(ItemService, 'save');
+
+      spyOn($.nameInput.value, 'getValue').and.returnValue('');
+
+      await item.onRenameButtonAction_();
+      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beFalse();
+
+      assert(ItemService.save).toNot.haveBeenCalled();
+      assert($.nameInput.value.getValue).to.haveBeenCalledWith(shadowRoot);
+      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
+    });
+
+    it(`should do nothing if there are no items`, async () => {
+      const shadowRoot = Mocks.object('shadowRoot');
+      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
+
+      Graph.clearNodesForTests([$isEditing, $item]);
+
+      Graph.createProvider($isEditing, true);
+      Graph.createProvider($item, null);
+
+      spyOn(ItemService, 'save');
+
+      spyOn($.nameInput.value, 'getValue').and.returnValue('');
+
+      await item.onRenameButtonAction_();
+      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beTrue();
+
+      assert(ItemService.save).toNot.haveBeenCalled();
+      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
+    });
+
+    it(`should do nothing if shadow roots cannot be found`, async () => {
+      spyOn(Persona, 'getShadowRoot').and.returnValue(null);
+
+      Graph.clearNodesForTests([$isEditing, $item]);
+
+      Graph.createProvider($isEditing, true);
+      Graph.createProvider($item, null);
+
+      spyOn(ItemService, 'save');
+
+      spyOn($.nameInput.value, 'getValue').and.returnValue('');
+
+      await item.onRenameButtonAction_();
+      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beTrue();
+
+      assert(ItemService.save).toNot.haveBeenCalled();
+      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
+    });
+  });
+
   describe('onRenderButtonAction_', () => {
     it(`should render the item correctly`, async () => {
       const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
@@ -237,19 +362,18 @@ describe('main.NavigatorItem', () => {
   describe('providesItem', () => {
     it(`should resolve with the correct item`, async () => {
       const id = 'id';
-      const time = Graph.getTimestamp();
       const selectedItem = DriveFile
           .newInstance(id, 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
+      const itemsGraph = new FakeDataGraph<Item>();
+      itemsGraph.set(id, selectedItem);
+
       spyOn(ItemService, 'getItem').and.returnValue(Promise.resolve(selectedItem));
 
-      assert(await item.providesItem(id, time)).to.equal(selectedItem);
-      assert(ItemService.getItem).to.haveBeenCalledWith(id, time);
+      assert(await item.providesItem(itemsGraph, id)).to.equal(selectedItem);
     });
 
     it(`should resolve with null if there are no item IDs`, async () => {
-      const time = Graph.getTimestamp();
-
-      assert(await item.providesItem(null, time)).to.equal(null);
+      assert(await item.providesItem(new FakeDataGraph<Item>(), null)).to.equal(null);
     });
   });
 

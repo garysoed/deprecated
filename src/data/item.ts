@@ -25,4 +25,6 @@ export abstract class Item implements DataModel<string> {
   abstract getParentId(): string | null;
 
   abstract getSearchIndex(): string;
+
+  abstract setName(name: string): this;
 }
