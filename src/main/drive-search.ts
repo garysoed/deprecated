@@ -29,12 +29,12 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
 import {
+  $driveService,
+  $itemService,
   $selectedItem,
   DriveFile,
   DriveFolder,
-  DriveService,
-  ItemService,
-  ThothFolder } from '../data';
+  ThothFolder} from '../data';
 import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../import';
 import { SearchItem } from '../main/search-item';
 
@@ -147,9 +147,12 @@ export class DriveSearch extends BaseThemedElement2 {
     }
 
     const time = Graph.getTimestamp();
-    const [selectedItem] = await Promise.all([
-      Graph.get($selectedItem, time),
-    ]);
+    const [selectedItem, driveService, itemService] = await Graph.getAll(
+        time,
+        this,
+        $selectedItem,
+        $driveService,
+        $itemService);
 
     if (!(selectedItem instanceof ThothFolder)) {
       throw Errors.assert('selectedFolder').should('be editable').butWas(selectedItem);
@@ -158,13 +161,13 @@ export class DriveSearch extends BaseThemedElement2 {
     const selectedId = selectedItem.getId();
     const addedItems = items.filter((item) => !!item.selected);
     const addedDriveItemPromises = addedItems
-        .map((item) => DriveService.recursiveGet(item.summary.id, selectedId, time));
+        .map((item) => driveService.recursiveGet(item.summary.id, selectedId));
     const addedDriveItems = await Promise.all(addedDriveItemPromises);
 
     // Stores all the drive items.
     const itemsToAddToSelectedFolder: (DriveFolder | DriveFile)[] = [];
     for (const addedItem of Iterables.flatten<DriveFile | DriveFolder>(addedDriveItems)) {
-      ItemService.save(time, addedItem);
+      itemService.save(addedItem);
 
       if (addedItem.getParentId() === selectedId) {
         itemsToAddToSelectedFolder.push(addedItem);
@@ -172,8 +175,7 @@ export class DriveSearch extends BaseThemedElement2 {
     }
 
     // Now add the folders to the selected folder.
-    ItemService.save(
-        time,
+    itemService.save(
         selectedItem.setItems(
             selectedItem
                 .getItems()

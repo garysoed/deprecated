@@ -1,18 +1,19 @@
 import { assert, Fakes, TestBase } from '../test-base';
 TestBase.setup();
 
-import { Graph } from 'external/gs_tools/src/graph';
-
 import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
-import { DriveServiceImpl } from '../data/drive-service';
+import { DriveService } from '../data/drive-service';
 import { ApiDriveType, DriveStorage } from '../import';
 
 describe('data.DriveServiceImpl', () => {
-  let service: DriveServiceImpl;
+  let mockItemService: any;
+  let service: DriveService;
 
   beforeEach(() => {
-    service = new DriveServiceImpl();
+    mockItemService = jasmine.createSpyObj('ItemService', ['newId']);
+    mockItemService.newId.and.callFake(() => `${Math.random()}`);
+    service = new DriveService(mockItemService);
   });
 
   describe('recursiveGet', () => {
@@ -69,10 +70,9 @@ describe('data.DriveServiceImpl', () => {
           .when(idSub).resolve(rootItem.files[1])
           .when(id21).resolve(rootItem.files[1].files[0])
           .when(id22).resolve(rootItem.files[1].files[1]);
-      const time = Graph.getTimestamp();
 
       const [rootFolder, file1, subFolder, file21, file22] =
-          await service.recursiveGet(idRoot, containerPath, time);
+          await service.recursiveGet(idRoot, containerPath);
 
       assert(rootFolder.getDriveId()).to.equal(idRoot);
       assert(rootFolder.getName()).to.equal(nameRoot);
@@ -116,9 +116,7 @@ describe('data.DriveServiceImpl', () => {
 
       const containerId = 'containerId';
 
-      const time = Graph.getTimestamp();
-
-      const [file] = await service.recursiveGet(id, containerId, time);
+      const [file] = await service.recursiveGet(id, containerId);
       assert(file.getDriveId()).to.equal(id);
       assert(file.getName()).to.equal(name);
       assert(file.getParentId()).to.equal(containerId);

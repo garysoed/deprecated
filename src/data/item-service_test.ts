@@ -2,39 +2,40 @@ import { assert, TestBase } from '../test-base';
 TestBase.setup();
 
 import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
-import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
+import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { $items, DriveFile, FileType, Item, ProjectService, ThothFolder } from '../data';
-import { ItemServiceClass } from '../data/item-service';
+import {
+  $items,
+  DriveFile,
+  FileType,
+  Item,
+  PreviewFile,
+  ThothFolder } from '../data';
+import { ItemService } from '../data/item-service';
 import { ROOT_PATH } from '../data/selected-item-graph';
 
 
-describe('data.ItemServiceClass', () => {
-  let service: ItemServiceClass;
+describe('data.ItemService', () => {
+  let itemsGraph: FakeDataGraph<Item>;
+  let mockProjectService: any;
+  let previewGraph: FakeDataGraph<PreviewFile>;
+  let service: ItemService;
 
   beforeEach(() => {
-    GraphFlags.checkValueType = false;
-    service = new ItemServiceClass();
-  });
-
-  afterAll(() => {
-    GraphFlags.checkValueType = true;
+    itemsGraph = new FakeDataGraph<Item>();
+    mockProjectService = jasmine.createSpyObj('ProjectService', ['get']);
+    previewGraph = new FakeDataGraph<PreviewFile>();
+    service = new ItemService(itemsGraph, previewGraph, mockProjectService);
   });
 
   describe('getItem', () => {
     it(`should return the correct item`, async () => {
       const id = 'id';
       const item = ThothFolder.newInstance(id, 'test', null, ImmutableSet.of([]));
-      const itemGraph = new FakeDataGraph<ThothFolder>();
-      itemGraph.set(id, item);
+      itemsGraph.set(id, item);
 
-      Graph.clearNodesForTests(ImmutableSet.of([$items]));
-      Graph.createProvider($items, itemGraph);
-
-      const time = Graph.getTimestamp();
-
-      assert(await service.getItem(id, time)).to.equal(item);
+      assert(await service.getItem(id)).to.equal(item);
     });
   });
 
@@ -53,19 +54,13 @@ describe('data.ItemServiceClass', () => {
       const name2 = 'name2';
       const item2 = ThothFolder.newInstance(id2, name2, id1, ImmutableSet.of([]));
 
-      const itemGraph = new FakeDataGraph<ThothFolder>();
-      itemGraph.set(idRoot, rootFolder);
-      itemGraph.set(id1, item1);
-      itemGraph.set(id2, item2);
-
-      Graph.clearNodesForTests(ImmutableSet.of([$items]));
-      Graph.createProvider($items, itemGraph);
-
-      const time = Graph.getTimestamp();
+      itemsGraph.set(idRoot, rootFolder);
+      itemsGraph.set(id1, item1);
+      itemsGraph.set(id2, item2);
 
       const path = [ROOT_PATH, name1, name2].join('/');
-      assert(await service.getItemByPath(time, path)).to.equal(item2);
-      assert(service.getRootFolder).to.haveBeenCalledWith(time);
+      assert(await service.getItemByPath(path)).to.equal(item2);
+      assert(service.getRootFolder).to.haveBeenCalledWith();
     });
 
     it(`should return the correct item with the root folder given`, async () => {
@@ -82,18 +77,12 @@ describe('data.ItemServiceClass', () => {
       const name2 = 'name2';
       const item2 = ThothFolder.newInstance(id2, name2, id1, ImmutableSet.of([]));
 
-      const itemGraph = new FakeDataGraph<ThothFolder>();
-      itemGraph.set(idRoot, rootFolder);
-      itemGraph.set(id1, item1);
-      itemGraph.set(id2, item2);
-
-      Graph.clearNodesForTests(ImmutableSet.of([$items]));
-      Graph.createProvider($items, itemGraph);
-
-      const time = Graph.getTimestamp();
+      itemsGraph.set(idRoot, rootFolder);
+      itemsGraph.set(id1, item1);
+      itemsGraph.set(id2, item2);
 
       const path = [name1, name2].join('/');
-      assert(await service.getItemByPath(time, path, rootFolder)).to.equal(item2);
+      assert(await service.getItemByPath(path, rootFolder)).to.equal(item2);
       assert(service.getRootFolder).toNot.haveBeenCalled();
     });
 
@@ -107,30 +96,17 @@ describe('data.ItemServiceClass', () => {
       const name1 = 'name1';
       const item1 = DriveFile.newInstance(id1, name1, idRoot, FileType.ASSET, 'content', 'driveId');
 
-      const itemGraph = new FakeDataGraph<Item>();
-      itemGraph.set(idRoot, rootFolder);
-      itemGraph.set(id1, item1);
-
-      Graph.clearNodesForTests(ImmutableSet.of([$items]));
-      Graph.createProvider($items, itemGraph);
-
-      const time = Graph.getTimestamp();
+      itemsGraph.set(idRoot, rootFolder);
+      itemsGraph.set(id1, item1);
 
       const path = [name1, 'name2'].join('/');
-      assert(service.getItemByPath(time, path, rootFolder)).to.rejectWithError(/a \[Folder\]/);
+      assert(service.getItemByPath(path, rootFolder)).to.rejectWithError(/a \[Folder\]/);
       assert(service.getRootFolder).toNot.haveBeenCalled();
     });
 
     it(`should return null if the rootFolder was not given but the path is not root`, async () => {
-      const itemGraph = new FakeDataGraph<Item>();
-
-      Graph.clearNodesForTests(ImmutableSet.of([$items]));
-      Graph.createProvider($items, itemGraph);
-
-      const time = Graph.getTimestamp();
-
       const path = ['name1', 'name2'].join('/');
-      assert(await service.getItemByPath(time, path)).to.beNull();
+      assert(await service.getItemByPath(path)).to.beNull();
     });
   });
 
@@ -140,20 +116,13 @@ describe('data.ItemServiceClass', () => {
       const mockProject = jasmine.createSpyObj('Project', ['getRootFolderId']);
       mockProject.getRootFolderId.and.returnValue(rootFolderId);
 
-      const time = Graph.getTimestamp();
-
-      const itemGraph = new FakeDataGraph<Item>();
-
-      Graph.clearNodesForTests(ImmutableSet.of([$items]));
-      Graph.createProvider($items, itemGraph);
-
       spyOn(service, 'save');
-      spyOn(ProjectService, 'get').and.returnValue(Promise.resolve(mockProject));
+      mockProjectService.get.and.returnValue(Promise.resolve(mockProject));
 
-      const root = await service.getRootFolder(time);
-      assert(service.save).to.haveBeenCalledWith(time, root);
+      const root = await service.getRootFolder();
+      assert(service.save).to.haveBeenCalledWith(root);
       assert(root.getId()).to.equal(rootFolderId);
-      assert(ProjectService.get).to.haveBeenCalledWith(time);
+      assert(mockProjectService.get).to.haveBeenCalledWith();
     });
 
     it(`should return an existing root folder`, async () => {
@@ -161,28 +130,23 @@ describe('data.ItemServiceClass', () => {
       const mockProject = jasmine.createSpyObj('Project', ['getRootFolderId']);
       mockProject.getRootFolderId.and.returnValue(rootFolderId);
 
-      const time = Graph.getTimestamp();
-
       const rootFolder = ThothFolder.newInstance(rootFolderId, 'name', null, ImmutableSet.of([]));
-      const itemGraph = new FakeDataGraph<Item>();
-      itemGraph.set(rootFolderId, rootFolder);
+      itemsGraph.set(rootFolderId, rootFolder);
 
       Graph.clearNodesForTests(ImmutableSet.of([$items]));
-      Graph.createProvider($items, itemGraph);
+      Graph.createProvider($items, itemsGraph);
 
       spyOn(service, 'save');
-      spyOn(ProjectService, 'get').and.returnValue(Promise.resolve(mockProject));
+      mockProjectService.get.and.returnValue(Promise.resolve(mockProject));
 
-      assert(await service.getRootFolder(time)).to.equal(rootFolder);
+      assert(await service.getRootFolder()).to.equal(rootFolder);
       assert(service.save).toNot.haveBeenCalled();
-      assert(ProjectService.get).to.haveBeenCalledWith(time);
+      assert(mockProjectService.get).to.haveBeenCalledWith();
     });
   });
 
   describe('save', () => {
     it(`should save the items correctly`, async () => {
-      const time = Graph.getTimestamp();
-
       const id1 = 'id1';
       const mockItem1 = jasmine.createSpyObj('Item1', ['getId']);
       mockItem1.getId.and.returnValue(id1);
@@ -191,14 +155,9 @@ describe('data.ItemServiceClass', () => {
       const mockItem2 = jasmine.createSpyObj('Item2', ['getId']);
       mockItem2.getId.and.returnValue(id2);
 
-      const itemsGraph = new FakeDataGraph();
-      spyOn(Graph, 'get').and.returnValue(Promise.resolve(itemsGraph));
-
-      await service.save(time, mockItem1, mockItem2);
+      await service.save(mockItem1, mockItem2);
       assert(await itemsGraph.get(id1)).to.equal(mockItem1);
       assert(await itemsGraph.get(id2)).to.equal(mockItem2);
-
-      assert(Graph.get).to.haveBeenCalledWith($items, time);
     });
   });
 });

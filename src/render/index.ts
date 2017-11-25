@@ -1,1 +1,1 @@
-export { RenderService } from './render-service';
+export { $renderService, RenderService } from './render-service';

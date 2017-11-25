@@ -1,28 +1,30 @@
 import { InstanceofType } from 'external/gs_tools/src/check';
-import { $time, Graph, GraphTime, staticId } from 'external/gs_tools/src/graph';
+import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { $location, navigateToHash } from 'external/gs_tools/src/ui';
 
 import { Item } from '../data/item';
 import { $items } from '../data/item-graph';
-import { ItemService } from '../data/item-service';
+import { $itemService, ItemService } from '../data/item-service';
 
 export const ROOT_PATH = '/(root)';
 
-export async function providesSelectedItem(location: string, time: GraphTime): Promise<Item> {
+export async function providesSelectedItem(
+    location: string,
+    itemService: ItemService): Promise<Item> {
   if (!location) {
     navigateToHash(ROOT_PATH);
-    return ItemService.getRootFolder(time);
+    return itemService.getRootFolder();
   }
 
-  const item = await ItemService.getItemByPath(time, location);
+  const item = await itemService.getItemByPath(location);
 
   if (item instanceof Item) {
     return item;
   } else if (location !== ROOT_PATH) {
     navigateToHash(ROOT_PATH);
-    return ItemService.getRootFolder(time);
+    return itemService.getRootFolder();
   } else {
-    return ItemService.getRootFolder(time);
+    return itemService.getRootFolder();
   }
 }
 
@@ -31,7 +33,7 @@ Graph.registerProvider(
     $selectedItem,
     providesSelectedItem,
     $location.path,
-    $time);
+    $itemService);
 Graph.onReady(null, $items, () => {
   Graph.refresh($selectedItem);
 });

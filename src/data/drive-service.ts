@@ -1,22 +1,25 @@
 /**
  * Handles access to the Drive API, converting Drive API format to Thoth data format.
  */
-import { GraphTime } from 'external/gs_tools/src/graph';
+import { InstanceofType } from 'external/gs_tools/src/check';
+import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableSet, Iterables } from 'external/gs_tools/src/immutable';
 
 import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
 import { convertToItemType } from '../data/file-type';
-import { ItemService } from '../data/item-service';
+import { $itemService, ItemService } from '../data/item-service';
 import { ApiDriveType, DriveStorage } from '../import';
 
-export class DriveServiceImpl {
-  async recursiveGet(driveId: string, containerId: string, time: GraphTime):
+export class DriveService {
+  constructor(private readonly itemService_: ItemService) { }
+
+  async recursiveGet(driveId: string, containerId: string):
       Promise<ImmutableList<DriveFile | DriveFolder>> {
     const apiDriveItem = await DriveStorage.read(driveId);
     const {type: apiType, name: apiName} = apiDriveItem.summary;
 
-    const id = await ItemService.newId(time);
+    const id = await this.itemService_.newId();
 
     if (apiType !== ApiDriveType.FOLDER) {
       const newFile = DriveFile.newInstance(
@@ -30,7 +33,7 @@ export class DriveServiceImpl {
     }
 
     const contentPromises = apiDriveItem.files.map((file) => {
-      return this.recursiveGet(file.summary.id, id, time);
+      return this.recursiveGet(file.summary.id, id);
     });
     const contents = await Promise.all(contentPromises);
     const contentsToAddAsChild: (DriveFile | DriveFolder)[] = [];
@@ -54,4 +57,10 @@ export class DriveServiceImpl {
   }
 }
 
-export const DriveService = new DriveServiceImpl();
+export const $driveService = staticId('driveService', InstanceofType(DriveService));
+Graph.registerProvider(
+    $driveService,
+    (itemService) => {
+      return new DriveService(itemService);
+    },
+    $itemService);

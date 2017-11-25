@@ -4,9 +4,8 @@ import {
   InstanceofType,
   NullableType,
   StringType} from 'external/gs_tools/src/check';
-import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Errors } from 'external/gs_tools/src/error';
-import { $time, Graph, GraphTime, instanceId, nodeIn, nodeOut } from 'external/gs_tools/src/graph';
+import { Graph, instanceId, nodeIn, nodeOut } from 'external/gs_tools/src/graph';
 import { inject } from 'external/gs_tools/src/inject';
 import { BooleanParser, StringParser } from 'external/gs_tools/src/parse';
 import {
@@ -26,16 +25,16 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
 import {
-  $items,
+  $driveService,
+  $itemService,
   DriveFile,
   DriveFolder,
-  DriveService,
   File,
   FileType,
   Item,
   ItemService,
   ThothFolder} from '../data';
-import { RenderService } from '../render';
+import { $renderService } from '../render';
 
 export const $ = resolveSelectors({
   content: {
@@ -139,7 +138,12 @@ export class NavigatorItem extends BaseThemedElement2 {
   @onDom.event($.deleteButton.el, 'gs-action')
   async onDeleteButtonAction_(): Promise<void> {
     const time = Graph.getTimestamp();
-    const [itemId, parent] = await Graph.getAll(time, this, $.host.itemid.getId(), $parent);
+    const [itemId, parent, itemService] = await Graph.getAll(
+        time,
+        this,
+        $.host.itemid.getId(),
+        $parent,
+        $itemService);
 
     if (!itemId) {
       return;
@@ -149,7 +153,7 @@ export class NavigatorItem extends BaseThemedElement2 {
       return;
     }
 
-    ItemService.save(time, parent.setItems(parent.getItems().delete(itemId)));
+    itemService.save(parent.setItems(parent.getItems().delete(itemId)));
   }
 
   @onDom.event($.host.el, 'click')
@@ -173,7 +177,12 @@ export class NavigatorItem extends BaseThemedElement2 {
     event.stopPropagation();
 
     const time = Graph.getTimestamp();
-    const item = await Graph.get($item, time, this);
+    const [item, driveService, itemService] = await Graph.getAll(
+        time,
+        this,
+        $item,
+        $driveService,
+        $itemService);
     if (!(item instanceof DriveFile) && !(item instanceof DriveFolder)) {
       return;
     }
@@ -183,14 +192,19 @@ export class NavigatorItem extends BaseThemedElement2 {
       throw Errors.assert('parentId').shouldExist().butWas(parentId);
     }
 
-    const files = await DriveService.recursiveGet(item.getDriveId(), parentId, time);
-    files.mapItem((file) => ItemService.save(time, file));
+    const files = await driveService.recursiveGet(item.getDriveId(), parentId);
+    files.mapItem((file) => itemService.save(file));
   }
 
   @onDom.event($.renameButton.el, 'gs-action')
   async onRenameButtonAction_(): Promise<void> {
     const time = Graph.getTimestamp();
-    const [isEditing, item] = await Graph.getAll(time, this, $isEditing, $item);
+    const [isEditing, item, itemService] = await Graph.getAll(
+        time,
+        this,
+        $isEditing,
+        $item,
+        $itemService);
     const shadowRoot = Persona.getShadowRoot(this);
     if (!shadowRoot) {
       return;
@@ -203,7 +217,7 @@ export class NavigatorItem extends BaseThemedElement2 {
     if (isEditing) {
       const newName = $.nameInput.value.getValue(shadowRoot);
       if (newName) {
-        ItemService.save(time, item.setName(newName));
+        itemService.save(item.setName(newName));
       }
     } else {
       $.nameInput.value.setValue(item.getName(), shadowRoot, time);
@@ -217,28 +231,28 @@ export class NavigatorItem extends BaseThemedElement2 {
     event.stopPropagation();
 
     const time = Graph.getTimestamp();
-    const item = await Graph.get($item, time, this);
+    const [item, renderService] = await Graph.getAll(time, this, $item, $renderService);
     if (item === null) {
       return;
     }
 
-    RenderService.render(item.getId(), time);
+    renderService.render(item.getId());
   }
 
   @nodeOut($item)
   providesItem(
-      @nodeIn($items) itemsGraph: DataGraph<Item | null>,
+      @nodeIn($itemService) itemService: ItemService,
       @nodeIn($.host.itemid.getId()) itemId: string | null): Promise<Item | null> {
     if (!itemId) {
       return Promise.resolve(null);
     }
-    return itemsGraph.get(itemId);
+    return itemService.getItem(itemId);
   }
 
   @nodeOut($parent)
   providesParent(
       @nodeIn($item) item: Item | null,
-      @nodeIn($time) time: GraphTime): Promise<Item | null> {
+      @nodeIn($itemService) itemService: ItemService): Promise<Item | null> {
     if (!item) {
       return Promise.resolve(null);
     }
@@ -248,7 +262,7 @@ export class NavigatorItem extends BaseThemedElement2 {
       return Promise.resolve(null);
     }
 
-    return ItemService.getItem(parentId, time);
+    return itemService.getItem(parentId);
   }
 
   @render.class($.content.class.editing)

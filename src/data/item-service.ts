@@ -1,29 +1,33 @@
 /**
  * Utilities for working with ItemGraph.
  */
-import { Graph, GraphTime } from 'external/gs_tools/src/graph';
+import { InstanceofType } from 'external/gs_tools/src/check';
+import { DataGraph } from 'external/gs_tools/src/datamodel';
+import { Errors } from 'external/gs_tools/src/error';
+import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
-
 import { Locations } from 'external/gs_tools/src/ui';
 
-import { Errors } from 'external/gs_tools/src/error';
 import { Folder } from '../data/folder';
 import { Item } from '../data/item';
 import { $items } from '../data/item-graph';
 import { PreviewFile } from '../data/preview-file';
 import { $previews } from '../data/preview-graph';
-import { ProjectService } from '../data/project-service';
+import { $projectService, ProjectService } from '../data/project-service';
 import { ROOT_PATH } from '../data/selected-item-graph';
 import { ThothFolder } from '../data/thoth-folder';
 
-export class ItemServiceClass {
-  async getItem(id: string, time: GraphTime): Promise<Item | null> {
-    const itemsGraph = await Graph.get($items, time);
-    return itemsGraph.get(id);
+export class ItemService {
+  constructor(
+      private readonly itemsGraph_: DataGraph<Item>,
+      private readonly previewGraph_: DataGraph<PreviewFile>,
+      private readonly projectService_: ProjectService) { }
+
+  async getItem(id: string): Promise<Item | null> {
+    return this.itemsGraph_.get(id);
   }
 
   async getItemByPath(
-      time: GraphTime,
       path: string,
       rootFolder: Folder | null = null): Promise<Item | null> {
     const normalizedPath = Locations.normalizePath(path);
@@ -33,7 +37,7 @@ export class ItemServiceClass {
     if (rootFolder) {
       root = rootFolder;
     } else if (current === ROOT_PATH.substr(1)) {
-      root = await this.getRootFolder(time);
+      root = await this.getRootFolder();
       [current, ...rest] = rest;
     } else {
       return null;
@@ -41,7 +45,7 @@ export class ItemServiceClass {
 
     // Search for the item with name === current.
     const items = await Promise.all(root.getItems()
-        .mapItem((itemId) => this.getItem(itemId, time)));
+        .mapItem((itemId) => this.getItem(itemId)));
     const nextItem = items.find((item) => {
       if (!item) {
         return false;
@@ -58,18 +62,17 @@ export class ItemServiceClass {
       throw Errors.assert(`item at ${path}`).shouldBe('a [Folder]').butWas(nextItem);
     }
 
-    return this.getItemByPath(time, rest.join('/'), nextItem);
+    return this.getItemByPath(rest.join('/'), nextItem);
   }
 
-  async getPreview(time: GraphTime, id: string): Promise<PreviewFile | null> {
-    const previewGraph = await Graph.get($previews, time);
-    return previewGraph.get(id);
+  async getPreview(id: string): Promise<PreviewFile | null> {
+    return this.previewGraph_.get(id);
   }
 
-  async getRootFolder(time: GraphTime): Promise<ThothFolder> {
-    const project = await ProjectService.get(time);
+  async getRootFolder(): Promise<ThothFolder> {
+    const project = await this.projectService_.get();
     const rootFolderId = project.getRootFolderId();
-    const rootFolder = await this.getItem(rootFolderId, time);
+    const rootFolder = await this.getItem(rootFolderId);
     if (rootFolder instanceof ThothFolder) {
       return rootFolder;
     }
@@ -79,28 +82,33 @@ export class ItemServiceClass {
         '(root)',
         null,
         ImmutableSet.of([]));
-    await this.save(time, newRootFolder);
+    await this.save(newRootFolder);
     return newRootFolder;
   }
 
-  async newId(time: GraphTime): Promise<string> {
-    const itemsGraph = await Graph.get($items, time);
-    return itemsGraph.generateId();
+  async newId(): Promise<string> {
+    return this.itemsGraph_.generateId();
   }
 
-  async save(time: GraphTime, ...items: Item[]): Promise<void> {
-    const itemsGraph = await Graph.get($items, time);
+  async save(...items: Item[]): Promise<void> {
     for (const item of items) {
-      itemsGraph.set(item.getId(), item);
+      this.itemsGraph_.set(item.getId(), item);
     }
   }
 
-  async savePreview(time: GraphTime, ...previewItems: PreviewFile[]): Promise<void> {
-    const previewGraph = await Graph.get($previews, time);
+  async savePreview(...previewItems: PreviewFile[]): Promise<void> {
     for (const previewItem of previewItems) {
-      previewGraph.set(previewItem.getId(), previewItem);
+      this.previewGraph_.set(previewItem.getId(), previewItem);
     }
   }
 }
 
-export const ItemService = new ItemServiceClass();
+export const $itemService = staticId('itemService', InstanceofType(ItemService));
+Graph.registerProvider(
+    $itemService,
+    (itemsGraph, previewsGraph, projectService) => {
+      return new ItemService(itemsGraph, previewsGraph, projectService);
+    },
+    $items,
+    $previews,
+    $projectService);

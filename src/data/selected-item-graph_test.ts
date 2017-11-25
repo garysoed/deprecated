@@ -1,25 +1,23 @@
 import { assert, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
-import { Graph } from 'external/gs_tools/src/graph';
-
-import { Folder, ItemService } from '../data';
+import { Folder } from '../data';
 import { providesSelectedItem, ROOT_PATH } from '../data/selected-item-graph';
 
 
-describe('main.providesSelectedFolder', () => {
-  describe('providesSelectedFolder', () => {
+describe('main.providesSelectedItem', () => {
+  describe('providesSelectedItem', () => {
     it(`should resolve with the correct folder`, async () => {
       const path = 'path';
 
       const item = Mocks.object('item');
       Object.setPrototypeOf(item, Folder.prototype);
-      spyOn(ItemService, 'getItemByPath').and.returnValue(Promise.resolve(item));
 
-      const time = Graph.getTimestamp();
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getItemByPath']);
+      mockItemService.getItemByPath.and.returnValue(Promise.resolve(item));
 
-      assert(await providesSelectedItem(path, time)).to.equal(item);
-      assert(ItemService.getItemByPath).to.haveBeenCalledWith(time, path);
+      assert(await providesSelectedItem(path, mockItemService)).to.equal(item);
+      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
     });
 
     it(`should redirect to ROOT_PATH and resolve with saved root folder if item doesn't exist ` +
@@ -27,15 +25,14 @@ describe('main.providesSelectedFolder', () => {
       const path = 'path';
 
       const rootFolder = Mocks.object('rootFolder');
-      spyOn(ItemService, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
+      const mockItemService = jasmine.createSpyObj(
+          'ItemService', ['getItemByPath', 'getRootFolder']);
+      mockItemService.getRootFolder.and.returnValue(Promise.resolve(rootFolder));
+      mockItemService.getItemByPath.and.returnValue(Promise.resolve(null));
 
-      spyOn(ItemService, 'getItemByPath').and.returnValue(Promise.resolve(null));
-
-      const time = Graph.getTimestamp();
-
-      assert(await providesSelectedItem(path, time)).to.equal(rootFolder);
-      assert(ItemService.getItemByPath).to.haveBeenCalledWith(time, path);
-      assert(ItemService.getRootFolder).to.haveBeenCalledWith(time);
+      assert(await providesSelectedItem(path, mockItemService)).to.equal(rootFolder);
+      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
+      assert(mockItemService.getRootFolder).to.haveBeenCalledWith();
       assert(window.location.hash).to.equal(`#${ROOT_PATH}`);
     });
 
@@ -44,26 +41,24 @@ describe('main.providesSelectedFolder', () => {
       const path = ROOT_PATH;
 
       const rootFolder = Mocks.object('rootFolder');
-      spyOn(ItemService, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
+      const mockItemService = jasmine.createSpyObj(
+          'ItemService', ['getItemByPath', 'getRootFolder']);
+      mockItemService.getRootFolder.and.returnValue(Promise.resolve(rootFolder));
+      mockItemService.getItemByPath.and.returnValue(Promise.resolve(null));
 
-      spyOn(ItemService, 'getItemByPath').and.returnValue(Promise.resolve(null));
-
-      const time = Graph.getTimestamp();
-
-      assert(await providesSelectedItem(path, time)).to.equal(rootFolder);
-      assert(ItemService.getItemByPath).to.haveBeenCalledWith(time, path);
-      assert(ItemService.getRootFolder).to.haveBeenCalledWith(time);
+      assert(await providesSelectedItem(path, mockItemService)).to.equal(rootFolder);
+      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
+      assert(mockItemService.getRootFolder).to.haveBeenCalledWith();
     });
 
     it(`should resolve with root folder and navigate to ROOT_PATH if location is not specified`,
         async () => {
       const rootFolder = Mocks.object('rootFolder');
-      spyOn(ItemService, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getRootFolder']);
+      mockItemService.getRootFolder.and.returnValue(Promise.resolve(rootFolder));
 
-      const time = Graph.getTimestamp();
-
-      assert(await providesSelectedItem('', time)).to.equal(rootFolder);
-      assert(ItemService.getRootFolder).to.haveBeenCalledWith(time);
+      assert(await providesSelectedItem('', mockItemService)).to.equal(rootFolder);
+      assert(mockItemService.getRootFolder).to.haveBeenCalledWith();
     });
   });
 });
