@@ -3,21 +3,30 @@ import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 
 import {
+  $previewService,
   File,
   FileType,
   Folder,
   ItemService,
-  PreviewFile} from '../data';
+  PreviewFile,
+  PreviewService} from '../data';
 import { $itemService } from '../data/item-service';
 import { HandlebarsService } from '../render/handlebars-service';
 import { ShowdownService } from '../render/showdown-service';
 
 export class RenderService {
-  constructor(private readonly itemService_: ItemService) { }
+  constructor(
+      private readonly itemService_: ItemService,
+      private readonly previewService_: PreviewService) { }
 
   async render(id: string): Promise<void> {
+    const path = await this.itemService_.getPath(id);
+    if (!path) {
+      throw Errors.assert(`Path for item [${id}]`).shouldExist().butWas(path);
+    }
+
     // Check if the preview already exists.
-    const existingPreviewItem = await this.itemService_.getPreview(id);
+    const existingPreviewItem = await this.previewService_.get(path);
     if (existingPreviewItem) {
       return;
     }
@@ -33,9 +42,9 @@ export class RenderService {
         ...item.getItems().mapItem((itemId) => this.render(itemId)),
       ]);
     } else if ((item instanceof File) && item.getType() === FileType.ASSET) {
-      await this.itemService_.savePreview(
+      await this.previewService_.save(
           PreviewFile.newInstance(
-              id,
+              path,
               HandlebarsService.render(ShowdownService.render(item.getContent()))));
     }
   }
@@ -44,8 +53,9 @@ export class RenderService {
 export const $renderService = staticId('renderService', InstanceofType(RenderService));
 Graph.registerProvider(
     $renderService,
-    (itemService) => {
-      return new RenderService(itemService);
+    (itemService, previewService) => {
+      return new RenderService(itemService, previewService);
     },
-    $itemService);
+    $itemService,
+    $previewService);
 

@@ -8,6 +8,8 @@ import { PreviewView } from '../preview/preview-view';
 // Only used to load the dependency.
 [PreviewView].forEach(() => undefined);
 window.addEventListener('load', () => {
+  Injector.bindProvider(() => document, 'x.dom.document');
+  Injector.bindProvider(() => window, 'x.dom.window');
   Persona.registerAll(Injector.newInstance(), Templates.newInstance());
 });
 

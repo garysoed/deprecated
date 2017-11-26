@@ -11,8 +11,6 @@ import { Locations } from 'external/gs_tools/src/ui';
 import { Folder } from '../data/folder';
 import { Item } from '../data/item';
 import { $items } from '../data/item-graph';
-import { PreviewFile } from '../data/preview-file';
-import { $previews } from '../data/preview-graph';
 import { $projectService, ProjectService } from '../data/project-service';
 import { ROOT_PATH } from '../data/selected-item-graph';
 import { ThothFolder } from '../data/thoth-folder';
@@ -20,7 +18,6 @@ import { ThothFolder } from '../data/thoth-folder';
 export class ItemService {
   constructor(
       private readonly itemsGraph_: DataGraph<Item>,
-      private readonly previewGraph_: DataGraph<PreviewFile>,
       private readonly projectService_: ProjectService) { }
 
   async getItem(id: string): Promise<Item | null> {
@@ -65,8 +62,17 @@ export class ItemService {
     return this.getItemByPath(rest.join('/'), nextItem);
   }
 
-  async getPreview(id: string): Promise<PreviewFile | null> {
-    return this.previewGraph_.get(id);
+  async getPath(id: string, suffixes: string[] = []): Promise<string | null> {
+    const item = await this.getItem(id);
+    if (!item) {
+      return null;
+    }
+
+    const newSuffixes = [item.getName(), ...suffixes];
+
+    const parentId = item.getParentId();
+    return parentId ?
+        this.getPath(parentId, newSuffixes) : Locations.normalizePath(newSuffixes.join('/'));
   }
 
   async getRootFolder(): Promise<ThothFolder> {
@@ -95,20 +101,13 @@ export class ItemService {
       this.itemsGraph_.set(item.getId(), item);
     }
   }
-
-  async savePreview(...previewItems: PreviewFile[]): Promise<void> {
-    for (const previewItem of previewItems) {
-      this.previewGraph_.set(previewItem.getId(), previewItem);
-    }
-  }
 }
 
 export const $itemService = staticId('itemService', InstanceofType(ItemService));
 Graph.registerProvider(
     $itemService,
-    (itemsGraph, previewsGraph, projectService) => {
-      return new ItemService(itemsGraph, previewsGraph, projectService);
+    (itemsGraph, projectService) => {
+      return new ItemService(itemsGraph, projectService);
     },
     $items,
-    $previews,
     $projectService);

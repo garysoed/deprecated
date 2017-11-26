@@ -10,7 +10,7 @@ import {
   shadowHostSelector,
 } from 'external/gs_tools/src/persona';
 
-import { $itemService } from '../data';
+import { $previewService } from '../data';
 
 const $ = resolveSelectors({
   host: {
@@ -38,11 +38,11 @@ export class PreviewView extends BaseDisposable {
 
     const time = Graph.getTimestamp();
     const baseUrl = this.document_.baseURI || '';
-    const selectedItemId = this.window_.location.href.slice(baseUrl.length - 1);
-    const [itemService] = await Graph.getAll(time, this, $itemService);
-    const previewItem = await itemService.getPreview(selectedItemId);
+    const previewPath = this.window_.location.href.slice(baseUrl.length - 1);
+    const [previewService] = await Graph.getAll(time, this, $previewService);
+    const previewItem = await previewService.get(previewPath);
     if (previewItem === null) {
-      shadowRoot!.innerHTML = '';
+      shadowRoot!.innerHTML = `${previewPath} cannot be found`;
       return;
     }
     shadowRoot.innerHTML = previewItem.getContent();

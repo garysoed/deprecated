@@ -24,7 +24,7 @@ describe('data.ItemService', () => {
     itemsGraph = new FakeDataGraph<Item>();
     mockProjectService = jasmine.createSpyObj('ProjectService', ['get']);
     previewGraph = new FakeDataGraph<PreviewFile>();
-    service = new ItemService(itemsGraph, previewGraph, mockProjectService);
+    service = new ItemService(itemsGraph, mockProjectService);
   });
 
   describe('getItem', () => {
@@ -105,6 +105,40 @@ describe('data.ItemService', () => {
     it(`should return null if the rootFolder was not given but the path is not root`, async () => {
       const path = ['name1', 'name2'].join('/');
       assert(await service.getItemByPath(path)).to.beNull();
+    });
+  });
+
+  describe('getPath', () => {
+    it(`should resolve with the correct path`, async () => {
+      const id1 = 'id1';
+      const id2 = 'id2';
+      const id3 = 'id3';
+
+      const name1 = 'name1';
+      const item1 = ThothFolder.newInstance(id1, name1, null, ImmutableSet.of([id2]));
+
+      const name2 = 'name2';
+      const item2 = ThothFolder.newInstance(id2, name2, id1, ImmutableSet.of([id3]));
+
+      const name3 = 'name3';
+      const item3 = DriveFile.newInstance(id3, name3, id2, FileType.ASSET, 'content', 'driveId');
+      itemsGraph.set(id1, item1);
+      itemsGraph.set(id2, item2);
+      itemsGraph.set(id3, item3);
+
+      assert(await service.getPath(id3)).to.equal(['', name1, name2, name3].join('/'));
+    });
+
+    it(`should resolve with null if one of the items cannot be found`, async () => {
+      const id1 = 'id1';
+      const id2 = 'id2';
+
+      const item1 = ThothFolder.newInstance(id1, 'name1', 'not exist', ImmutableSet.of([id2]));
+      const item2 = DriveFile.newInstance(id2, 'name2', id1, FileType.ASSET, 'content', 'driveId');
+      itemsGraph.set(id1, item1);
+      itemsGraph.set(id2, item2);
+
+      assert(await service.getPath(id2)).to.beNull();
     });
   });
 

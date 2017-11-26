@@ -3,7 +3,7 @@ TestBase.setup();
 
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { $itemService, PreviewFile } from '../data';
+import { $previewService, PreviewFile } from '../data';
 import { PreviewView } from '../preview/preview-view';
 
 
@@ -35,9 +35,9 @@ describe('preview.PreviewView', () => {
       fakeWindow.location = {href: `baseUrl/selectedItemId`};
 
       const item = PreviewFile.newInstance('id', content);
-      const mockItemService = jasmine.createSpyObj('ItemService', ['getPreview']);
-      mockItemService.getPreview.and.returnValue(Promise.resolve(item));
-      TestGraph.set($itemService, mockItemService);
+      const mockPreviewService = jasmine.createSpyObj('PreviewService', ['get']);
+      mockPreviewService.get.and.returnValue(Promise.resolve(item));
+      TestGraph.set($previewService, mockPreviewService);
 
       spyOn(view, 'processScript_');
 
@@ -46,7 +46,7 @@ describe('preview.PreviewView', () => {
       assert(view['processScript_']).to.haveBeenCalledWith(scriptEl2);
       assert(mockShadowRoot.querySelectorAll).to.haveBeenCalledWith('script');
       assert(mockShadowRoot.innerHTML).to.equal(content);
-      assert(mockItemService.getPreview).to.haveBeenCalledWith(selectedItemId);
+      assert(mockPreviewService.get).to.haveBeenCalledWith(selectedItemId);
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 
@@ -61,16 +61,16 @@ describe('preview.PreviewView', () => {
       const selectedItemId = '/selectedItemId';
       fakeWindow.location = {href: `baseUrl/selectedItemId`};
 
-      const mockItemService = jasmine.createSpyObj('ItemService', ['getPreview']);
-      mockItemService.getPreview.and.returnValue(Promise.resolve(null));
-      TestGraph.set($itemService, mockItemService);
+      const mockPreviewService = jasmine.createSpyObj('PreviewService', ['get']);
+      mockPreviewService.get.and.returnValue(Promise.resolve(null));
+      TestGraph.set($previewService, mockPreviewService);
 
       spyOn(view, 'processScript_');
 
       await view.onHostConnected_();
       assert(mockShadowRoot.querySelectorAll).toNot.haveBeenCalled();
-      assert(mockShadowRoot.innerHTML).to.equal('');
-      assert(mockItemService.getPreview).to.haveBeenCalledWith(selectedItemId);
+      assert(mockShadowRoot.innerHTML).to.equal(`${selectedItemId} cannot be found`);
+      assert(mockPreviewService.get).to.haveBeenCalledWith(selectedItemId);
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 
