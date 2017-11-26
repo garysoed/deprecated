@@ -1,4 +1,4 @@
-import { assert, Matchers, Mocks, TestBase, TestDispose } from '../test-base';
+import { assert, Matchers, Mocks, TestBase, TestDispose, TestGraph } from '../test-base';
 TestBase.setup();
 
 import { Graph } from 'external/gs_tools/src/graph';
@@ -29,14 +29,14 @@ describe('main.NavigatorItem', () => {
     it(`should delete the item correctly`, async () => {
       const idOld = 'idOld';
       const idDelete = 'idDelete';
-      Graph.setForTest($.host.itemid.getId(), idDelete);
+      TestGraph.set($.host.itemid.getId(), idDelete);
 
       const parent = ThothFolder
           .newInstance('idParent', 'name', null, ImmutableSet.of([idOld, idDelete]));
-      Graph.setForTest($parent, parent);
+      TestGraph.set($parent, parent);
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       await item.onDeleteButtonAction_();
       assert(mockItemService.save).to.haveBeenCalledWith(Matchers.anyThing());
@@ -47,14 +47,14 @@ describe('main.NavigatorItem', () => {
 
     it(`should not save if the parent is not a ThothFolder`, async () => {
       const idDelete = 'idDelete';
-      Graph.setForTest($.host.itemid.getId(), idDelete);
+      TestGraph.set($.host.itemid.getId(), idDelete);
 
       const parent = DriveFolder
           .newInstance('idParent', 'name', null, ImmutableSet.of([]), 'driveId');
-      Graph.setForTest($parent, parent);
+      TestGraph.set($parent, parent);
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       await item.onDeleteButtonAction_();
       assert(mockItemService.save).toNot.haveBeenCalled();
@@ -62,26 +62,26 @@ describe('main.NavigatorItem', () => {
 
     it(`should not save if the parent is null`, async () => {
       const idDelete = 'idDelete';
-      Graph.setForTest($.host.itemid.getId(), idDelete);
+      TestGraph.set($.host.itemid.getId(), idDelete);
 
-      Graph.setForTest($parent, null);
+      TestGraph.set($parent, null);
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       await item.onDeleteButtonAction_();
       assert(mockItemService.save).toNot.haveBeenCalled();
     });
 
     it(`should not save if itemId does not exist`, async () => {
-      Graph.setForTest($.host.itemid.getId(), '');
+      TestGraph.set($.host.itemid.getId(), '');
 
       const parent = ThothFolder
           .newInstance('idParent', 'name', null, ImmutableSet.of([]));
-      Graph.setForTest($parent, parent);
+      TestGraph.set($parent, parent);
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       await item.onDeleteButtonAction_();
       assert(mockItemService.save).toNot.haveBeenCalled();
@@ -93,9 +93,9 @@ describe('main.NavigatorItem', () => {
       const name = 'name';
 
       const path = 'path';
-      Graph.setForTest($location.path, path);
-      Graph.setForTest($isEditing, false);
-      Graph.setForTest(
+      TestGraph.set($location.path, path);
+      TestGraph.set($isEditing, false);
+      TestGraph.set(
           $item,
           ThothFolder.newInstance('id', name, null, ImmutableSet.of([])));
 
@@ -106,16 +106,16 @@ describe('main.NavigatorItem', () => {
     });
 
     it(`should do nothing if there are no items`, async () => {
-      Graph.setForTest($item, null);
-      Graph.setForTest($isEditing, false);
+      TestGraph.set($item, null);
+      TestGraph.set($isEditing, false);
 
       await item.onHostClick_();
       assert(window.location.hash).to.equal('');
     });
 
     it(`should do nothing if editing`, async () => {
-      Graph.setForTest($item, null);
-      Graph.setForTest($isEditing, true);
+      TestGraph.set($item, null);
+      TestGraph.set($isEditing, true);
 
       await item.onHostClick_();
       assert(window.location.hash).to.equal('');
@@ -133,16 +133,16 @@ describe('main.NavigatorItem', () => {
         item1,
         item2,
       ])));
-      Graph.setForTest($driveService, mockDriveService);
+      TestGraph.set($driveService, mockDriveService);
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       const parentId = 'parentId';
       const driveId = 'driveId';
       const driveItem = DriveFile
           .newInstance('id', 'name', parentId, FileType.ASSET, 'content', driveId);
-      Graph.setForTest($item, driveItem);
+      TestGraph.set($item, driveItem);
 
       await item.onRefreshButtonAction_(mockEvent);
       assert(mockItemService.save).to.haveBeenCalledWith(item1);
@@ -161,16 +161,16 @@ describe('main.NavigatorItem', () => {
         item1,
         item2,
       ])));
-      Graph.setForTest($driveService, mockDriveService);
+      TestGraph.set($driveService, mockDriveService);
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       const parentId = 'parentId';
       const driveId = 'driveId';
       const driveItem = DriveFolder
           .newInstance('id', 'name', parentId, ImmutableSet.of([]), driveId);
-      Graph.setForTest($item, driveItem);
+      TestGraph.set($item, driveItem);
 
       await item.onRefreshButtonAction_(mockEvent);
       assert(mockItemService.save).to.haveBeenCalledWith(item1);
@@ -191,12 +191,12 @@ describe('main.NavigatorItem', () => {
       ])));
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       const driveId = 'driveId';
       const driveItem = DriveFolder
           .newInstance('id', 'name', null, ImmutableSet.of([]), driveId);
-      Graph.setForTest($item, driveItem);
+      TestGraph.set($item, driveItem);
 
       await assert(item.onRefreshButtonAction_(mockEvent)).to.rejectWithError(/should exist/);
       assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
@@ -207,11 +207,11 @@ describe('main.NavigatorItem', () => {
 
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       const parentId = 'parentId';
       const driveItem = ThothFolder.newInstance('id', 'name', parentId, ImmutableSet.of([]));
-      Graph.setForTest($item, driveItem);
+      TestGraph.set($item, driveItem);
 
       await item.onRefreshButtonAction_(mockEvent);
       assert(mockItemService.save).toNot.haveBeenCalled();
@@ -227,8 +227,8 @@ describe('main.NavigatorItem', () => {
 
 
       const selectedItem = ThothFolder.newInstance('id', itemName, null, ImmutableSet.of([]));
-      Graph.setForTest($isEditing, false);
-      Graph.setForTest($item, selectedItem);
+      TestGraph.set($isEditing, false);
+      TestGraph.set($item, selectedItem);
 
       spyOn($.nameInput.value, 'setValue');
 
@@ -245,11 +245,11 @@ describe('main.NavigatorItem', () => {
       spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
 
       const selectedItem = ThothFolder.newInstance('id', 'itemName', null, ImmutableSet.of([]));
-      Graph.setForTest($isEditing, true);
-      Graph.setForTest($item, selectedItem);
+      TestGraph.set($isEditing, true);
+      TestGraph.set($item, selectedItem);
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       const newName = 'newName';
       spyOn($.nameInput.value, 'getValue').and.returnValue(newName);
@@ -269,11 +269,11 @@ describe('main.NavigatorItem', () => {
       spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
 
       const selectedItem = ThothFolder.newInstance('id', 'itemName', null, ImmutableSet.of([]));
-      Graph.setForTest($isEditing, true);
-      Graph.setForTest($item, selectedItem);
+      TestGraph.set($isEditing, true);
+      TestGraph.set($item, selectedItem);
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       spyOn($.nameInput.value, 'getValue').and.returnValue('');
 
@@ -289,11 +289,11 @@ describe('main.NavigatorItem', () => {
       const shadowRoot = Mocks.object('shadowRoot');
       spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
 
-      Graph.setForTest($isEditing, true);
-      Graph.setForTest($item, null);
+      TestGraph.set($isEditing, true);
+      TestGraph.set($item, null);
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       spyOn($.nameInput.value, 'getValue').and.returnValue('');
 
@@ -308,12 +308,12 @@ describe('main.NavigatorItem', () => {
       spyOn(Persona, 'getShadowRoot').and.returnValue(null);
 
 
-      Graph.setForTest($isEditing, true);
-      Graph.setForTest($item, null);
+      TestGraph.set($isEditing, true);
+      TestGraph.set($item, null);
 
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       spyOn($.nameInput.value, 'getValue').and.returnValue('');
 
@@ -331,10 +331,10 @@ describe('main.NavigatorItem', () => {
       const id = 'id';
       const driveItem = DriveFile
           .newInstance(id, 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
-      Graph.setForTest($item, driveItem);
+      TestGraph.set($item, driveItem);
 
       const mockRenderService = jasmine.createSpyObj('RenderService', ['render']);
-      Graph.setForTest($renderService, mockRenderService);
+      TestGraph.set($renderService, mockRenderService);
 
       await item.onRenderButtonAction_(mockEvent);
       assert(mockRenderService.render).to.haveBeenCalledWith(id);
@@ -342,10 +342,10 @@ describe('main.NavigatorItem', () => {
 
     it(`should not reject if the item is not a FileImpl`, async () => {
       const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
-      Graph.setForTest($item, null);
+      TestGraph.set($item, null);
 
       const mockRenderService = jasmine.createSpyObj('RenderService', ['render']);
-      Graph.setForTest($renderService, mockRenderService);
+      TestGraph.set($renderService, mockRenderService);
 
       await item.onRenderButtonAction_(mockEvent);
       assert(mockRenderService.render).toNot.haveBeenCalled();

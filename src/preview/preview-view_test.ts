@@ -1,7 +1,6 @@
-import { assert, Mocks, TestBase, TestDispose } from '../test-base';
+import { assert, Mocks, TestBase, TestDispose, TestGraph } from '../test-base';
 TestBase.setup();
 
-import { Graph } from 'external/gs_tools/src/graph';
 import { Persona } from 'external/gs_tools/src/persona';
 
 import { $itemService, PreviewFile } from '../data';
@@ -38,7 +37,7 @@ describe('preview.PreviewView', () => {
       const item = PreviewFile.newInstance('id', content);
       const mockItemService = jasmine.createSpyObj('ItemService', ['getPreview']);
       mockItemService.getPreview.and.returnValue(Promise.resolve(item));
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       spyOn(view, 'processScript_');
 
@@ -64,7 +63,7 @@ describe('preview.PreviewView', () => {
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['getPreview']);
       mockItemService.getPreview.and.returnValue(Promise.resolve(null));
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       spyOn(view, 'processScript_');
 

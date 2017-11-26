@@ -1,4 +1,4 @@
-import { assert, Fakes, Mocks, TestBase, TestDispose } from '../test-base';
+import { assert, Fakes, Mocks, TestBase, TestDispose, TestGraph } from '../test-base';
 TestBase.setup();
 
 import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
@@ -130,12 +130,12 @@ describe('main.DriveSearch', () => {
   describe('onOkButtonAction_', () => {
     it(`should save the new folders and files correctly`, async () => {
       const idSelected = 'idSelected';
-      Graph.setForTest(
+      TestGraph.set(
           $selectedItem,
           ThothFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      Graph.setForTest($itemService, mockItemService);
+      TestGraph.set($itemService, mockItemService);
 
       const id1 = 'id1';
       const name1 = 'name1';
@@ -163,7 +163,7 @@ describe('main.DriveSearch', () => {
       Fakes.build(mockDriveService.recursiveGet)
           .when(id1).resolve(ImmutableList.of([mockItem1, mockItem11, mockItem12]))
           .when(id2).resolve(ImmutableList.of([mockItem2]));
-      Graph.setForTest($driveService, mockDriveService);
+      TestGraph.set($driveService, mockDriveService);
 
       Fakes.build(spyOn(Persona, 'getValue'))
           .when($.results.children, search).return(ImmutableList.of([
@@ -193,7 +193,7 @@ describe('main.DriveSearch', () => {
 
     it(`should reject if dispatcher cannot be found`, async () => {
       const idSelected = 'idSelected';
-      Graph.setForTest(
+      TestGraph.set(
           $selectedItem,
           ThothFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
 
@@ -203,14 +203,14 @@ describe('main.DriveSearch', () => {
 
       const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
       mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableList.of([])));
-      Graph.setForTest($driveService, mockDriveService);
+      TestGraph.set($driveService, mockDriveService);
 
       await assert(search.onOkButtonAction_()).to.rejectWithError(/exist/);
     });
 
     it(`should reject if the current selected folder is not editable`, async () => {
       const idSelected = 'idSelected';
-      Graph.setForTest(
+      TestGraph.set(
           $selectedItem,
           DriveFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([]), 'driveId'));
 
@@ -231,19 +231,19 @@ describe('main.DriveSearch', () => {
 
       const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
       mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableList.of([])));
-      Graph.setForTest($driveService, mockDriveService);
+      TestGraph.set($driveService, mockDriveService);
 
       await assert(search.onOkButtonAction_()).to.rejectWithError(/selectedFolder/);
     });
 
     it(`should do nothing if there are no items selected`, async () => {
-      Graph.setForTest(
+      TestGraph.set(
           $selectedItem,
           ThothFolder.newInstance('idSelected', 'test', null, ImmutableSet.of([])));
 
       const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
       mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableList.of([])));
-      Graph.setForTest($driveService, mockDriveService);
+      TestGraph.set($driveService, mockDriveService);
 
       spyOn(Persona, 'getValue').and.returnValue(null);
       spyOn(DriveStorage, 'read');
