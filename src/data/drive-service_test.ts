@@ -123,5 +123,11 @@ describe('data.DriveServiceImpl', () => {
       assert((file as DriveFile).getContent()).to.equal(content);
       assert(DriveStorage.read).to.haveBeenCalledWith(id);
     });
+
+    it(`should return empty list if the item cannot be found`, async () => {
+      spyOn(DriveStorage, 'read').and.returnValue(null);
+
+      assert(await service.recursiveGet('idRoot', 'containerPath')).to.haveElements([]);
+    });
   });
 });

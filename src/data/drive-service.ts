@@ -17,6 +17,10 @@ export class DriveService {
   async recursiveGet(driveId: string, containerId: string):
       Promise<ImmutableList<DriveFile | DriveFolder>> {
     const apiDriveItem = await DriveStorage.read(driveId);
+    if (!apiDriveItem) {
+      return ImmutableList.of([]);
+    }
+
     const {type: apiType, name: apiName} = apiDriveItem.summary;
 
     const id = await this.itemService_.newId();

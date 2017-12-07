@@ -1,6 +1,8 @@
 import { assert, Fakes, Matchers, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
+import { ImmutableSet } from 'external/gs_tools/src/immutable';
+
 import { ApiDriveType } from '../import/drive';
 import { DRIVE_FOLDER_MIMETYPE, DriveStorageImpl } from '../import/drive-storage';
 
@@ -34,111 +36,68 @@ describe('import.DriveStorage', () => {
     });
   });
 
-  describe('list', () => {
+  describe('hasImpl_', () => {
+    it(`should resolve true if the item exists`, async () => {
+      const queueRequest = Mocks.object('queueRequest');
+      const id = 'id';
+      spyOn(storage, 'readImpl_').and.returnValue(Mocks.object('item'));
+
+      assert(await storage['hasImpl_'](queueRequest, id)).to.beTrue();
+      assert(storage['readImpl_']).to.haveBeenCalledWith(queueRequest, id);
+    });
+
+    it(`should resolve false if the item does not exist`, async () => {
+      const queueRequest = Mocks.object('queueRequest');
+      const id = 'id';
+      spyOn(storage, 'readImpl_').and.returnValue(null);
+
+      assert(await storage['hasImpl_'](queueRequest, id)).to.beFalse();
+      assert(storage['readImpl_']).to.haveBeenCalledWith(queueRequest, id);
+    });
+  });
+
+  describe('listIdsImpl_', () => {
+    it(`should return the correct IDs`, async () => {
+      const id1 = 'id1';
+      const id2 = 'id2';
+
+      spyOn(storage, 'listImpl_').and.returnValue(Promise.resolve(ImmutableSet.of([
+        {id: id1, name: 'name1'},
+        {id: id2, name: 'name2'},
+      ])));
+
+      const queueRequest = Mocks.object('queueRequest');
+
+      assert(await storage['listIdsImpl_'](queueRequest)).to.haveElements([id1, id2]);
+      assert(storage['listImpl_']).to.haveBeenCalledWith(queueRequest);
+    });
+  });
+
+  describe('listImpl_', () => {
     it(`should return the correct files`, async () => {
       const id1 = 'id1';
       const id2 = 'id2';
       const name1 = 'name1';
       const name2 = 'name2';
+      const driveRequest = Mocks.object('driveRequest');
       const mockFiles = jasmine.createSpyObj('Files', ['list']);
-      mockFiles.list.and.returnValue(Promise.resolve({
-        result: {
-          files: [
-            {id: id1, name: name1, mimeType: 'text/x-markdown'},
-            {id: id2, name: name2, mimeType: 'text/plain'},
-          ],
-        },
-      }));
-      mockDriveLibrary.get.and.returnValue(Promise.resolve({files: mockFiles}));
+      mockFiles.list.and.returnValue(driveRequest);
 
-      assert(await storage.list()).to.haveElements([
+      const mockQueueRequest = jasmine.createSpy('QueueRequest');
+      mockQueueRequest.and.returnValue(Promise.resolve({
+        files: [
+          {id: id1, name: name1, mimeType: 'text/x-markdown'},
+          {id: id2, name: name2, mimeType: 'text/plain'},
+        ],
+      }));
+
+      assert(await storage['listImpl_'](mockQueueRequest)).to.haveElements([
         {id: id1, name: name1, type: ApiDriveType.MARKDOWN},
         {id: id2, name: name2, type: ApiDriveType.UNKNOWN},
       ]);
-    });
-  });
+      assert(mockQueueRequest).to.haveBeenCalledWith(Matchers.anyFunction());
 
-  describe('listIds', () => {
-    it(`should return the correct IDs`, async () => {
-      const id1 = 'id1';
-      const id2 = 'id2';
-      const mockFiles = jasmine.createSpyObj('Files', ['list']);
-      mockFiles.list.and.returnValue(Promise.resolve({
-        result: {
-          files: [
-            {id: id1, name: 'name1'},
-            {id: id2, name: 'name2'},
-          ],
-        },
-      }));
-      mockDriveLibrary.get.and.returnValue(Promise.resolve({files: mockFiles}));
-
-      assert(await storage.listIds()).to.haveElements([id1, id2]);
-    });
-  });
-
-  describe('read', () => {
-    it(`should handle folders correctly`, async () => {
-      const id = 'id';
-      const files = Mocks.object('files');
-
-      spyOn(storage, 'readFolderContents_').and.returnValue(Promise.resolve(files));
-
-      const mockFiles = jasmine.createSpyObj('Files', ['get']);
-      mockFiles.get.and.returnValue(Promise.resolve({
-        result: {id, mimeType: DRIVE_FOLDER_MIMETYPE},
-      }));
-      mockDriveLibrary.get.and.returnValue(Promise.resolve({files: mockFiles}));
-
-      await assert(storage.read(id)).to.resolveWith({
-        files,
-        summary: Matchers.objectContaining({
-          id,
-        }),
-      });
-      assert(storage['readFolderContents_']).to.haveBeenCalledWith(id);
-      assert(mockFiles.get).to.haveBeenCalledWith({fileId: id});
-    });
-
-    it(`should handle markdown files correctly`, async () => {
-      const id = 'id';
-      const content = 'content';
-
-      spyOn(storage, 'readFileContent_').and.returnValue(Promise.resolve(content));
-
-      const mockFiles = jasmine.createSpyObj('Files', ['get']);
-      mockFiles.get.and.returnValue(Promise.resolve({
-        result: {id, mimeType: 'text/x-markdown'},
-      }));
-      mockDriveLibrary.get.and.returnValue(Promise.resolve({files: mockFiles}));
-
-      await assert(storage.read(id)).to.resolveWith({
-        content,
-        files: [],
-        summary: Matchers.objectContaining({
-          id,
-        }),
-      });
-      assert(storage['readFileContent_']).to.haveBeenCalledWith(Matchers.objectContaining({id}));
-      assert(mockFiles.get).to.haveBeenCalledWith({fileId: id});
-    });
-
-    it(`should handle unknown file type correctly`, async () => {
-      const id = 'id';
-
-      const mockFiles = jasmine.createSpyObj('Files', ['get']);
-      mockFiles.get.and.returnValue(Promise.resolve({
-        result: {id, mimeType: 'text/plain'},
-      }));
-      mockDriveLibrary.get.and.returnValue(Promise.resolve({files: mockFiles}));
-
-      await assert(storage.read(id)).to.resolveWith({
-        files: [],
-        summary: Matchers.objectContaining({
-          id,
-        }),
-      });
-      assert(mockFiles.get).to.haveBeenCalledWith({fileId: id});
+      assert(mockQueueRequest.calls.argsFor(0)[0]({files: mockFiles})).to.equal(driveRequest);
     });
   });
 
@@ -189,6 +148,91 @@ describe('import.DriveStorage', () => {
       assert(storage.read).to.haveBeenCalledWith(id2);
       assert(mockFiles.list).to.haveBeenCalledWith(config);
       assert(storage['createListConfig_']).to.haveBeenCalledWith({parentId: folderId});
+    });
+  });
+
+  describe('readImpl_', () => {
+    it(`should handle folders correctly`, async () => {
+      const id = 'id';
+      const files = Mocks.object('files');
+
+      spyOn(storage, 'readFolderContents_').and.returnValue(Promise.resolve(files));
+
+      const driveRequest = Mocks.object('driveRequest');
+      const mockFiles = jasmine.createSpyObj('Files', ['get']);
+      mockFiles.get.and.returnValue(driveRequest);
+
+      const mockQueueRequest = jasmine.createSpy('QueueRequest');
+      mockQueueRequest.and.returnValue(Promise.resolve({
+        id,
+        mimeType: DRIVE_FOLDER_MIMETYPE,
+      }));
+
+      await assert(storage['readImpl_'](mockQueueRequest, id)).to.resolveWith({
+        files,
+        summary: Matchers.objectContaining({
+          id,
+        }),
+      });
+      assert(storage['readFolderContents_']).to.haveBeenCalledWith(id);
+
+      assert(mockQueueRequest).to.haveBeenCalledWith(Matchers.anyFunction());
+      assert(mockQueueRequest.calls.argsFor(0)[0]({files: mockFiles})).to.equal(driveRequest);
+      assert(mockFiles.get).to.haveBeenCalledWith({fileId: id});
+    });
+
+    it(`should handle markdown files correctly`, async () => {
+      const id = 'id';
+      const content = 'content';
+
+      spyOn(storage, 'readFileContent_').and.returnValue(Promise.resolve(content));
+
+      const driveRequest = Mocks.object('driveRequest');
+      const mockFiles = jasmine.createSpyObj('Files', ['get']);
+      mockFiles.get.and.returnValue(driveRequest);
+
+      const mockQueueRequest = jasmine.createSpy('QueueRequest');
+      mockQueueRequest.and.returnValue(Promise.resolve({
+        id,
+        mimeType: 'text/x-markdown',
+      }));
+
+      await assert(storage['readImpl_'](mockQueueRequest, id)).to.resolveWith({
+        content,
+        files: [],
+        summary: Matchers.objectContaining({
+          id,
+        }),
+      });
+      assert(storage['readFileContent_']).to.haveBeenCalledWith(Matchers.objectContaining({id}));
+
+      assert(mockQueueRequest).to.haveBeenCalledWith(Matchers.anyFunction());
+      assert(mockQueueRequest.calls.argsFor(0)[0]({files: mockFiles})).to.equal(driveRequest);
+      assert(mockFiles.get).to.haveBeenCalledWith({fileId: id});
+    });
+
+    it(`should handle unknown file type correctly`, async () => {
+      const id = 'id';
+
+      const driveRequest = Mocks.object('driveRequest');
+      const mockFiles = jasmine.createSpyObj('Files', ['get']);
+      mockFiles.get.and.returnValue(driveRequest);
+
+      const mockQueueRequest = jasmine.createSpy('QueueRequest');
+      mockQueueRequest.and.returnValue(Promise.resolve({
+        id,
+        mimeType: 'text/plain',
+      }));
+
+      await assert(storage['readImpl_'](mockQueueRequest, id)).to.resolveWith({
+        files: [],
+        summary: Matchers.objectContaining({
+          id,
+        }),
+      });
+      assert(mockQueueRequest).to.haveBeenCalledWith(Matchers.anyFunction());
+      assert(mockQueueRequest.calls.argsFor(0)[0]({files: mockFiles})).to.equal(driveRequest);
+      assert(mockFiles.get).to.haveBeenCalledWith({fileId: id});
     });
   });
 
