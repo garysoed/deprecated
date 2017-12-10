@@ -1,6 +1,7 @@
 export enum ApiDriveType {
   UNKNOWN,
   FOLDER,
+  JSON,
   MARKDOWN,
 }
 

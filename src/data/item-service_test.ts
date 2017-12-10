@@ -95,7 +95,7 @@ describe('data.ItemService', () => {
       const item1 = DriveFile.newInstance(id1, name1, idRoot, FileType.ASSET, 'content', 'driveId');
 
       itemsGraph.set(idRoot, rootFolder);
-      itemsGraph.set(id1, item1);
+      itemsGraph.set(item1.getId(), item1);
 
       const path = [name1, 'name2'].join('/');
       assert(service.getItemByPath(path, rootFolder)).to.rejectWithError(/a \[Folder\]/);

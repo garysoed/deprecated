@@ -1,5 +1,3 @@
-import { ImmutableSet } from 'external/gs_tools/src/immutable';
-
 import { ApiDriveType } from '../import';
 
 export enum FileType {
@@ -9,14 +7,20 @@ export enum FileType {
   TEMPLATE,
 }
 
-const HANDLED_FILE_TYPES = ImmutableSet.of([
-  ApiDriveType.FOLDER,
-  ApiDriveType.MARKDOWN,
-]);
-export function convertToItemType(apiType: ApiDriveType): FileType {
+const METADATA_NAME = '$metadata.json';
+
+export function convertToItemType(apiType: ApiDriveType, name: string): FileType {
   if (apiType === ApiDriveType.UNKNOWN) {
     return FileType.UNKNOWN;
   }
 
-  return HANDLED_FILE_TYPES.has(apiType) ? FileType.ASSET : FileType.UNKNOWN;
+  if (apiType === ApiDriveType.MARKDOWN) {
+    return FileType.ASSET;
+  }
+
+  if (apiType === ApiDriveType.JSON && name === METADATA_NAME) {
+    return FileType.METADATA;
+  }
+
+  return FileType.UNKNOWN;
 }

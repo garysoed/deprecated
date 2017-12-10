@@ -30,7 +30,7 @@ export class DriveService {
           id,
           apiName,
           containerId,
-          convertToItemType(apiType),
+          convertToItemType(apiType, apiName),
           apiDriveItem.content || '',
           driveId);
       return ImmutableList.of([newFile]);

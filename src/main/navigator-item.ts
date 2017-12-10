@@ -285,6 +285,8 @@ export class NavigatorItem extends BaseThemedElement2 {
       switch (item.getType()) {
         case FileType.ASSET:
           return 'web';
+        case FileType.METADATA:
+          return 'settings';
         default:
           return 'help';
       }
