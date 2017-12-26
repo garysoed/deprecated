@@ -7,7 +7,7 @@ export enum FileType {
   TEMPLATE,
 }
 
-const METADATA_NAME = '$metadata.json';
+const METADATA_NAME = '$metadata.yml';
 
 export function convertToItemType(apiType: ApiDriveType, name: string): FileType {
   if (apiType === ApiDriveType.UNKNOWN) {
@@ -18,7 +18,7 @@ export function convertToItemType(apiType: ApiDriveType, name: string): FileType
     return FileType.ASSET;
   }
 
-  if (apiType === ApiDriveType.JSON && name === METADATA_NAME) {
+  if (apiType === ApiDriveType.YAML && name === METADATA_NAME) {
     return FileType.METADATA;
   }
 

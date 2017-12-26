@@ -92,7 +92,8 @@ describe('data.ItemService', () => {
       spyOn(service, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
 
       const name1 = 'name1';
-      const item1 = DriveFile.newInstance(id1, name1, idRoot, FileType.ASSET, 'content', 'driveId');
+      const item1 = DriveFile.newInstance(
+          name1, idRoot, 'parentId', FileType.ASSET, 'content', 'driveId');
 
       itemsGraph.set(idRoot, rootFolder);
       itemsGraph.set(item1.getId(), item1);

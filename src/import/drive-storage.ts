@@ -14,7 +14,7 @@ type ListQueryConfig = {
 export const DRIVE_FOLDER_MIMETYPE = 'application/vnd.google-apps.folder';
 const TYPE_MAPPING = new Map([
   [DRIVE_FOLDER_MIMETYPE, ApiDriveType.FOLDER],
-  ['application/json', ApiDriveType.JSON],
+  ['application/json', ApiDriveType.YAML],
   ['text/x-markdown', ApiDriveType.MARKDOWN],
 ]);
 
@@ -128,7 +128,7 @@ export class DriveStorageImpl extends GapiStorage<
           summary,
         };
       case ApiDriveType.MARKDOWN:
-      case ApiDriveType.JSON:
+      case ApiDriveType.YAML:
         return {
           content: await this.readFileContent_(summary) || undefined,
           files: [],
