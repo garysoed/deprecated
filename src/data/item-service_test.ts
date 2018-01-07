@@ -11,7 +11,6 @@ import {
   PreviewFile,
   ThothFolder } from '../data';
 import { ItemService } from '../data/item-service';
-import { ROOT_PATH } from '../data/selected-item-graph';
 
 
 describe('data.ItemService', () => {
@@ -37,7 +36,7 @@ describe('data.ItemService', () => {
     });
   });
 
-  describe('getItemByPath', () => {
+  describe('getItemByPath_', () => {
     it(`should return the correct item`, async () => {
       const id1 = 'id1';
       const id2 = 'id2';
@@ -56,8 +55,7 @@ describe('data.ItemService', () => {
       itemsGraph.set(id1, item1);
       itemsGraph.set(id2, item2);
 
-      const path = [ROOT_PATH, name1, name2].join('/');
-      assert(await service.getItemByPath(path)).to.equal(item2);
+      assert(await service['getItemByPath_'](['(root)', name1, name2], null)).to.equal(item2);
       assert(service.getRootFolder).to.haveBeenCalledWith();
     });
 
@@ -79,8 +77,7 @@ describe('data.ItemService', () => {
       itemsGraph.set(id1, item1);
       itemsGraph.set(id2, item2);
 
-      const path = [name1, name2].join('/');
-      assert(await service.getItemByPath(path, rootFolder)).to.equal(item2);
+      assert(await service['getItemByPath_']([name1, name2], rootFolder)).to.equal(item2);
       assert(service.getRootFolder).toNot.haveBeenCalled();
     });
 
@@ -98,14 +95,13 @@ describe('data.ItemService', () => {
       itemsGraph.set(idRoot, rootFolder);
       itemsGraph.set(item1.getId(), item1);
 
-      const path = [name1, 'name2'].join('/');
-      assert(service.getItemByPath(path, rootFolder)).to.rejectWithError(/a \[Folder\]/);
+      assert(service['getItemByPath_']([name1, 'name2'], rootFolder)).to
+          .rejectWithError(/a \[Folder\]/);
       assert(service.getRootFolder).toNot.haveBeenCalled();
     });
 
     it(`should return null if the rootFolder was not given but the path is not root`, async () => {
-      const path = ['name1', 'name2'].join('/');
-      assert(await service.getItemByPath(path)).to.beNull();
+      assert(await service['getItemByPath_'](['name1', 'name2'], null)).to.beNull();
     });
   });
 
@@ -127,7 +123,8 @@ describe('data.ItemService', () => {
       itemsGraph.set(id2, item2);
       itemsGraph.set(id3, item3);
 
-      assert(await service.getPath(id3)).to.equal(['', name1, name2, name3].join('/'));
+      const path = await service.getPath(id3);
+      assert(path!.toString()).to.equal(`/${name1}/${name2}/${name3}`);
     });
 
     it(`should resolve with null if one of the items cannot be found`, async () => {

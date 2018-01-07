@@ -6,9 +6,10 @@ import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
-import { Locations } from 'external/gs_tools/src/ui';
+import { Path, Paths } from 'external/gs_tools/src/path';
 
 import { Folder } from '../data/folder';
+
 import { Item } from '../data/item';
 import { $items } from '../data/item-graph';
 import { $projectService, ProjectService } from '../data/project-service';
@@ -24,12 +25,12 @@ export class ItemService {
     return this.itemsGraph_.get(id);
   }
 
-  async getItemByPath(
-      path: string,
-      rootFolder: Folder | null = null): Promise<Item | null> {
-    const normalizedPath = Locations.normalizePath(path);
-    let [, current, ...rest] = normalizedPath.split('/');
+  getItemByPath(path: Path): Promise<Item | null> {
+    return this.getItemByPath_([...path.getParts()], null);
+  }
 
+  private async getItemByPath_(path: string[], rootFolder: Folder | null): Promise<Item | null> {
+    let [current, ...rest] = path;
     let root: Folder;
     if (rootFolder) {
       root = rootFolder;
@@ -59,10 +60,10 @@ export class ItemService {
       throw Errors.assert(`item at ${path}`).shouldBe('a [Folder]').butWas(nextItem);
     }
 
-    return this.getItemByPath(rest.join('/'), nextItem);
+    return this.getItemByPath_(rest, nextItem);
   }
 
-  async getPath(id: string, suffixes: string[] = []): Promise<string | null> {
+  async getPath(id: string, suffixes: string[] = []): Promise<Path | null> {
     const item = await this.getItem(id);
     if (!item) {
       return null;
@@ -72,7 +73,8 @@ export class ItemService {
 
     const parentId = item.getParentId();
     return parentId ?
-        this.getPath(parentId, newSuffixes) : Locations.normalizePath(newSuffixes.join('/'));
+        this.getPath(parentId, newSuffixes) :
+        Paths.absolutePath(newSuffixes);
   }
 
   async getRootFolder(): Promise<ThothFolder> {

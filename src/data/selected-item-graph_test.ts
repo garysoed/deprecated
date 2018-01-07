@@ -8,7 +8,7 @@ import { providesSelectedItem, ROOT_PATH } from '../data/selected-item-graph';
 describe('main.providesSelectedItem', () => {
   describe('providesSelectedItem', () => {
     it(`should resolve with the correct folder`, async () => {
-      const path = 'path';
+      const path = '/path';
 
       const item = Mocks.object('item');
       Object.setPrototypeOf(item, Folder.prototype);
@@ -17,12 +17,14 @@ describe('main.providesSelectedItem', () => {
       mockItemService.getItemByPath.and.returnValue(Promise.resolve(item));
 
       assert(await providesSelectedItem(path, mockItemService)).to.equal(item);
-      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
+
+      const actualPath = mockItemService.getItemByPath.calls.argsFor(0)[0];
+      assert(actualPath.toString()).to.equal(path);
     });
 
     it(`should redirect to ROOT_PATH and resolve with saved root folder if item doesn't exist ` +
         `and path is not ROOT_PATH`, async () => {
-      const path = 'path';
+      const path = '/path';
 
       const rootFolder = Mocks.object('rootFolder');
       const mockItemService = jasmine.createSpyObj(
@@ -31,7 +33,9 @@ describe('main.providesSelectedItem', () => {
       mockItemService.getItemByPath.and.returnValue(Promise.resolve(null));
 
       assert(await providesSelectedItem(path, mockItemService)).to.equal(rootFolder);
-      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
+
+      const actualPath = mockItemService.getItemByPath.calls.argsFor(0)[0];
+      assert(actualPath.toString()).to.equal(path);
       assert(mockItemService.getRootFolder).to.haveBeenCalledWith();
       assert(window.location.hash).to.equal(`#${ROOT_PATH}`);
     });
@@ -47,7 +51,9 @@ describe('main.providesSelectedItem', () => {
       mockItemService.getItemByPath.and.returnValue(Promise.resolve(null));
 
       assert(await providesSelectedItem(path, mockItemService)).to.equal(rootFolder);
-      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
+
+      const actualPath = mockItemService.getItemByPath.calls.argsFor(0)[0];
+      assert(actualPath.toString()).to.equal(path);
       assert(mockItemService.getRootFolder).to.haveBeenCalledWith();
     });
 

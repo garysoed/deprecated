@@ -44,7 +44,7 @@ export class RenderService {
     } else if ((item instanceof File) && item.getType() === FileType.ASSET) {
       await this.previewService_.save(
           PreviewFile.newInstance(
-              path,
+              path.toString(),
               HandlebarsService.render(ShowdownService.render(item.getContent()))));
     }
   }

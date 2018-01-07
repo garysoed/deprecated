@@ -2,6 +2,7 @@ import { assert, Fakes, TestBase } from '../test-base';
 TestBase.setup();
 
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { Paths } from 'external/gs_tools/src/path';
 
 import { DriveFile } from 'src/data/drive-file';
 import {
@@ -38,7 +39,7 @@ describe('render.RenderServiceClass', () => {
           .when(id).return(originalItem)
           .when(childId).return(childItem);
 
-      mockItemService.getPath.and.returnValue(Promise.resolve('path'));
+      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath(['path'])));
 
       spyOn(service, 'render').and.callThrough();
 
@@ -61,13 +62,13 @@ describe('render.RenderServiceClass', () => {
       Fakes.build(mockItemService.getItem)
           .when(id).return(originalItem);
 
-      const path = 'path';
+      const path = Paths.absolutePath(['path']);
       mockItemService.getPath.and.returnValue(Promise.resolve(path));
 
       await service.render(id);
 
       const previewFile: PreviewFile = mockPreviewService.save.calls.argsFor(0)[0];
-      assert(previewFile.getPath()).to.equal(path);
+      assert(previewFile.getPath()).to.equal(path.toString());
       assert(previewFile.getContent()).to.equal(handlebarsContent);
 
       assert(mockPreviewService.save).to.haveBeenCalledWith(previewFile);
@@ -78,7 +79,7 @@ describe('render.RenderServiceClass', () => {
 
     it(`should reject if the item type is not a file or a folder`, async () => {
       const id = `id`;
-      mockItemService.getPath.and.returnValue(Promise.resolve('path'));
+      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath(['path'])));
 
       await assert(service.render(id)).to.rejectWithError(/item for id/i);
     });
