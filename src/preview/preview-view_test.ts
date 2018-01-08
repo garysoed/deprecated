@@ -1,4 +1,4 @@
-import { assert, Mocks, TestBase, TestDispose, TestGraph } from '../test-base';
+import { assert, Mocks, PathMatcher, TestBase, TestDispose, TestGraph } from '../test-base';
 TestBase.setup();
 
 import { Persona } from 'external/gs_tools/src/persona';
@@ -31,7 +31,7 @@ describe('preview.PreviewView', () => {
       const baseUrl = 'baseUrl/';
       fakeDocument.baseURI = baseUrl;
 
-      const selectedItemId = '/selectedItemId';
+      const selectedItemPath = '/selectedItemId';
       fakeWindow.location = {href: `baseUrl/selectedItemId`};
 
       const item = PreviewFile.newInstance('id', content);
@@ -46,7 +46,7 @@ describe('preview.PreviewView', () => {
       assert(view['processScript_']).to.haveBeenCalledWith(scriptEl2);
       assert(mockShadowRoot.querySelectorAll).to.haveBeenCalledWith('script');
       assert(mockShadowRoot.innerHTML).to.equal(content);
-      assert(mockPreviewService.get).to.haveBeenCalledWith(selectedItemId);
+      assert(mockPreviewService.get).to.haveBeenCalledWith(PathMatcher.with(selectedItemPath));
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 
@@ -58,7 +58,7 @@ describe('preview.PreviewView', () => {
       const baseUrl = 'baseUrl/';
       fakeDocument.baseURI = baseUrl;
 
-      const selectedItemId = '/selectedItemId';
+      const selectedItemPath = '/selectedItemId';
       fakeWindow.location = {href: `baseUrl/selectedItemId`};
 
       const mockPreviewService = jasmine.createSpyObj('PreviewService', ['get']);
@@ -69,8 +69,8 @@ describe('preview.PreviewView', () => {
 
       await view.onHostConnected_();
       assert(mockShadowRoot.querySelectorAll).toNot.haveBeenCalled();
-      assert(mockShadowRoot.innerHTML).to.equal(`${selectedItemId} cannot be found`);
-      assert(mockPreviewService.get).to.haveBeenCalledWith(selectedItemId);
+      assert(mockShadowRoot.innerHTML).to.equal(`${selectedItemPath} cannot be found`);
+      assert(mockPreviewService.get).to.haveBeenCalledWith(PathMatcher.with(selectedItemPath));
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(view);
     });
 

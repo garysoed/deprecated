@@ -1,4 +1,5 @@
 import { TestGraph } from 'external/gs_tools/src/graph';
+import { PathMatcher } from 'external/gs_tools/src/path/testing';
 import {
   TestAsync,
   TestDispose,
@@ -12,6 +13,7 @@ export { TestGraph } from 'external/gs_tools/src/graph';
 export { assert, assertColor, Matchers } from 'external/gs_tools/src/jasmine';
 export { Fakes, Mocks } from 'external/gs_tools/src/mock';
 export { TestDispose } from 'external/gs_tools/src/testing';
+export { PathMatcher } from 'external/gs_tools/src/path/testing';
 
 const TEST_SETUP = new TestSetup([
   TestAsync,
@@ -19,6 +21,7 @@ const TEST_SETUP = new TestSetup([
   TestDispose,
   TestInject,
   TestJasmine,
+  PathMatcher.testSetup,
 ]);
 
 let initialized = false;

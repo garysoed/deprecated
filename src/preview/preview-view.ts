@@ -2,6 +2,7 @@ import { BaseDisposable } from 'external/gs_tools/src/dispose';
 import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableList } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
+import { Paths } from 'external/gs_tools/src/path';
 import {
   component,
   onDom,
@@ -40,7 +41,7 @@ export class PreviewView extends BaseDisposable {
     const baseUrl = this.document_.baseURI || '';
     const previewPath = this.window_.location.href.slice(baseUrl.length - 1);
     const [previewService] = await Graph.getAll(time, this, $previewService);
-    const previewItem = await previewService.get(previewPath);
+    const previewItem = await previewService.get(Paths.absolutePath(previewPath));
     if (previewItem === null) {
       shadowRoot!.innerHTML = `${previewPath} cannot be found`;
       return;

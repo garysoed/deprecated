@@ -39,7 +39,7 @@ describe('render.RenderServiceClass', () => {
           .when(id).return(originalItem)
           .when(childId).return(childItem);
 
-      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath(['path'])));
+      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath('/path')));
 
       spyOn(service, 'render').and.callThrough();
 
@@ -62,7 +62,7 @@ describe('render.RenderServiceClass', () => {
       Fakes.build(mockItemService.getItem)
           .when(id).return(originalItem);
 
-      const path = Paths.absolutePath(['path']);
+      const path = Paths.absolutePath('/path');
       mockItemService.getPath.and.returnValue(Promise.resolve(path));
 
       await service.render(id);
@@ -79,7 +79,7 @@ describe('render.RenderServiceClass', () => {
 
     it(`should reject if the item type is not a file or a folder`, async () => {
       const id = `id`;
-      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath(['path'])));
+      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath('/path')));
 
       await assert(service.render(id)).to.rejectWithError(/item for id/i);
     });

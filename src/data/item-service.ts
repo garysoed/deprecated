@@ -6,7 +6,7 @@ import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
-import { Path, Paths } from 'external/gs_tools/src/path';
+import { AbsolutePath, Path } from 'external/gs_tools/src/path';
 
 import { Folder } from '../data/folder';
 
@@ -74,7 +74,7 @@ export class ItemService {
     const parentId = item.getParentId();
     return parentId ?
         this.getPath(parentId, newSuffixes) :
-        Paths.absolutePath(newSuffixes);
+        new AbsolutePath(newSuffixes);
   }
 
   async getRootFolder(): Promise<ThothFolder> {
