@@ -14,7 +14,9 @@
     "typescript": "^2.5.2",
     "x-tag": "^1.5.11"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/js-yaml": "^3.10.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

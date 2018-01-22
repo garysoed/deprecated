@@ -203,14 +203,18 @@ describe('data.MetadataService', () => {
 
       mockItemService.getPath.and.returnValue(Paths.absolutePath('/a/b/c/d'));
 
+      const metadata = Mocks.object('metadata');
+      spyOn(service, 'createMetadata_').and.returnValue(Promise.resolve(metadata));
+
       Fakes.build(spyOn(service, 'getMetadataItemInFolder_'))
           .when(PathMatcher.with('/a/b/c/d')).return(item3)
           .when(PathMatcher.with('/a/b')).return(item2)
           .when(PathMatcher.with('/a')).return(item1)
           .else().return(null);
 
-      const metadata = await service['resolveMetadataItem_'](item3);
-      assert(metadata.content).to.equal([content1, content2, content3].join('\n'));
+      assert(await service['resolveMetadataItem_'](item3)).to.equal(metadata);
+      assert(service['createMetadata_']).to
+          .haveBeenCalledWith([content1, content2, content3].join('\n'));
       assert(mockItemService.getPath).to.haveBeenCalledWith(item3Id);
     });
 
@@ -228,8 +232,11 @@ describe('data.MetadataService', () => {
 
       mockItemService.getPath.and.returnValue(null);
 
-      const metadata = await service['resolveMetadataItem_'](item);
-      assert(metadata.content).to.equal(content);
+      const metadata = Mocks.object('metadata');
+      spyOn(service, 'createMetadata_').and.returnValue(Promise.resolve(metadata));
+
+      assert(await service['resolveMetadataItem_'](item)).to.equal(metadata);
+      assert(service['createMetadata_']).to.haveBeenCalledWith(content);
       assert(mockItemService.getPath).to.haveBeenCalledWith(itemId);
     });
   });

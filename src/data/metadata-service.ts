@@ -11,6 +11,11 @@ import { Metadata } from '../data/metadata';
 export class MetadataService {
   constructor(private readonly itemService_: ItemService) { }
 
+  private async createMetadata_(unparsedContent: string): Promise<Metadata> {
+    const parsedContent = jsyaml.load(unparsedContent);
+    return new Metadata(Paths.absolutePath('/'), parsedContent);
+  }
+
   async getMetadataForItem(itemId: string): Promise<Metadata | null> {
     const path = await this.itemService_.getPath(itemId);
     if (!path) {
@@ -54,7 +59,7 @@ export class MetadataService {
   private async resolveMetadataItem_(item: File): Promise<Metadata> {
     const path = await this.itemService_.getPath(item.getId());
     if (!path) {
-      return new Metadata(item.getContent());
+      return this.createMetadata_(item.getContent());
     }
 
     const contentPromises = Paths.getSubPathsToRoot(path)
@@ -68,7 +73,7 @@ export class MetadataService {
         });
     const contents = await Promise.all(contentPromises);
     const combinedContent = contents.reverse().filter((content) => !!content).join('\n');
-    return new Metadata(combinedContent);
+    return this.createMetadata_(combinedContent);
   }
 }
 
