@@ -1,4 +1,11 @@
-import { InstanceofType } from 'external/gs_tools/src/check';
+import {
+  HasPropertiesType,
+  InstanceofType,
+  ObjectType,
+  StringType,
+  UndefinedType,
+  UnionType} from 'external/gs_tools/src/check';
+import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { Path, Paths } from 'external/gs_tools/src/path';
 
@@ -8,24 +15,53 @@ import { Folder } from '../data/folder';
 import { $itemService, ItemService } from '../data/item-service';
 import { Metadata } from '../data/metadata';
 
+export const DEFAULT_METADATA = new Metadata();
+
+type MetadataJsonType = {
+  globals?: {[key: string]: string},
+  templates?: {[key: string]: string},
+};
+const METADATA_JSON_TYPE = HasPropertiesType<MetadataJsonType>({
+  'globals': UnionType.builder<undefined | {[key: string]: string}>()
+      .addType(UndefinedType)
+      .addType(ObjectType.stringKeyed<string>(StringType))
+      .build(),
+  'templates': UnionType.builder<undefined | {[key: string]: string}>()
+      .addType(UndefinedType)
+      .addType(ObjectType.stringKeyed<string>(StringType))
+      .build(),
+});
+
 export class MetadataService {
   constructor(private readonly itemService_: ItemService) { }
 
-  private async createMetadata_(unparsedContent: string): Promise<Metadata> {
+  private createMetadata_(unparsedContent: string, path: string): Metadata {
     const parsedContent = jsyaml.load(unparsedContent);
-    return new Metadata(Paths.absolutePath('/'), parsedContent);
+    if (!METADATA_JSON_TYPE.check(parsedContent)) {
+      throw Errors.assert(`content of metadata [${path}]`).shouldBeA(METADATA_JSON_TYPE)
+          .butWas(parsedContent);
+    }
+
+    const templates = parsedContent.templates;
+    const defaultTemplateString = templates ?
+        templates['$default'] || null :
+        null;
+    const defaultTemplate = StringType.check(defaultTemplateString) ?
+        Paths.absolutePath(defaultTemplateString) :
+        null;
+    return new Metadata(defaultTemplate, parsedContent.globals);
   }
 
-  async getMetadataForItem(itemId: string): Promise<Metadata | null> {
+  async getMetadataForItem(itemId: string): Promise<Metadata> {
     const path = await this.itemService_.getPath(itemId);
     if (!path) {
-      return null;
+      return DEFAULT_METADATA;
     }
 
     const dirPath = Paths.getDirPath(path);
     const folder = await this.itemService_.getItemByPath(dirPath);
     if (!folder) {
-      return null;
+      return DEFAULT_METADATA;
     }
 
     // Check if there are any metadatas in this folder.
@@ -59,7 +95,7 @@ export class MetadataService {
   private async resolveMetadataItem_(item: File): Promise<Metadata> {
     const path = await this.itemService_.getPath(item.getId());
     if (!path) {
-      return this.createMetadata_(item.getContent());
+      return this.createMetadata_(item.getContent(), '');
     }
 
     const contentPromises = Paths.getSubPathsToRoot(path)
@@ -73,7 +109,7 @@ export class MetadataService {
         });
     const contents = await Promise.all(contentPromises);
     const combinedContent = contents.reverse().filter((content) => !!content).join('\n');
-    return this.createMetadata_(combinedContent);
+    return this.createMetadata_(combinedContent, path.toString());
   }
 }
 

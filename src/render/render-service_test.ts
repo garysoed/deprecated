@@ -1,27 +1,36 @@
-import { assert, Fakes, TestBase } from '../test-base';
+import { assert, Fakes, IterableMatcher, TestBase } from '../test-base';
 TestBase.setup();
 
-import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Paths } from 'external/gs_tools/src/path';
 
 import { DriveFile } from 'src/data/drive-file';
 import {
   DriveFolder,
   FileType,
-  PreviewFile } from '../data';
+  Metadata,
+  PreviewFile} from '../data';
 import { HandlebarsService } from '../render/handlebars-service';
 import { RenderService } from '../render/render-service';
 import { ShowdownService } from '../render/showdown-service';
 
 describe('render.RenderServiceClass', () => {
   let mockItemService: any;
+  let mockMetadataService: any;
   let mockPreviewService: any;
+  let mockTemplates: any;
   let service: RenderService;
 
   beforeEach(() => {
     mockItemService = jasmine.createSpyObj('ItemService', ['getItem', 'getPath']);
+    mockMetadataService = jasmine.createSpyObj('MetadataService', ['getMetadataForItem']);
     mockPreviewService = jasmine.createSpyObj('PreviewService', ['get', 'save']);
-    service = new RenderService(mockItemService, mockPreviewService);
+    mockTemplates = jasmine.createSpyObj('Templates', ['getTemplate']);
+    service = new RenderService(
+        mockItemService,
+        mockMetadataService,
+        mockPreviewService,
+        mockTemplates);
   });
 
   describe('render', () => {
@@ -65,6 +74,12 @@ describe('render.RenderServiceClass', () => {
       const path = Paths.absolutePath('/path');
       mockItemService.getPath.and.returnValue(Promise.resolve(path));
 
+      const templateContent = 'templateContent';
+      spyOn(service, 'getTemplateContent_').and.returnValue(templateContent);
+
+      const metadata = new Metadata(undefined, {a: '1', b: '2'});
+      mockMetadataService.getMetadataForItem.and.returnValue(metadata);
+
       await service.render(id);
 
       const previewFile: PreviewFile = mockPreviewService.save.calls.argsFor(0)[0];
@@ -72,9 +87,13 @@ describe('render.RenderServiceClass', () => {
       assert(previewFile.getContent()).to.equal(handlebarsContent);
 
       assert(mockPreviewService.save).to.haveBeenCalledWith(previewFile);
+      assert(mockMetadataService.getMetadataForItem).to.haveBeenCalledWith(id);
 
       assert(ShowdownService.render).to.haveBeenCalledWith(content);
-      assert(HandlebarsService.render).to.haveBeenCalledWith(showdownContent);
+      assert(HandlebarsService.render).to.haveBeenCalledWith(
+          showdownContent,
+          templateContent,
+          IterableMatcher.of(ImmutableMap.of<string, string>([['a', '1'], ['b', '2']])));
     });
 
     it(`should reject if the item type is not a file or a folder`, async () => {

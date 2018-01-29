@@ -1,11 +1,17 @@
-import { Templates } from 'external/gs_tools/src/webc';
+import { ImmutableMap } from 'external/gs_tools/src/immutable';
 
 export class HandlebarsServiceClass {
-  private readonly templates_: Templates = Templates.newInstance();
-
-  render(content: string): string {
-    const template = this.templates_.getTemplate('src/render/render-default-template');
-    return Handlebars.compile(template)({$mainContent: content});
+  render(
+      content: string,
+      template: string,
+      globals: Iterable<[string, string]> = ImmutableMap.of({})): string {
+    const context = {
+      $mainContent: content,
+    };
+    for (const [key, value] of globals) {
+      context[key] = value;
+    }
+    return Handlebars.compile(template)(context);
   }
 }
 

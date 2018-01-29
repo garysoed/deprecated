@@ -7,6 +7,7 @@ export { FileType } from './file-type';
 export { Folder } from './folder';
 export { Item } from './item';
 export { $itemService, ItemService } from './item-service';
+export { Metadata } from './metadata';
 export { $metadataService, MetadataService } from './metadata-service';
 export { PreviewFile } from './preview-file';
 export { $previewService, PreviewService } from './preview-service';

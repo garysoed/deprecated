@@ -115,6 +115,9 @@ const isEditingProvider = Graph.createProvider($isEditing, false);
 export const $item = instanceId('item', NullableType(InstanceofType(Item)));
 export const $parent = instanceId('parent', NullableType(InstanceofType(Item)));
 
+export const PREVIEW_WINDOW_NAME = 'thoth.PreviewWindow';
+export const PREVIEW_PATH_ROOT = '../../preview/main.html';
+
 @component({
   inputs: [
     $.host.itemid,
@@ -123,7 +126,9 @@ export const $parent = instanceId('parent', NullableType(InstanceofType(Item)));
   templateKey: 'src/main/navigator-item',
 })
 export class NavigatorItem extends BaseThemedElement2 {
-  constructor(@inject('theming.ThemeService') themeService: ThemeService) {
+  constructor(
+      @inject('x.dom.window') private readonly window_: Window,
+      @inject('theming.ThemeService') themeService: ThemeService) {
     super(themeService);
   }
 
@@ -231,12 +236,24 @@ export class NavigatorItem extends BaseThemedElement2 {
     event.stopPropagation();
 
     const time = Graph.getTimestamp();
-    const [item, renderService] = await Graph.getAll(time, this, $item, $renderService);
+    const [item, itemService, renderService] = await Graph.getAll(
+        time,
+        this,
+        $item,
+        $itemService,
+        $renderService);
     if (item === null) {
       return;
     }
 
-    renderService.render(item.getId());
+    await renderService.render(item.getId());
+
+    const path = await itemService.getPath(item.getId());
+    if (!path) {
+      return;
+    }
+
+    this.window_.open(`${PREVIEW_PATH_ROOT}${path}`, PREVIEW_WINDOW_NAME);
   }
 
   @nodeOut($item)

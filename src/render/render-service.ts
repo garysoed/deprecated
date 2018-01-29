@@ -1,23 +1,39 @@
 import { InstanceofType } from 'external/gs_tools/src/check';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
+import { Templates } from 'external/gs_tools/src/webc';
 
 import {
+  $itemService,
+  $metadataService,
   $previewService,
   File,
   FileType,
   Folder,
   ItemService,
+  MetadataService,
   PreviewFile,
   PreviewService} from '../data';
-import { $itemService } from '../data/item-service';
 import { HandlebarsService } from '../render/handlebars-service';
 import { ShowdownService } from '../render/showdown-service';
+
+const DEFAULT_TEMPLATE_KEY = 'src/render/render-default-template';
 
 export class RenderService {
   constructor(
       private readonly itemService_: ItemService,
-      private readonly previewService_: PreviewService) { }
+      private readonly metadataService_: MetadataService,
+      private readonly previewService_: PreviewService,
+      private readonly templates_: Templates) { }
+
+  async getTemplateContent_(): Promise<string> {
+    // TODO: Use the specified template.
+    const content = this.templates_.getTemplate(DEFAULT_TEMPLATE_KEY);
+    if (!content) {
+      throw Errors.assert('default template').shouldExist().butNot();
+    }
+    return content;
+  }
 
   async render(id: string): Promise<void> {
     const path = await this.itemService_.getPath(id);
@@ -42,10 +58,14 @@ export class RenderService {
         ...item.getItems().mapItem((itemId) => this.render(itemId)),
       ]);
     } else if ((item instanceof File) && item.getType() === FileType.ASSET) {
+      const metadata = await this.metadataService_.getMetadataForItem(item.getId());
+
+      const renderedItem = HandlebarsService.render(
+          ShowdownService.render(item.getContent()),
+          await this.getTemplateContent_(),
+          metadata.getGlobals());
       await this.previewService_.save(
-          PreviewFile.newInstance(
-              path.toString(),
-              HandlebarsService.render(ShowdownService.render(item.getContent()))));
+          PreviewFile.newInstance(path.toString(), renderedItem));
     }
   }
 }
@@ -53,9 +73,14 @@ export class RenderService {
 export const $renderService = staticId('renderService', InstanceofType(RenderService));
 Graph.registerProvider(
     $renderService,
-    (itemService, previewService) => {
-      return new RenderService(itemService, previewService);
+    (itemService, metadataService, previewService) => {
+      return new RenderService(
+          itemService,
+          metadataService,
+          previewService,
+          Templates.newInstance());
     },
     $itemService,
+    $metadataService,
     $previewService);
 

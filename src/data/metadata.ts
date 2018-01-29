@@ -1,23 +1,29 @@
 import { ImmutableMap } from 'external/gs_tools/src/immutable';
 import { AbsolutePath } from 'external/gs_tools/src/path';
 
-type TemplateType = AbsolutePath;
+type TemplatePath = AbsolutePath;
 
 export class Metadata {
-  constructor(
-      private readonly defaultTemplate_: TemplateType,
-      private readonly globals_: {[key: string]: string} = {},
-      private readonly templates_: {[filename: string]: TemplateType} = {}) { }
+  private readonly globals_: ImmutableMap<string, string>;
+  private readonly templates_: ImmutableMap<string, TemplatePath>;
 
-  getDefaultTemplatePath(): AbsolutePath {
+  constructor(
+      private readonly defaultTemplate_: TemplatePath | null = null,
+      globals: {[key: string]: string} = {},
+      templates: {[filename: string]: TemplatePath} = {}) {
+    this.globals_ = ImmutableMap.of(globals);
+    this.templates_ = ImmutableMap.of(templates);
+  }
+
+  getDefaultTemplatePath(): TemplatePath | null {
     return this.defaultTemplate_;
   }
 
-  getTemplates(): ImmutableMap<string, AbsolutePath> {
-    return ImmutableMap.of(this.templates_);
+  getGlobals(): ImmutableMap<string, string> {
+    return this.globals_;
   }
 
-  getValues(): ImmutableMap<string, string> {
-    return ImmutableMap.of(this.globals_);
+  getTemplates(): ImmutableMap<string, TemplatePath> {
+    return this.templates_;
   }
 }

@@ -15,5 +15,6 @@ ts_library(
     ],
     deps = [
       "@gs_tools//src",
+      "@gs_tools//src/immutable/testing",
       "@gs_tools//src/path/testing",
     ])

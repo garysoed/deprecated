@@ -14,14 +14,16 @@ import {
   FileType,
   Item,
   ThothFolder} from '../data';
-import { $, $isEditing, $item, $parent, NavigatorItem } from '../main/navigator-item';
+import { $, $isEditing, $item, $parent, NavigatorItem, PREVIEW_PATH_ROOT, PREVIEW_WINDOW_NAME } from '../main/navigator-item';
 import { $renderService } from '../render';
 
 describe('main.NavigatorItem', () => {
   let item: NavigatorItem;
+  let mockWindow: any;
 
   beforeEach(() => {
-    item = new NavigatorItem(Mocks.object('themeService'));
+    mockWindow = jasmine.createSpyObj('Window', ['open']);
+    item = new NavigatorItem(mockWindow, Mocks.object('themeService'));
     TestDispose.add(item);
   });
 
@@ -336,8 +338,37 @@ describe('main.NavigatorItem', () => {
       const mockRenderService = jasmine.createSpyObj('RenderService', ['render']);
       TestGraph.set($renderService, mockRenderService);
 
+      const path = 'path';
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getPath']);
+      mockItemService.getPath.and.returnValue(path);
+      TestGraph.set($itemService, mockItemService);
+
       await item.onRenderButtonAction_(mockEvent);
       assert(mockRenderService.render).to.haveBeenCalledWith(id);
+      assert(mockWindow.open).to.haveBeenCalledWith(
+          `${PREVIEW_PATH_ROOT}${path}`,
+          PREVIEW_WINDOW_NAME);
+      assert(mockItemService.getPath).to.haveBeenCalledWith(id);
+    });
+
+    it(`should not navigate if path cannot be found`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      const id = 'id';
+      const driveItem = DriveFile
+          .newInstance(id, 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
+      TestGraph.set($item, driveItem);
+
+      const mockRenderService = jasmine.createSpyObj('RenderService', ['render']);
+      TestGraph.set($renderService, mockRenderService);
+
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getPath']);
+      mockItemService.getPath.and.returnValue(null);
+      TestGraph.set($itemService, mockItemService);
+
+      await item.onRenderButtonAction_(mockEvent);
+      assert(mockRenderService.render).to.haveBeenCalledWith(id);
+      assert(mockWindow.open).toNot.haveBeenCalled();
+      assert(mockItemService.getPath).to.haveBeenCalledWith(id);
     });
 
     it(`should not reject if the item is not a FileImpl`, async () => {
