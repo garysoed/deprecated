@@ -7,7 +7,7 @@ import {
   UnionType} from 'external/gs_tools/src/check';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
-import { Path, Paths } from 'external/gs_tools/src/path';
+import { AbsolutePathParser, Path, Paths } from 'external/gs_tools/src/path';
 
 import { File } from '../data/file';
 import { FileType } from '../data/file-type';
@@ -46,9 +46,7 @@ export class MetadataService {
     const defaultTemplateString = templates ?
         templates['$default'] || null :
         null;
-    const defaultTemplate = StringType.check(defaultTemplateString) ?
-        Paths.absolutePath(defaultTemplateString) :
-        null;
+    const defaultTemplate = AbsolutePathParser.parse(defaultTemplateString);
     return new Metadata(defaultTemplate, parsedContent.globals);
   }
 

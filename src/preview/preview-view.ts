@@ -6,7 +6,6 @@ import { Paths } from 'external/gs_tools/src/path';
 import {
   component,
   onDom,
-  Persona,
   resolveSelectors,
   shadowHostSelector,
 } from 'external/gs_tools/src/persona';
@@ -26,31 +25,29 @@ const $ = resolveSelectors({
 export class PreviewView extends BaseDisposable {
   constructor(
       @inject('x.dom.document') private readonly document_: Document,
-      @inject('x.dom.window') private readonly window_: Window) {
+      @inject('x.dom.window') private readonly window_: Window,
+      private readonly parser_: DOMParser = new DOMParser()) {
     super();
   }
 
   @onDom.event($.host.el, 'gs-connected')
   async onHostConnected_(): Promise<void> {
-    const shadowRoot = Persona.getShadowRoot(this);
-    if (!shadowRoot) {
-      return;
-    }
-
     const time = Graph.getTimestamp();
     const baseUrl = this.document_.baseURI || '';
     const previewPath = this.window_.location.href.slice(baseUrl.length - 1);
     const [previewService] = await Graph.getAll(time, this, $previewService);
     const previewItem = await previewService.get(Paths.absolutePath(previewPath));
     if (previewItem === null) {
-      shadowRoot!.innerHTML = `${previewPath} cannot be found`;
+      this.document_.write(`${previewPath} cannot be found`);
       return;
     }
-    shadowRoot.innerHTML = previewItem.getContent();
-    const scripts = ImmutableList.of(shadowRoot.querySelectorAll('script'));
+    const dom = this.parser_.parseFromString(previewItem.getContent(), 'text/html');
+    const scripts = ImmutableList.of(dom.querySelectorAll('script'));
     for (const script of scripts) {
       this.processScript_(script);
     }
+
+    this.document_.write(dom.documentElement.outerHTML);
   }
 
   private async processScript_(scriptEl: HTMLScriptElement): Promise<void> {
