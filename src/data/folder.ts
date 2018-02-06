@@ -14,7 +14,7 @@ export function getInitMap_(
 
 export abstract class Folder extends Item {
   @field('items', SetParser(StringParser))
-  readonly items_: ImmutableSet<string>;
+  readonly items_!: ImmutableSet<string>;
 
   abstract getItems(): ImmutableSet<string>;
 }

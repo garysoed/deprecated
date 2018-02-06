@@ -4,7 +4,7 @@ import {
   ObjectType,
   StringType,
   UndefinedType,
-  UnionType} from 'external/gs_tools/src/check';
+  UnionType } from 'external/gs_tools/src/check';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { AbsolutePathParser, Path, Paths } from 'external/gs_tools/src/path';

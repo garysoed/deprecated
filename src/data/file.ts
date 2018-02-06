@@ -17,8 +17,8 @@ export function getInitMap_(
 }
 
 export abstract class File extends Item {
-  @field('content', StringParser) readonly content_: string;
-  @field('type', EnumParser(FileType)) readonly type_: FileType;
+  @field('content', StringParser) readonly content_!: string;
+  @field('type', EnumParser(FileType)) readonly type_!: FileType;
 
   abstract getContent(): string;
 

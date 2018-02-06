@@ -7,7 +7,7 @@ import { FileType } from '../data/file-type';
 
 @Serializable('data.DriveFile')
 export abstract class DriveFile extends File {
-  @field('driveId', StringParser) readonly driveId_: string;
+  @field('driveId', StringParser) readonly driveId_!: string;
 
   abstract getDriveId(): string;
 

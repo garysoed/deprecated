@@ -5,7 +5,7 @@ import { StringParser } from 'external/gs_tools/src/parse';
 
 @Serializable('data.Project')
 export abstract class Project implements DataModel<string> {
-  @field('rootFolderId', StringParser) rootFolderId_: string;
+  @field('rootFolderId', StringParser) rootFolderId_!: string;
 
   abstract getRootFolderId(): string;
 

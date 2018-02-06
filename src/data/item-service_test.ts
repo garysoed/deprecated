@@ -8,7 +8,6 @@ import {
   DriveFile,
   FileType,
   Item,
-  PreviewFile,
   ThothFolder } from '../data';
 import { ItemService } from '../data/item-service';
 
@@ -16,13 +15,11 @@ import { ItemService } from '../data/item-service';
 describe('data.ItemService', () => {
   let itemsGraph: FakeDataGraph<Item>;
   let mockProjectService: any;
-  let previewGraph: FakeDataGraph<PreviewFile>;
   let service: ItemService;
 
   beforeEach(() => {
     itemsGraph = new FakeDataGraph<Item>();
     mockProjectService = jasmine.createSpyObj('ProjectService', ['get']);
-    previewGraph = new FakeDataGraph<PreviewFile>();
     service = new ItemService(itemsGraph, mockProjectService);
   });
 

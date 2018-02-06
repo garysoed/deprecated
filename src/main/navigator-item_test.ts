@@ -14,7 +14,14 @@ import {
   FileType,
   Item,
   ThothFolder} from '../data';
-import { $, $isEditing, $item, $parent, NavigatorItem, PREVIEW_PATH_ROOT, PREVIEW_WINDOW_NAME } from '../main/navigator-item';
+import {
+  $,
+  $isEditing,
+  $item,
+  $parent,
+  NavigatorItem,
+  PREVIEW_PATH_ROOT,
+  PREVIEW_WINDOW_NAME } from '../main/navigator-item';
 import { $renderService } from '../render';
 
 describe('main.NavigatorItem', () => {

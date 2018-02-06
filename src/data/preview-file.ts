@@ -5,8 +5,8 @@ import { StringParser } from 'external/gs_tools/src/parse';
 
 @Serializable('data.PreviewFile')
 export abstract class PreviewFile implements DataModel<string> {
-  @field('content', StringParser) readonly content_: string;
-  @field('path', StringParser) readonly path_: string;
+  @field('content', StringParser) readonly content_!: string;
+  @field('path', StringParser) readonly path_!: string;
 
   abstract getContent(): string;
 
