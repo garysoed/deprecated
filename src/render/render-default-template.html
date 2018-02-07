@@ -5,8 +5,19 @@
   <head>
     <title>{{$title}}</title>
     <script defer src="/bazel-genfiles/render_pack.js"></script>
+    <style>
+      .header {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    </style>
   </head>
   <body>
-    {{{$mainContent}}}
+    <header class="header" gs-theme="normal" gs-highlight>
+      <h1>{{$title}}</h1>
+    </header>
+    <main>
+      {{{$mainContent}}}
+    </main>
   </body>
 </html>

@@ -13,7 +13,7 @@ package_group(
 )
 
 ts_library(
-    name = "lib_js",
+    name = "main_lib_js",
     srcs = [],
     deps = [
         "//src/main"
@@ -29,8 +29,8 @@ ts_library(
 )
 
 ts_binary(
-    name = "bin_js",
-    deps = [":lib_js"],
+    name = "main_bin_js",
+    deps = [":main_lib_js"],
 )
 
 ts_binary(
@@ -40,11 +40,11 @@ ts_binary(
 
 ts_binary(
     name = "render_bin_js",
-    deps = [":lib_js"],
+    deps = [":main_lib_js"],
 )
 
 filegroup(
-    name = "pack_template",
+    name = "main_pack_template",
     srcs = [
         "@gs_ui//:pack_template",
         "//src/main:template",
@@ -69,8 +69,8 @@ filegroup(
 )
 
 webpack_binary(
-    name = "pack_js",
-    package = ":bin_js",
+    name = "main_pack_js",
+    package = ":main_bin_js",
     entry = "src/main/main.js",
 )
 
@@ -87,12 +87,12 @@ webpack_binary(
 )
 
 genrule(
-    name = "pack",
+    name = "main_pack",
     srcs = [
-        "//:pack_js",
-        "//:pack_template",
+        "//:main_pack_js",
+        "//:main_pack_template",
     ],
-    outs = ["pack.js"],
+    outs = ["main_pack.js"],
     cmd = "awk 'FNR==1{print \"\"}1' $(SRCS) > $@",
 )
 
@@ -114,6 +114,15 @@ genrule(
     ],
     outs = ["render_pack.js"],
     cmd = "awk 'FNR==1{print \"\"}1' $(SRCS) > $@",
+)
+
+filegroup(
+    name = "pack",
+    srcs = [
+        ":main_pack",
+        ":preview_pack",
+        ":render_pack",
+    ]
 )
 
 filegroup(
