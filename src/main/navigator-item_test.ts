@@ -1,4 +1,4 @@
-import { assert, Matchers, Mocks, TestBase, TestDispose, TestGraph } from '../test-base';
+import { assert, Fakes, Matchers, Mocks, TestBase, TestDispose, TestGraph } from '../test-base';
 TestBase.setup();
 
 import { Graph } from 'external/gs_tools/src/graph';
@@ -12,8 +12,9 @@ import {
   DriveFile,
   DriveFolder,
   FileType,
+  Folder,
   Item,
-  ThothFolder} from '../data';
+  ThothFolder } from '../data';
 import {
   $,
   $isEditing,
@@ -32,6 +33,69 @@ describe('main.NavigatorItem', () => {
     mockWindow = jasmine.createSpyObj('Window', ['open']);
     item = new NavigatorItem(mockWindow, Mocks.object('themeService'));
     TestDispose.add(item);
+  });
+
+  describe('getDefaultItem_', () => {
+    it(`should return the item in the folder with name 'index'`, async () => {
+      const item1Id = 'item1Id';
+      const item2Id = 'item2Id';
+      const indexItemId = 'indexItemId';
+      const mockItem1 = jasmine.createSpyObj('Item1', ['getName']);
+      mockItem1.getName.and.returnValue('item1.ext');
+      const mockItem2 = jasmine.createSpyObj('Item2', ['getName']);
+      mockItem2.getName.and.returnValue('item2.ext');
+      const mockIndexItem = jasmine.createSpyObj('IndexItem', ['getName']);
+      mockIndexItem.getName.and.returnValue('index.js.test');
+
+      const mockItem = jasmine.createSpyObj('Item', ['getItems']);
+      mockItem.getItems.and.returnValue(ImmutableSet.of([item1Id, item2Id, indexItemId]));
+      Object.setPrototypeOf(mockItem, Folder.prototype);
+
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getItem']);
+      Fakes.build(mockItemService.getItem)
+          .when(item1Id).resolve(mockItem1)
+          .when(item2Id).resolve(mockItem2)
+          .when(indexItemId).resolve(mockIndexItem);
+
+      assert(await item['getDefaultItem_'](mockItem, mockItemService)).to.equal(mockIndexItem);
+    });
+
+    it(`should return the first item in the folder if none are called 'index'`, async () => {
+      const item1Id = 'item1Id';
+      const item2Id = 'item2Id';
+      const mockItem1 = jasmine.createSpyObj('Item1', ['getName']);
+      mockItem1.getName.and.returnValue('item1.ext');
+      const mockItem2 = jasmine.createSpyObj('Item2', ['getName']);
+      mockItem2.getName.and.returnValue('item2.ext');
+
+      const mockItem = jasmine.createSpyObj('Item', ['getItems']);
+      mockItem.getItems.and.returnValue(ImmutableSet.of([item1Id, item2Id]));
+      Object.setPrototypeOf(mockItem, Folder.prototype);
+
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getItem']);
+      Fakes.build(mockItemService.getItem)
+          .when(item1Id).resolve(mockItem1)
+          .when(item2Id).resolve(mockItem2);
+
+      assert(await item['getDefaultItem_'](mockItem, mockItemService)).to.equal(mockItem1);
+    });
+
+    it(`should return null if the folder is empty`, async () => {
+      const mockItem = jasmine.createSpyObj('Item', ['getItems']);
+      mockItem.getItems.and.returnValue(ImmutableSet.of([]));
+      Object.setPrototypeOf(mockItem, Folder.prototype);
+
+      const itemService = Mocks.object('itemService');
+
+      assert(await item['getDefaultItem_'](mockItem, itemService)).to.beNull();
+    });
+
+    it(`should return the item if it isn't a folder`, async () => {
+      const driveItem = Mocks.object('driveItem');
+      const itemService = Mocks.object('itemService');
+
+      assert(await item['getDefaultItem_'](driveItem, itemService)).to.equal(driveItem);
+    });
   });
 
   describe('onDeleteButtonAction_', () => {
@@ -350,12 +414,15 @@ describe('main.NavigatorItem', () => {
       mockItemService.getPath.and.returnValue(path);
       TestGraph.set($itemService, mockItemService);
 
+      spyOn(item, 'getDefaultItem_').and.returnValue(Promise.resolve(driveItem));
+
       await item.onRenderButtonAction_(mockEvent);
       assert(mockRenderService.render).to.haveBeenCalledWith(id);
       assert(mockWindow.open).to.haveBeenCalledWith(
           `${PREVIEW_PATH_ROOT}${path}`,
           PREVIEW_WINDOW_NAME);
       assert(mockItemService.getPath).to.haveBeenCalledWith(id);
+      assert(item['getDefaultItem_']).to.haveBeenCalledWith(driveItem, mockItemService);
     });
 
     it(`should not navigate if path cannot be found`, async () => {
@@ -372,10 +439,35 @@ describe('main.NavigatorItem', () => {
       mockItemService.getPath.and.returnValue(null);
       TestGraph.set($itemService, mockItemService);
 
+      spyOn(item, 'getDefaultItem_').and.returnValue(Promise.resolve(driveItem));
+
       await item.onRenderButtonAction_(mockEvent);
       assert(mockRenderService.render).to.haveBeenCalledWith(id);
       assert(mockWindow.open).toNot.haveBeenCalled();
       assert(mockItemService.getPath).to.haveBeenCalledWith(id);
+      assert(item['getDefaultItem_']).to.haveBeenCalledWith(driveItem, mockItemService);
+    });
+
+    it(`should not navigate if default item cannot be found`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      const id = 'id';
+      const driveItem = DriveFile
+          .newInstance(id, 'name', 'parentId', FileType.ASSET, 'content', 'driveId');
+      TestGraph.set($item, driveItem);
+
+      const mockRenderService = jasmine.createSpyObj('RenderService', ['render']);
+      TestGraph.set($renderService, mockRenderService);
+
+      const mockItemService = jasmine.createSpyObj('ItemService', ['getPath']);
+      mockItemService.getPath.and.returnValue(null);
+      TestGraph.set($itemService, mockItemService);
+
+      spyOn(item, 'getDefaultItem_').and.returnValue(Promise.resolve(null));
+
+      await item.onRenderButtonAction_(mockEvent);
+      assert(mockRenderService.render).to.haveBeenCalledWith(id);
+      assert(mockWindow.open).toNot.haveBeenCalled();
+      assert(item['getDefaultItem_']).to.haveBeenCalledWith(driveItem, mockItemService);
     });
 
     it(`should not reject if the item is not a FileImpl`, async () => {

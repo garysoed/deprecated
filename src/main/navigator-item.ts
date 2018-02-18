@@ -3,7 +3,7 @@ import {
   ElementWithTagType,
   InstanceofType,
   NullableType,
-  StringType} from 'external/gs_tools/src/check';
+  StringType } from 'external/gs_tools/src/check';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn, nodeOut } from 'external/gs_tools/src/graph';
 import { inject } from 'external/gs_tools/src/inject';
@@ -18,7 +18,7 @@ import {
     Persona,
     render,
     resolveSelectors,
-    shadowHostSelector} from 'external/gs_tools/src/persona';
+    shadowHostSelector } from 'external/gs_tools/src/persona';
 import { $location, navigateToHash } from 'external/gs_tools/src/ui';
 
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
@@ -31,9 +31,10 @@ import {
   DriveFolder,
   File,
   FileType,
+  Folder,
   Item,
   ItemService,
-  ThothFolder} from '../data';
+  ThothFolder } from '../data';
 import { $renderService } from '../render';
 
 export const $ = resolveSelectors({
@@ -130,6 +131,36 @@ export class NavigatorItem extends BaseThemedElement2 {
       @inject('x.dom.window') private readonly window_: Window,
       @inject('theming.ThemeService') themeService: ThemeService) {
     super(themeService);
+  }
+
+  private async getDefaultItem_(item: Item, itemService: ItemService): Promise<Item | null> {
+    if (!(item instanceof Folder)) {
+      return item;
+    }
+
+    const promiseSet = item.getItems()
+        .mapItem((itemId) => itemService.getItem(itemId));
+    const childItems = await Promise.all([...promiseSet]);
+    const defaultItem = childItems
+        .find((item) => {
+          if (!item) {
+            return false;
+          }
+
+          const name = item.getName();
+          const parts = name.split('.');
+          if (parts.length <= 0) {
+            return false;
+          }
+
+          return parts[0] === 'index';
+        });
+
+    if (defaultItem) {
+      return defaultItem;
+    } else {
+      return childItems[0] || null;
+    }
   }
 
   @onDom.event($.deleteButton.el, 'click')
@@ -248,7 +279,12 @@ export class NavigatorItem extends BaseThemedElement2 {
 
     await renderService.render(item.getId());
 
-    const path = await itemService.getPath(item.getId());
+    const defaultItem = await this.getDefaultItem_(item, itemService);
+    if (!defaultItem) {
+      return;
+    }
+
+    const path = await itemService.getPath(defaultItem.getId());
     if (!path) {
       return;
     }

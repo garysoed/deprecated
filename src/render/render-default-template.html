@@ -6,21 +6,30 @@
     <title>{{$title}}</title>
     <script defer src="/bazel-genfiles/render_pack.js"></script>
     <style>
+      .body {
+        overflow-y: auto;
+      }
+
+      .content {
+        padding: 0 4rem;
+        max-width: 40rem;
+      }
+
+      .content > *:last-child {
+        padding-bottom: 4rem;
+      }
+
       .header {
         padding-left: 1rem;
         padding-right: 1rem;
       }
-
-      .content {
-        max-width: 40rem;
-      }
     </style>
   </head>
-  <body>
+  <body layout="column">
     <header class="header" gs-theme="normal" gs-highlight>
       <h1>{{$title}}</h1>
     </header>
-    <div layout="row" flex-justify="center">
+    <div class="body" layout="row" flex flex-justify="center">
       <div class="content">
         <main>
           {{{$mainContent}}}
