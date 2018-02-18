@@ -10,14 +10,22 @@
         padding-left: 1rem;
         padding-right: 1rem;
       }
+
+      .content {
+        max-width: 40rem;
+      }
     </style>
   </head>
   <body>
     <header class="header" gs-theme="normal" gs-highlight>
       <h1>{{$title}}</h1>
     </header>
-    <main>
-      {{{$mainContent}}}
-    </main>
+    <div layout="row" flex-justify="center">
+      <div class="content">
+        <main>
+          {{{$mainContent}}}
+        </main>
+      </div>
+    </div>
   </body>
 </html>

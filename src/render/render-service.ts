@@ -13,7 +13,7 @@ import {
   ItemService,
   MetadataService,
   PreviewFile,
-  PreviewService} from '../data';
+  PreviewService } from '../data';
 import { HandlebarsService } from '../render/handlebars-service';
 import { ShowdownService } from '../render/showdown-service';
 
@@ -61,7 +61,7 @@ export class RenderService {
       const metadata = await this.metadataService_.getMetadataForItem(item.getId());
 
       const renderedItem = HandlebarsService.render(
-          ShowdownService.render(item.getContent()),
+          ShowdownService.render(item.getContent(), metadata.getShowdownConfigForPath(path)),
           await this.getTemplateContent_(),
           metadata.getGlobals());
       await this.previewService_.save(

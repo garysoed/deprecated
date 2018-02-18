@@ -1,4 +1,5 @@
 import { cache } from 'external/gs_tools/src/data';
+import { ImmutableMap } from 'external/gs_tools/src/immutable';
 
 export class ShowdownServiceClass {
   @cache()
@@ -8,8 +9,12 @@ export class ShowdownServiceClass {
     });
   }
 
-  render(raw: string): string {
-    return this.getConverter_().makeHtml(raw);
+  render(raw: string, options: ImmutableMap<string, string>): string {
+    const converter = this.getConverter_();
+    for (const [key, value] of options) {
+      converter.setOption(key, value);
+    }
+    return converter.makeHtml(raw);
   }
 }
 

@@ -1,4 +1,4 @@
-import { assert, Fakes, IterableMatcher, TestBase } from '../test-base';
+import { assert, Fakes, IterableMatcher, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
 import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
@@ -8,8 +8,7 @@ import { DriveFile } from 'src/data/drive-file';
 import {
   DriveFolder,
   FileType,
-  Metadata,
-  PreviewFile} from '../data';
+  PreviewFile } from '../data';
 import { HandlebarsService } from '../render/handlebars-service';
 import { RenderService } from '../render/render-service';
 import { ShowdownService } from '../render/showdown-service';
@@ -77,8 +76,10 @@ describe('render.RenderServiceClass', () => {
       const templateContent = 'templateContent';
       spyOn(service, 'getTemplateContent_').and.returnValue(templateContent);
 
-      const metadata = new Metadata(undefined, {a: '1', b: '2'});
-      mockMetadataService.getMetadataForItem.and.returnValue(metadata);
+      const showdownConfig = Mocks.object('showdownConfig');
+      const mockMetadata = jasmine.createSpyObj('Metadata', ['getShowdownConfigForPath']);
+      mockMetadata.getShowdownConfigForPath.and.returnValue(showdownConfig);
+      mockMetadataService.getMetadataForItem.and.returnValue(mockMetadata);
 
       await service.render(id);
 
@@ -89,7 +90,8 @@ describe('render.RenderServiceClass', () => {
       assert(mockPreviewService.save).to.haveBeenCalledWith(previewFile);
       assert(mockMetadataService.getMetadataForItem).to.haveBeenCalledWith(id);
 
-      assert(ShowdownService.render).to.haveBeenCalledWith(content);
+      assert(ShowdownService.render).to.haveBeenCalledWith(content, showdownConfig);
+      assert(mockMetadata.getShowdownConfigForPath).to.haveBeenCalledWith(path);
       assert(HandlebarsService.render).to.haveBeenCalledWith(
           showdownContent,
           templateContent,

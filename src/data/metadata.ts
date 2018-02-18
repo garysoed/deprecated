@@ -1,26 +1,38 @@
 import { ImmutableMap } from 'external/gs_tools/src/immutable';
 import { AbsolutePath } from 'external/gs_tools/src/path';
 
+type ShowdownConfig = ImmutableMap<string, string>;
 type TemplatePath = AbsolutePath;
 
-export class Metadata {
-  private readonly globals_: ImmutableMap<string, string>;
-  private readonly templates_: ImmutableMap<string, TemplatePath>;
+const DEFAULT_KEY = '$default';
 
+export class Metadata {
   constructor(
-      private readonly defaultTemplate_: TemplatePath | null = null,
-      globals: {[key: string]: string} = {},
-      templates: {[filename: string]: TemplatePath} = {}) {
-    this.globals_ = ImmutableMap.of(globals);
-    this.templates_ = ImmutableMap.of(templates);
+      private readonly globals_: ImmutableMap<string, string>,
+      private readonly showdownConfigs_: ImmutableMap<string, ShowdownConfig>,
+      private readonly templates_: ImmutableMap<string, TemplatePath>) {
+  }
+
+  getDefaultShowdownConfig(): ShowdownConfig | null {
+    return this.showdownConfigs_.get(DEFAULT_KEY) || null;
   }
 
   getDefaultTemplatePath(): TemplatePath | null {
-    return this.defaultTemplate_;
+    return this.templates_.get(DEFAULT_KEY) || null;
   }
 
   getGlobals(): ImmutableMap<string, string> {
     return this.globals_;
+  }
+
+  getShowdownConfigForPath(path: AbsolutePath): ShowdownConfig {
+    const defaultConfig = this.getDefaultShowdownConfig() || ImmutableMap.of([]);
+    const overrideConfig = this.showdownConfigs_.get(path.toString()) || ImmutableMap.of([]);
+    return defaultConfig.addAll(overrideConfig);
+  }
+
+  getShowdownConfigs(): ImmutableMap<string, ShowdownConfig> {
+    return this.showdownConfigs_;
   }
 
   getTemplates(): ImmutableMap<string, TemplatePath> {
