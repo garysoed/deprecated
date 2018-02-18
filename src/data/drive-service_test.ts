@@ -4,7 +4,7 @@ TestBase.setup();
 import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
 import { DriveService } from '../data/drive-service';
-import { ApiDriveType, DriveStorage } from '../import';
+import { ApiDriveType, DriveStorage } from '../datasource';
 
 describe('data.DriveServiceImpl', () => {
   let mockItemService: any;

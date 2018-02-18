@@ -35,7 +35,7 @@ import {
   DriveFile,
   DriveFolder,
   ThothFolder } from '../data';
-import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../import';
+import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../datasource';
 import { SearchItem } from '../main/search-item';
 
 const DriveFileSummaryType = HasPropertiesType<ApiDriveFileSummary>({

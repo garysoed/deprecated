@@ -1,4 +1,4 @@
-import { ApiDriveType } from '../import';
+import { ApiDriveType } from '../datasource';
 
 export enum FileType {
   UNKNOWN,

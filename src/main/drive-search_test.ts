@@ -11,7 +11,7 @@ import {
   $selectedItem,
   DriveFolder,
   ThothFolder } from '../data';
-import { ApiDriveType, DriveStorage } from '../import';
+import { ApiDriveType, DriveStorage } from '../datasource';
 import {
   $,
   $driveItems,

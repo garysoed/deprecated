@@ -3,7 +3,7 @@ import { GapiLibrary } from 'external/gs_tools/src/net';
 import { GapiRequestQueue, GapiStorage } from 'external/gs_tools/src/store';
 
 import { drive } from '../api';
-import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../import/drive';
+import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../datasource/drive';
 
 type ListQueryConfig = {
   filename?: string,

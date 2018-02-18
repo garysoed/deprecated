@@ -9,7 +9,7 @@ import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
 import { convertToItemType } from '../data/file-type';
 import { $itemService, ItemService } from '../data/item-service';
-import { ApiDriveType, DriveStorage } from '../import';
+import { ApiDriveType, DriveStorage } from '../datasource';
 
 export class DriveService {
   constructor(private readonly itemService_: ItemService) { }

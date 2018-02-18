@@ -3,11 +3,11 @@ TestBase.setup();
 
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { ApiDriveType } from '../import/drive';
-import { DRIVE_FOLDER_MIMETYPE, DriveStorageImpl } from '../import/drive-storage';
+import { ApiDriveType } from '../datasource/drive';
+import { DRIVE_FOLDER_MIMETYPE, DriveStorageImpl } from '../datasource/drive-storage';
 
 
-describe('import.DriveStorage', () => {
+describe('datasource.DriveStorage', () => {
   let mockDriveLibrary: any;
   let storage: DriveStorageImpl;
 
