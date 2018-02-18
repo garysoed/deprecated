@@ -6,7 +6,7 @@ import {
   InstanceofType,
   IterableOfType,
   NullableType,
-  StringType} from 'external/gs_tools/src/check';
+  StringType } from 'external/gs_tools/src/check';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableSet, Iterables } from 'external/gs_tools/src/immutable';
@@ -23,7 +23,7 @@ import {
   render,
   resolveSelectors,
   shadowHostSelector,
-  slotSelector} from 'external/gs_tools/src/persona';
+  slotSelector } from 'external/gs_tools/src/persona';
 
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
@@ -34,7 +34,7 @@ import {
   $selectedItem,
   DriveFile,
   DriveFolder,
-  ThothFolder} from '../data';
+  ThothFolder } from '../data';
 import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../import';
 import { SearchItem } from '../main/search-item';
 

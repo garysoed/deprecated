@@ -10,7 +10,7 @@ import {
   $itemService,
   $selectedItem,
   DriveFolder,
-  ThothFolder} from '../data';
+  ThothFolder } from '../data';
 import { ApiDriveType, DriveStorage } from '../import';
 import {
   $,

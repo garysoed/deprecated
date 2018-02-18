@@ -12,7 +12,7 @@ import {
   render,
   resolveSelectors,
   shadowHostSelector,
-  slotSelector} from 'external/gs_tools/src/persona';
+  slotSelector } from 'external/gs_tools/src/persona';
 
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';

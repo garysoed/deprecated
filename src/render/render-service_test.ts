@@ -1,7 +1,7 @@
-import { assert, Fakes, IterableMatcher, Mocks, TestBase } from '../test-base';
+import { assert, Fakes, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
-import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Paths } from 'external/gs_tools/src/path';
 
 import { DriveFile } from 'src/data/drive-file';
@@ -77,7 +77,10 @@ describe('render.RenderServiceClass', () => {
       spyOn(service, 'getTemplateContent_').and.returnValue(templateContent);
 
       const showdownConfig = Mocks.object('showdownConfig');
-      const mockMetadata = jasmine.createSpyObj('Metadata', ['getShowdownConfigForPath']);
+      const mockMetadata = jasmine
+          .createSpyObj('Metadata', ['getGlobals', 'getShowdownConfigForPath']);
+      const globals = Mocks.object('globals');
+      mockMetadata.getGlobals.and.returnValue(globals);
       mockMetadata.getShowdownConfigForPath.and.returnValue(showdownConfig);
       mockMetadataService.getMetadataForItem.and.returnValue(mockMetadata);
 
@@ -95,7 +98,7 @@ describe('render.RenderServiceClass', () => {
       assert(HandlebarsService.render).to.haveBeenCalledWith(
           showdownContent,
           templateContent,
-          IterableMatcher.of(ImmutableMap.of<string, string>([['a', '1'], ['b', '2']])));
+          globals);
     });
 
     it(`should reject if the item type is not a file or a folder`, async () => {
