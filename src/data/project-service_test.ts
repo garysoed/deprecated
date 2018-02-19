@@ -8,12 +8,12 @@ import { PROJECT_ID } from '../data/project-service';
 
 
 describe('data.ProjectService', () => {
-  let itemsGraph: FakeDataGraph<Item>;
+  let itemsGraph: FakeDataGraph<Item<any>>;
   let projectsGraph: FakeDataGraph<Project>;
   let service: ProjectService;
 
   beforeEach(() => {
-    itemsGraph = new FakeDataGraph<Item>();
+    itemsGraph = new FakeDataGraph<Item<any>>();
     projectsGraph = new FakeDataGraph<Project>();
     service = new ProjectService(itemsGraph, projectsGraph);
   });

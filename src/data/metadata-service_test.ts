@@ -6,6 +6,7 @@ import { Paths } from 'external/gs_tools/src/path';
 
 import { DriveFile, DriveFolder, FileType, MetadataService } from '../data';
 import { DEFAULT_METADATA } from '../data/metadata-service';
+import { DriveSource } from '../datasource';
 
 
 describe('data.MetadataService', () => {
@@ -168,7 +169,7 @@ describe('data.MetadataService', () => {
           folderId,
           FileType.ASSET,
           'content',
-          'otherDriveId');
+          DriveSource.newInstance('otherDriveId'));
       const metadataId = 'metadataId';
       const metadataFile = DriveFile.newInstance(
           metadataId,
@@ -176,7 +177,7 @@ describe('data.MetadataService', () => {
           folderId,
           FileType.METADATA,
           'content',
-          'metadataDriveId');
+          DriveSource.newInstance('metadataDriveId'));
       Fakes.build(mockItemService.getItem)
           .when(otherId).return(otherFile)
           .when(metadataId).return(metadataFile);
@@ -186,7 +187,7 @@ describe('data.MetadataService', () => {
           'folder',
           null,
           ImmutableSet.of([otherId, metadataId]),
-          'folderDriveId');
+          DriveSource.newInstance('folderDriveId'));
       mockItemService.getItemByPath.and.returnValue(folder);
 
       assert(await service['getMetadataItemInFolder_'](path)).to.equal(metadataFile);
@@ -204,7 +205,7 @@ describe('data.MetadataService', () => {
           folderId,
           FileType.ASSET,
           'content',
-          'otherDriveId');
+          DriveSource.newInstance('otherDriveId'));
       mockItemService.getItem.and.returnValue(otherFile);
 
       const folder = DriveFolder.newInstance(
@@ -212,7 +213,7 @@ describe('data.MetadataService', () => {
           'folder',
           null,
           ImmutableSet.of([otherId]),
-          'folderDriveId');
+          DriveSource.newInstance('folderDriveId'));
       mockItemService.getItemByPath.and.returnValue(folder);
 
       assert(await service['getMetadataItemInFolder_'](path)).to.beNull();
@@ -227,7 +228,7 @@ describe('data.MetadataService', () => {
           'folderId',
           FileType.ASSET,
           'content',
-          'otherDriveId');
+          DriveSource.newInstance('otherDriveId'));
       mockItemService.getItemByPath.and.returnValue(otherFile);
 
       assert(await service['getMetadataItemInFolder_'](path)).to.beNull();
@@ -248,7 +249,7 @@ describe('data.MetadataService', () => {
           'parentId',
           FileType.METADATA,
           content1,
-          'driveId');
+          DriveSource.newInstance('driveId'));
       const item2Id = 'item2Id';
       const item2 = DriveFile.newInstance(
           item2Id,
@@ -256,7 +257,7 @@ describe('data.MetadataService', () => {
           'parentId',
           FileType.METADATA,
           content2,
-          'driveId');
+          DriveSource.newInstance('driveId'));
       const item3Id = 'item3Id';
       const item3 = DriveFile.newInstance(
           item3Id,
@@ -264,7 +265,7 @@ describe('data.MetadataService', () => {
           'parentId',
           FileType.METADATA,
           content3,
-          'driveId');
+          DriveSource.newInstance('driveId'));
 
       const pathString = '/a/b/c/d';
       mockItemService.getPath.and.returnValue(Paths.absolutePath(pathString));
@@ -295,7 +296,7 @@ describe('data.MetadataService', () => {
           'parentId',
           FileType.METADATA,
           content,
-          'driveId');
+          DriveSource.newInstance('driveId'));
 
       mockItemService.getPath.and.returnValue(null);
 

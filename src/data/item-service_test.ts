@@ -10,15 +10,16 @@ import {
   Item,
   ThothFolder } from '../data';
 import { ItemService } from '../data/item-service';
+import { DriveSource } from '../datasource';
 
 
 describe('data.ItemService', () => {
-  let itemsGraph: FakeDataGraph<Item>;
+  let itemsGraph: FakeDataGraph<Item<any>>;
   let mockProjectService: any;
   let service: ItemService;
 
   beforeEach(() => {
-    itemsGraph = new FakeDataGraph<Item>();
+    itemsGraph = new FakeDataGraph<Item<any>>();
     mockProjectService = jasmine.createSpyObj('ProjectService', ['get']);
     service = new ItemService(itemsGraph, mockProjectService);
   });
@@ -87,7 +88,12 @@ describe('data.ItemService', () => {
 
       const name1 = 'name1';
       const item1 = DriveFile.newInstance(
-          name1, idRoot, 'parentId', FileType.ASSET, 'content', 'driveId');
+          name1,
+          idRoot,
+          'parentId',
+          FileType.ASSET,
+          'content',
+          DriveSource.newInstance('driveId'));
 
       itemsGraph.set(idRoot, rootFolder);
       itemsGraph.set(item1.getId(), item1);
@@ -115,7 +121,8 @@ describe('data.ItemService', () => {
       const item2 = ThothFolder.newInstance(id2, name2, id1, ImmutableSet.of([id3]));
 
       const name3 = 'name3';
-      const item3 = DriveFile.newInstance(id3, name3, id2, FileType.ASSET, 'content', 'driveId');
+      const item3 = DriveFile.newInstance(
+          id3, name3, id2, FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
       itemsGraph.set(id1, item1);
       itemsGraph.set(id2, item2);
       itemsGraph.set(id3, item3);
@@ -129,7 +136,8 @@ describe('data.ItemService', () => {
       const id2 = 'id2';
 
       const item1 = ThothFolder.newInstance(id1, 'name1', 'not exist', ImmutableSet.of([id2]));
-      const item2 = DriveFile.newInstance(id2, 'name2', id1, FileType.ASSET, 'content', 'driveId');
+      const item2 = DriveFile.newInstance(
+          id2, 'name2', id1, FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
       itemsGraph.set(id1, item1);
       itemsGraph.set(id2, item2);
 

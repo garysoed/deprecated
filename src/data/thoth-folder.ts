@@ -3,9 +3,10 @@ import { DataModels } from 'external/gs_tools/src/datamodel';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { Folder, getInitMap_ } from '../data/folder';
+import { ThothSource } from '../datasource';
 
 @Serializable('data.ThothFolder')
-export abstract class ThothFolder extends Folder {
+export abstract class ThothFolder extends Folder<ThothSource> {
   getSearchIndex(): string {
     return this.getName();
   }
@@ -19,6 +20,6 @@ export abstract class ThothFolder extends Folder {
       items: ImmutableSet<string>): ThothFolder {
     return DataModels.newInstance(
         ThothFolder,
-        getInitMap_(id, name, parentId, items));
+        getInitMap_(id, name, parentId, items, ThothSource.newInstance()));
   }
 }

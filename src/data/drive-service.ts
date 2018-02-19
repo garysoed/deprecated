@@ -9,13 +9,14 @@ import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
 import { convertToItemType } from '../data/file-type';
 import { $itemService, ItemService } from '../data/item-service';
-import { ApiDriveType, DriveStorage } from '../datasource';
+import { ApiDriveType, DriveSource, DriveStorage } from '../datasource';
 
 export class DriveService {
   constructor(private readonly itemService_: ItemService) { }
 
-  async recursiveGet(driveId: string, containerId: string):
+  async recursiveGet(source: DriveSource, containerId: string):
       Promise<ImmutableList<DriveFile | DriveFolder>> {
+    const driveId = source.getDriveId();
     const apiDriveItem = await DriveStorage.read(driveId);
     if (!apiDriveItem) {
       return ImmutableList.of([]);
@@ -32,12 +33,12 @@ export class DriveService {
           containerId,
           convertToItemType(apiType, apiName),
           apiDriveItem.content || '',
-          driveId);
+          source);
       return ImmutableList.of([newFile]);
     }
 
     const contentPromises = apiDriveItem.files.map((file) => {
-      return this.recursiveGet(file.summary.source.getDriveId(), id);
+      return this.recursiveGet(file.summary.source, id);
     });
     const contents = await Promise.all(contentPromises);
     const contentsToAddAsChild: (DriveFile | DriveFolder)[] = [];
@@ -51,7 +52,7 @@ export class DriveService {
         apiName,
         containerId,
         ImmutableSet.of(contentsToAddAsChild.map((file) => file.getId())),
-        driveId);
+        source);
 
     let newItems = ImmutableList.of<DriveFile | DriveFolder>([newFolder]);
     for (const content of contents) {

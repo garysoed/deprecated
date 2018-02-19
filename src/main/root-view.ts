@@ -95,11 +95,11 @@ export class RootView extends BaseThemedElement2 {
 
   @render.attribute($.breadcrumb.crumb)
   async renderCrumbs_(
-      @nodeIn($selectedItem) selectedItem: Item | null,
+      @nodeIn($selectedItem) selectedItem: Item<any> | null,
       @nodeIn($itemService) itemService: ItemService):
       Promise<ImmutableList<CrumbData>> {
-    const itemArray: Item[] = [];
-    let current: Item | null = selectedItem;
+    const itemArray: Item<any>[] = [];
+    let current: Item<any> | null = selectedItem;
     while (current) {
       itemArray.push(current);
       const parentId: string | null = current.getParentId();

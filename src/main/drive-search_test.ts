@@ -19,15 +19,6 @@ import {
   driveItemsSetter,
   DriveSearch } from '../main/drive-search';
 
-function createDriveSummary(driveId: string, name: string, type: ApiDriveType):
-    {name: string, source: DriveSource, type: ApiDriveType} {
-  return {
-    name,
-    source: DriveSource.newInstance(driveId),
-    type,
-  };
-}
-
 describe('driveItemsGetter', () => {
   it(`should return the correct item`, () => {
     const id = 'id';
@@ -129,8 +120,16 @@ describe('main.DriveSearch', () => {
       const name2 = 'name2';
 
       spyOn(DriveStorage, 'search').and.returnValue(Promise.resolve(ImmutableList.of([
-        createDriveSummary(id1, name1, ApiDriveType.MARKDOWN),
-        createDriveSummary(id2, name2, ApiDriveType.FOLDER),
+        {
+          name: name1,
+          source: DriveSource.newInstance(id1),
+          type: ApiDriveType.MARKDOWN,
+        },
+        {
+          name: name2,
+          source: DriveSource.newInstance(id2),
+          type: ApiDriveType.FOLDER,
+        },
       ])));
 
       await search.onInputChange_();
@@ -177,9 +176,15 @@ describe('main.DriveSearch', () => {
       const mockDispatcher = jasmine.createSpy('Dispatcher');
 
       const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
-      Fakes.build(mockDriveService.recursiveGet)
-          .when(id1).resolve(ImmutableList.of([mockItem1, mockItem11, mockItem12]))
-          .when(id2).resolve(ImmutableList.of([mockItem2]));
+      Fakes.build(mockDriveService.recursiveGet).call((source: DriveSource) => {
+        const driveId = source.getDriveId();
+        switch (driveId) {
+          case id1:
+            return ImmutableList.of([mockItem1, mockItem11, mockItem12]);
+          case id2:
+            return ImmutableList.of([mockItem2]);
+        }
+      });
       TestGraph.set($driveService, mockDriveService);
 
       Fakes.build(spyOn(Persona, 'getValue'))
@@ -203,9 +208,6 @@ describe('main.DriveSearch', () => {
       assert(mockItemService.save).to.haveBeenCalledWith(mockItem11);
       assert(mockItemService.save).to.haveBeenCalledWith(mockItem12);
       assert(mockItemService.save).to.haveBeenCalledWith(mockItem2);
-
-      assert(mockDriveService.recursiveGet).to.haveBeenCalledWith(id1, idSelected);
-      assert(mockDriveService.recursiveGet).to.haveBeenCalledWith(id2, idSelected);
     });
 
     it(`should reject if dispatcher cannot be found`, async () => {
@@ -229,7 +231,12 @@ describe('main.DriveSearch', () => {
       const idSelected = 'idSelected';
       TestGraph.set(
           $selectedItem,
-          DriveFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([]), 'driveId'));
+          DriveFolder.newInstance(
+              idSelected,
+              'test',
+              null,
+              ImmutableSet.of([]),
+              DriveSource.newInstance('driveId')));
 
       const id1 = 'id1';
       const id2 = 'id2';
@@ -279,17 +286,17 @@ describe('main.DriveSearch', () => {
       const name1 = 'name1';
       const name2 = 'name2';
 
-      const item1 = createDriveSummary(id1, name1, ApiDriveType.MARKDOWN);
-      const item2 = createDriveSummary(id2, name2, ApiDriveType.FOLDER);
+      const item1 = {id: id1, name: name1, type: ApiDriveType.MARKDOWN};
+      const item2 = {id: id2, name: name2, type: ApiDriveType.FOLDER};
       const items = [item1, item2];
       assert(search.renderDriveItems_(items)).to.haveElements([
         {
           selected: null,
-          summary: {id: id1, name: name1, type: ApiDriveType.MARKDOWN},
+          summary: item1,
         },
         {
           selected: null,
-          summary: {id: id2, name: name2, type: ApiDriveType.FOLDER},
+          summary: item2,
         },
       ]);
     });

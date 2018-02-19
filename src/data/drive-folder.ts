@@ -1,16 +1,12 @@
 import { Serializable } from 'external/gs_tools/src/data';
-import { DataModels, field } from 'external/gs_tools/src/datamodel';
+import { DataModels } from 'external/gs_tools/src/datamodel';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
-import { StringParser } from 'external/gs_tools/src/parse';
 
 import { Folder, getInitMap_ } from '../data/folder';
+import { DriveSource } from '../datasource';
 
 @Serializable('data.DriveFolder')
-export abstract class DriveFolder extends Folder {
-  @field('driveId', StringParser) readonly driveId_!: string;
-
-  abstract getDriveId(): string;
-
+export abstract class DriveFolder extends Folder<DriveSource> {
   getSearchIndex(): string {
     return this.getName();
   }
@@ -24,10 +20,9 @@ export abstract class DriveFolder extends Folder {
       name: string,
       parentId: string | null,
       items: ImmutableSet<string>,
-      driveId: string): DriveFolder {
+      source: DriveSource): DriveFolder {
     return DataModels.newInstance(
         DriveFolder,
-        getInitMap_(id, name, parentId, items)
-            .set('driveId_', driveId));
+        getInitMap_(id, name, parentId, items, source));
   }
 }

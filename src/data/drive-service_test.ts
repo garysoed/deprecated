@@ -81,31 +81,31 @@ describe('data.DriveServiceImpl', () => {
           .when(id22).resolve(rootItem.files[1].files[1]);
 
       const [rootFolder, file1, subFolder, file21, file22] =
-          await service.recursiveGet(idRoot, containerPath);
+          await service.recursiveGet(DriveSource.newInstance(idRoot), containerPath);
 
-      assert(rootFolder.getDriveId()).to.equal(idRoot);
+      assert(rootFolder.getSource().getDriveId()).to.equal(idRoot);
       assert(rootFolder.getName()).to.equal(nameRoot);
       assert(rootFolder.getParentId()).to.equal(containerPath);
       assert((rootFolder as DriveFolder).getItems()).to
           .haveElements([file1.getId(), subFolder.getId()]);
 
-      assert(file1.getDriveId()).to.equal(id1);
+      assert(file1.getSource().getDriveId()).to.equal(id1);
       assert(file1.getName()).to.equal(name1);
       assert(file1.getParentId()).to.equal(rootFolder.getId());
       assert((file1 as DriveFile).getContent()).to.equal(content1);
 
-      assert(subFolder.getDriveId()).to.equal(idSub);
+      assert(subFolder.getSource().getDriveId()).to.equal(idSub);
       assert(subFolder.getName()).to.equal(nameSub);
       assert(subFolder.getParentId()).to.equal(rootFolder.getId());
       assert((subFolder as DriveFolder).getItems()).to
           .haveElements([file21.getId(), file22.getId()]);
 
-      assert(file21.getDriveId()).to.equal(id21);
+      assert(file21.getSource().getDriveId()).to.equal(id21);
       assert(file21.getName()).to.equal(name21);
       assert(file21.getParentId()).to.equal(subFolder.getId());
       assert((file21 as DriveFile).getContent()).to.equal(content21);
 
-      assert(file22.getDriveId()).to.equal(id22);
+      assert(file22.getSource().getDriveId()).to.equal(id22);
       assert(file22.getName()).to.equal(name22);
       assert(file22.getParentId()).to.equal(subFolder.getId());
       assert((file22 as DriveFile).getContent()).to.equal(content22);
@@ -125,8 +125,8 @@ describe('data.DriveServiceImpl', () => {
 
       const containerId = 'containerId';
 
-      const [file] = await service.recursiveGet(id, containerId);
-      assert(file.getDriveId()).to.equal(id);
+      const [file] = await service.recursiveGet(DriveSource.newInstance(id), containerId);
+      assert(file.getSource().getDriveId()).to.equal(id);
       assert(file.getName()).to.equal(name);
       assert(file.getParentId()).to.equal(containerId);
       assert((file as DriveFile).getContent()).to.equal(content);
@@ -136,7 +136,8 @@ describe('data.DriveServiceImpl', () => {
     it(`should return empty list if the item cannot be found`, async () => {
       spyOn(DriveStorage, 'read').and.returnValue(null);
 
-      assert(await service.recursiveGet('idRoot', 'containerPath')).to.haveElements([]);
+      assert(await service.recursiveGet(DriveSource.newInstance('idRoot'), 'containerPath'))
+          .to.haveElements([]);
     });
   });
 });

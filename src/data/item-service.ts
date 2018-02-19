@@ -18,20 +18,21 @@ import { ThothFolder } from '../data/thoth-folder';
 
 export class ItemService {
   constructor(
-      private readonly itemsGraph_: DataGraph<Item>,
+      private readonly itemsGraph_: DataGraph<Item<any>>,
       private readonly projectService_: ProjectService) { }
 
-  async getItem(id: string): Promise<Item | null> {
+  async getItem(id: string): Promise<Item<any> | null> {
     return this.itemsGraph_.get(id);
   }
 
-  getItemByPath(path: Path): Promise<Item | null> {
+  getItemByPath(path: Path): Promise<Item<any> | null> {
     return this.getItemByPath_([...path.getParts()], null);
   }
 
-  private async getItemByPath_(path: string[], rootFolder: Folder | null): Promise<Item | null> {
+  private async getItemByPath_(path: string[], rootFolder: Folder<any> | null):
+      Promise<Item<any> | null> {
     let [current, ...rest] = path;
-    let root: Folder;
+    let root: Folder<any>;
     if (rootFolder) {
       root = rootFolder;
     } else if (current === ROOT_PATH.substr(1)) {
@@ -98,7 +99,7 @@ export class ItemService {
     return this.itemsGraph_.generateId();
   }
 
-  async save(...items: Item[]): Promise<void> {
+  async save(...items: Item<any>[]): Promise<void> {
     for (const item of items) {
       this.itemsGraph_.set(item.getId(), item);
     }

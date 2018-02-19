@@ -35,7 +35,7 @@ import {
   DriveFile,
   DriveFolder,
   ThothFolder } from '../data';
-import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../datasource';
+import { ApiDriveFileSummary, ApiDriveType, DriveSource, DriveStorage } from '../datasource';
 import { SearchItem } from '../main/search-item';
 
 type ItemSummaryType = {id: string, name: string, type: ApiDriveType};
@@ -169,7 +169,9 @@ export class DriveSearch extends BaseThemedElement2 {
     const selectedId = selectedItem.getId();
     const addedItems = items.filter((item) => !!item.selected);
     const addedDriveItemPromises = addedItems
-        .map((item) => driveService.recursiveGet(item.summary.id, selectedId));
+        .map((item) => {
+          return driveService.recursiveGet(DriveSource.newInstance(item.summary.id), selectedId);
+        });
     const addedDriveItems = await Promise.all(addedDriveItemPromises);
 
     // Stores all the drive items.
@@ -201,17 +203,13 @@ export class DriveSearch extends BaseThemedElement2 {
   }
 
   @render.children($.results.children)
-  renderDriveItems_(@nodeIn($driveItems) items: Iterable<ApiDriveFileSummary>):
+  renderDriveItems_(@nodeIn($driveItems) items: Iterable<ItemSummaryType>):
       ImmutableList<DriveFileItemData> {
     return ImmutableList.of([...items])
         .map((item) => {
           return {
             selected: null,
-            summary: {
-              id: item.source.getDriveId(),
-              name: item.name,
-              type: item.type,
-            },
+            summary: item,
           };
         });
   }

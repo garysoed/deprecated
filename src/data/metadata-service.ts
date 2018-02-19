@@ -86,7 +86,7 @@ export class MetadataService {
     return this.getMetadataForItem(folder.getId());
   }
 
-  private async getMetadataItemInFolder_(path: Path): Promise<File | null> {
+  private async getMetadataItemInFolder_(path: Path): Promise<File<any> | null> {
     const folder = await this.itemService_.getItemByPath(path);
     if (!(folder instanceof Folder)) {
       return null;
@@ -102,10 +102,10 @@ export class MetadataService {
       return item.getType() === FileType.METADATA;
     }) || null;
 
-    return result as (File | null);
+    return result as (File<any> | null);
   }
 
-  private async resolveMetadataItem_(item: File): Promise<Metadata> {
+  private async resolveMetadataItem_(item: File<any>): Promise<Metadata> {
     const path = await this.itemService_.getPath(item.getId());
     if (!path) {
       return this.createMetadata_(item.getContent(), '');

@@ -133,7 +133,8 @@ export class NavigatorItem extends BaseThemedElement2 {
     super(themeService);
   }
 
-  private async getDefaultItem_(item: Item, itemService: ItemService): Promise<Item | null> {
+  private async getDefaultItem_(item: Item<any>, itemService: ItemService):
+      Promise<Item<any> | null> {
     if (!(item instanceof Folder)) {
       return item;
     }
@@ -228,7 +229,7 @@ export class NavigatorItem extends BaseThemedElement2 {
       throw Errors.assert('parentId').shouldExist().butWas(parentId);
     }
 
-    const files = await driveService.recursiveGet(item.getDriveId(), parentId);
+    const files = await driveService.recursiveGet(item.getSource(), parentId);
     files.mapItem((file) => itemService.save(file));
   }
 
@@ -295,7 +296,7 @@ export class NavigatorItem extends BaseThemedElement2 {
   @nodeOut($item)
   providesItem(
       @nodeIn($itemService) itemService: ItemService,
-      @nodeIn($.host.itemid.getId()) itemId: string | null): Promise<Item | null> {
+      @nodeIn($.host.itemid.getId()) itemId: string | null): Promise<Item<any> | null> {
     if (!itemId) {
       return Promise.resolve(null);
     }
@@ -304,8 +305,8 @@ export class NavigatorItem extends BaseThemedElement2 {
 
   @nodeOut($parent)
   providesParent(
-      @nodeIn($item) item: Item | null,
-      @nodeIn($itemService) itemService: ItemService): Promise<Item | null> {
+      @nodeIn($item) item: Item<any> | null,
+      @nodeIn($itemService) itemService: ItemService): Promise<Item<any> | null> {
     if (!item) {
       return Promise.resolve(null);
     }
@@ -324,12 +325,12 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @render.attribute($.host.deleteable)
-  renderDeleteable_(@nodeIn($parent) parent: Item | null): boolean {
+  renderDeleteable_(@nodeIn($parent) parent: Item<any> | null): boolean {
     return parent instanceof ThothFolder;
   }
 
   @render.innerText($.icon.innerText)
-  renderIcon_(@nodeIn($item) item: Item | null): string {
+  renderIcon_(@nodeIn($item) item: Item<any> | null): string {
     if (!item) {
       return '';
     }
@@ -354,7 +355,7 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @render.innerText($.name.innerText)
-  renderName_(@nodeIn($item) item: Item | null): string {
+  renderName_(@nodeIn($item) item: Item<any> | null): string {
     if (!item) {
       return '';
     }
@@ -363,12 +364,12 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @render.attribute($.host.refreshable)
-  renderRefreshable_(@nodeIn($item) item: Item | null): boolean {
+  renderRefreshable_(@nodeIn($item) item: Item<any> | null): boolean {
     return item instanceof DriveFile || item instanceof DriveFolder;
   }
 
   @render.attribute($.host.viewable)
-  renderViewable_(@nodeIn($item) item: Item | null): boolean {
+  renderViewable_(@nodeIn($item) item: Item<any> | null): boolean {
     return item instanceof File;
   }
 }
