@@ -38,7 +38,8 @@ import {
 import { ApiDriveFileSummary, ApiDriveType, DriveStorage } from '../datasource';
 import { SearchItem } from '../main/search-item';
 
-const DriveFileSummaryType = HasPropertiesType<ApiDriveFileSummary>({
+type ItemSummaryType = {id: string, name: string, type: ApiDriveType};
+const DriveFileSummaryType = HasPropertiesType<ItemSummaryType>({
   id: StringType,
   name: StringType,
   type: EnumType(ApiDriveType),
@@ -46,7 +47,7 @@ const DriveFileSummaryType = HasPropertiesType<ApiDriveFileSummary>({
 
 type DriveFileItemData = {
   selected: boolean | null,
-  summary: ApiDriveFileSummary,
+  summary: ItemSummaryType,
 };
 
 const DriveFileItemDataType = HasPropertiesType<DriveFileItemData>({
@@ -135,7 +136,14 @@ export class DriveSearch extends BaseThemedElement2 {
   @onDom.event($.input.el, 'change')
   async onInputChange_(): Promise<void> {
     const query = Persona.getValue($.input.value, this);
-    const folders = await DriveStorage.search(query || '');
+    const folders = (await DriveStorage.search(query || ''))
+        .map((summary: ApiDriveFileSummary) => {
+          return {
+            id: summary.source.getDriveId(),
+            name: summary.name,
+            type: summary.type,
+          };
+        });
     return driveItemsProvider(folders, this);
   }
 
@@ -197,7 +205,14 @@ export class DriveSearch extends BaseThemedElement2 {
       ImmutableList<DriveFileItemData> {
     return ImmutableList.of([...items])
         .map((item) => {
-          return {selected: null, summary: item};
+          return {
+            selected: null,
+            summary: {
+              id: item.source.getDriveId(),
+              name: item.name,
+              type: item.type,
+            },
+          };
         });
   }
 }

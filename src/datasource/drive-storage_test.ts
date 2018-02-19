@@ -3,8 +3,10 @@ TestBase.setup();
 
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
+import { DriveSource } from '../datasource';
 import { ApiDriveType } from '../datasource/drive';
 import { DRIVE_FOLDER_MIMETYPE, DriveStorageImpl } from '../datasource/drive-storage';
+import { DriveSourceMatcher } from './testing';
 
 
 describe('datasource.DriveStorage', () => {
@@ -62,8 +64,8 @@ describe('datasource.DriveStorage', () => {
       const id2 = 'id2';
 
       spyOn(storage, 'listImpl_').and.returnValue(Promise.resolve(ImmutableSet.of([
-        {id: id1, name: 'name1'},
-        {id: id2, name: 'name2'},
+        {name: 'name1', source: DriveSource.newInstance(id1)},
+        {name: 'name2', source: DriveSource.newInstance(id2)},
       ])));
 
       const queueRequest = Mocks.object('queueRequest');
@@ -92,8 +94,8 @@ describe('datasource.DriveStorage', () => {
       }));
 
       assert(await storage['listImpl_'](mockQueueRequest)).to.haveElements([
-        {id: id1, name: name1, type: ApiDriveType.MARKDOWN},
-        {id: id2, name: name2, type: ApiDriveType.UNKNOWN},
+        {name: name1, source: DriveSourceMatcher.with(id1), type: ApiDriveType.MARKDOWN},
+        {name: name2, source: DriveSourceMatcher.with(id2), type: ApiDriveType.UNKNOWN},
       ]);
       assert(mockQueueRequest).to.haveBeenCalledWith(Matchers.anyFunction());
 
@@ -104,23 +106,26 @@ describe('datasource.DriveStorage', () => {
   describe('readFileContent_', () => {
     it(`should resolve correctly for text file type`, async () => {
       const id = 'id';
+      const source = DriveSource.newInstance(id);
       const body = 'body';
       const mockFiles = jasmine.createSpyObj('Files', ['get']);
       mockFiles.get.and.returnValue(Promise.resolve({body}));
       mockDriveLibrary.get.and.returnValue(Promise.resolve({files: mockFiles}));
 
-      await assert(storage['readFileContent_']({id, type: ApiDriveType.MARKDOWN} as any))
+      await assert(storage['readFileContent_']({source, type: ApiDriveType.MARKDOWN} as any))
           .to.resolveWith(body);
       assert(mockFiles.get).to.haveBeenCalledWith({alt: 'media', fileId: id});
     });
 
     it(`should resolve with null if the type is FOLDER`, async () => {
-      await assert(storage['readFileContent_']({id: 'id', type: ApiDriveType.FOLDER} as any))
+      const source = DriveSource.newInstance('id');
+      await assert(storage['readFileContent_']({source, type: ApiDriveType.FOLDER} as any))
           .to.resolveWith(null);
     });
 
     it(`should resolve with null if the type is UNKNOWN`, async () => {
-      await assert(storage['readFileContent_']({id: 'id', type: ApiDriveType.UNKNOWN} as any))
+      const source = DriveSource.newInstance('id');
+      await assert(storage['readFileContent_']({source, type: ApiDriveType.UNKNOWN} as any))
           .to.resolveWith(null);
     });
   });
@@ -171,7 +176,7 @@ describe('datasource.DriveStorage', () => {
       await assert(storage['readImpl_'](mockQueueRequest, id)).to.resolveWith({
         files,
         summary: Matchers.objectContaining({
-          id,
+          source: DriveSourceMatcher.with(id),
         }),
       });
       assert(storage['readFolderContents_']).to.haveBeenCalledWith(id);
@@ -201,10 +206,12 @@ describe('datasource.DriveStorage', () => {
         content,
         files: [],
         summary: Matchers.objectContaining({
-          id,
+          source: DriveSourceMatcher.with(id),
         }),
       });
-      assert(storage['readFileContent_']).to.haveBeenCalledWith(Matchers.objectContaining({id}));
+      assert(storage['readFileContent_']).to.haveBeenCalledWith(Matchers.objectContaining({
+        source: DriveSourceMatcher.with(id),
+      }));
 
       assert(mockQueueRequest).to.haveBeenCalledWith(Matchers.anyFunction());
       assert(mockQueueRequest.calls.argsFor(0)[0]({files: mockFiles})).to.equal(driveRequest);
@@ -227,7 +234,7 @@ describe('datasource.DriveStorage', () => {
       await assert(storage['readImpl_'](mockQueueRequest, id)).to.resolveWith({
         files: [],
         summary: Matchers.objectContaining({
-          id,
+          source: DriveSourceMatcher.with(id),
         }),
       });
       assert(mockQueueRequest).to.haveBeenCalledWith(Matchers.anyFunction());
@@ -258,8 +265,8 @@ describe('datasource.DriveStorage', () => {
       spyOn(storage, 'createListConfig_').and.returnValue(config);
 
       assert(await storage.search(filename)).to.haveElements([
-        {id: id1, name: name1, type: ApiDriveType.MARKDOWN},
-        {id: id2, name: name2, type: ApiDriveType.UNKNOWN},
+        {name: name1, source: DriveSourceMatcher.with(id1), type: ApiDriveType.MARKDOWN},
+        {name: name2, source: DriveSourceMatcher.with(id2), type: ApiDriveType.UNKNOWN},
       ]);
       assert(storage['createListConfig_']).to
           .haveBeenCalledWith(Matchers.objectContaining({filename}));

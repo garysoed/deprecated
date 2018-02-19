@@ -4,7 +4,16 @@ TestBase.setup();
 import { DriveFile } from '../data/drive-file';
 import { DriveFolder } from '../data/drive-folder';
 import { DriveService } from '../data/drive-service';
-import { ApiDriveType, DriveStorage } from '../datasource';
+import { ApiDriveType, DriveSource, DriveStorage } from '../datasource';
+
+function createDriveSummary(id: string, name: string, type: ApiDriveType):
+    {name: string, source: DriveSource, type: ApiDriveType} {
+  return {
+    name,
+    source: DriveSource.newInstance(id),
+    type,
+  };
+}
 
 describe('data.DriveServiceImpl', () => {
   let mockItemService: any;
@@ -43,25 +52,25 @@ describe('data.DriveServiceImpl', () => {
           {
             content: content1,
             files: [],
-            summary: {id: 'id1', name: name1, type: ApiDriveType.MARKDOWN},
+            summary: createDriveSummary('id1', name1, ApiDriveType.UNKNOWN),
           },
           {
             files: [
               {
                 content: content21,
                 files: [],
-                summary: {id: 'id21', name: name21, type: ApiDriveType.MARKDOWN},
+                summary: createDriveSummary('id21', name21, ApiDriveType.MARKDOWN),
               },
               {
                 content: content22,
                 files: [],
-                summary: {id: 'id22', name: name22, type: ApiDriveType.MARKDOWN},
+                summary: createDriveSummary('id22', name22, ApiDriveType.MARKDOWN),
               },
             ],
-            summary: {id: 'idSub', name: nameSub, type: ApiDriveType.FOLDER},
+            summary: createDriveSummary('idSub', nameSub, ApiDriveType.FOLDER),
           },
         ],
-        summary: {id: 'idRoot', name: nameRoot, type: ApiDriveType.FOLDER},
+        summary: createDriveSummary('idRoot', nameRoot, ApiDriveType.FOLDER),
       };
 
       Fakes.build(spyOn(DriveStorage, 'read'))

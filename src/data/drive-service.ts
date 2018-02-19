@@ -37,7 +37,7 @@ export class DriveService {
     }
 
     const contentPromises = apiDriveItem.files.map((file) => {
-      return this.recursiveGet(file.summary.id, id);
+      return this.recursiveGet(file.summary.source.getDriveId(), id);
     });
     const contents = await Promise.all(contentPromises);
     const contentsToAddAsChild: (DriveFile | DriveFolder)[] = [];

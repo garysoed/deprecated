@@ -17,4 +17,5 @@ ts_library(
       "@gs_tools//src",
       "@gs_tools//src/immutable/testing",
       "@gs_tools//src/path/testing",
+      "//src/datasource/testing",
     ])

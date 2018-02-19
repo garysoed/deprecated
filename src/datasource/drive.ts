@@ -1,3 +1,5 @@
+import { DriveSource } from '../datasource/drive-source';
+
 export enum ApiDriveType {
   UNKNOWN,
   FOLDER,
@@ -6,8 +8,8 @@ export enum ApiDriveType {
 }
 
 export type ApiDriveFileSummary = {
-  id: string,
   name: string,
+  source: DriveSource,
   type: ApiDriveType,
 };
 

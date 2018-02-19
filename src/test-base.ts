@@ -17,12 +17,15 @@ export { TestDispose } from 'external/gs_tools/src/testing';
 export { PathMatcher } from 'external/gs_tools/src/path/testing';
 export { IterableMatcher } from 'external/gs_tools/src/immutable/testing';
 
+import { DriveSourceMatcher } from './datasource/testing';
+
 const TEST_SETUP = new TestSetup([
   TestAsync,
   TestGraph,
   TestDispose,
   TestInject,
   TestJasmine,
+  DriveSourceMatcher.testSetup,
   IterableMatcher.testSetup,
   PathMatcher.testSetup,
 ]);

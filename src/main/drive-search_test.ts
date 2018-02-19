@@ -11,13 +11,22 @@ import {
   $selectedItem,
   DriveFolder,
   ThothFolder } from '../data';
-import { ApiDriveType, DriveStorage } from '../datasource';
+import { ApiDriveType, DriveSource, DriveStorage } from '../datasource';
 import {
   $,
   $driveItems,
   driveItemsGetter,
   driveItemsSetter,
   DriveSearch } from '../main/drive-search';
+
+function createDriveSummary(driveId: string, name: string, type: ApiDriveType):
+    {name: string, source: DriveSource, type: ApiDriveType} {
+  return {
+    name,
+    source: DriveSource.newInstance(driveId),
+    type,
+  };
+}
 
 describe('driveItemsGetter', () => {
   it(`should return the correct item`, () => {
@@ -114,14 +123,22 @@ describe('main.DriveSearch', () => {
       const query = 'query';
       spyOn(Persona, 'getValue').and.returnValue(query);
 
-      const item1 = {id: 'id1', name: 'name1', type: ApiDriveType.MARKDOWN};
-      const item2 = {id: 'id2', name: 'name2', type: ApiDriveType.FOLDER};
-      spyOn(DriveStorage, 'search').and
-          .returnValue(Promise.resolve(ImmutableSet.of([item1, item2])));
+      const id1 = 'id1';
+      const id2 = 'id2';
+      const name1 = 'name1';
+      const name2 = 'name2';
+
+      spyOn(DriveStorage, 'search').and.returnValue(Promise.resolve(ImmutableList.of([
+        createDriveSummary(id1, name1, ApiDriveType.MARKDOWN),
+        createDriveSummary(id2, name2, ApiDriveType.FOLDER),
+      ])));
 
       await search.onInputChange_();
       const items = await Graph.get($driveItems, Graph.getTimestamp(), search);
-      assert([...items]).to.equal([item1, item2]);
+      assert([...items]).to.equal([
+        {id: id1, name: name1, type: ApiDriveType.MARKDOWN},
+        {id: id2, name: name2, type: ApiDriveType.FOLDER},
+      ]);
       assert(DriveStorage.search).to.haveBeenCalledWith(query);
       assert(Persona.getValue).to.haveBeenCalledWith($.input.value, search);
     });
@@ -257,12 +274,23 @@ describe('main.DriveSearch', () => {
 
   describe('renderDriveItems_', () => {
     it(`should return the correct list`, () => {
-      const item1 = Mocks.object('item1');
-      const item2 = Mocks.object('item2');
+      const id1 = 'id1';
+      const id2 = 'id2';
+      const name1 = 'name1';
+      const name2 = 'name2';
+
+      const item1 = createDriveSummary(id1, name1, ApiDriveType.MARKDOWN);
+      const item2 = createDriveSummary(id2, name2, ApiDriveType.FOLDER);
       const items = [item1, item2];
       assert(search.renderDriveItems_(items)).to.haveElements([
-        {selected: null, summary: item1},
-        {selected: null, summary: item2},
+        {
+          selected: null,
+          summary: {id: id1, name: name1, type: ApiDriveType.MARKDOWN},
+        },
+        {
+          selected: null,
+          summary: {id: id2, name: name2, type: ApiDriveType.FOLDER},
+        },
       ]);
     });
   });

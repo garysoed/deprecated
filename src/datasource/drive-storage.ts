@@ -4,6 +4,7 @@ import { GapiRequestQueue, GapiStorage } from 'external/gs_tools/src/store';
 
 import { drive } from '../api';
 import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../datasource/drive';
+import { DriveSource } from '../datasource/drive-source';
 
 type ListQueryConfig = {
   filename?: string,
@@ -24,8 +25,8 @@ export function convertToType_(driveType: string): ApiDriveType {
 
 export function convertToFileSummary_(file: goog.drive.files.File): ApiDriveFileSummary {
   return {
-    id: file.id,
     name: file.name,
+    source: DriveSource.newInstance(file.id),
     type: convertToType_(file.mimeType),
   };
 }
@@ -77,7 +78,7 @@ export class DriveStorageImpl extends GapiStorage<
   protected async listIdsImpl_(
       queueRequest: GapiRequestQueue<goog.Drive, goog.drive.files.ListResponse>):
       Promise<ImmutableSet<string>> {
-    return (await this.listImpl_(queueRequest)).mapItem((item) => item.id);
+    return (await this.listImpl_(queueRequest)).mapItem((item) => item.source.getDriveId());
   }
 
   protected async listImpl_(
@@ -100,7 +101,7 @@ export class DriveStorageImpl extends GapiStorage<
     }
 
     const drive = await this.driveLibrary.get();
-    const response = await drive.files.get({alt: 'media', fileId: summary.id});
+    const response = await drive.files.get({alt: 'media', fileId: summary.source.getDriveId()});
     return response.body;
   }
 
@@ -124,7 +125,7 @@ export class DriveStorageImpl extends GapiStorage<
     switch (summary.type) {
       case ApiDriveType.FOLDER:
         return {
-          files: await this.readFolderContents_(summary.id),
+          files: await this.readFolderContents_(summary.source.getDriveId()),
           summary,
         };
       case ApiDriveType.MARKDOWN:
