@@ -9,6 +9,7 @@ import {
   DriveFolder,
   FileType,
   PreviewFile } from '../data';
+import { DriveSource } from '../datasource';
 import { HandlebarsService } from '../render/handlebars-service';
 import { RenderService } from '../render/render-service';
 import { ShowdownService } from '../render/showdown-service';
@@ -38,10 +39,10 @@ describe('render.RenderServiceClass', () => {
       const id = `id`;
 
       const childId = 'childId';
-      const originalItem = DriveFolder
-          .newInstance(id, 'name', null, ImmutableSet.of([childId]), 'driveId');
-      const childItem = DriveFile
-          .newInstance(childId, 'name', id, FileType.UNKNOWN, 'content', 'driveId');
+      const originalItem = DriveFolder.newInstance(
+          id, 'name', null, ImmutableSet.of([childId]), DriveSource.newInstance('driveId'));
+      const childItem = DriveFile.newInstance(
+          childId, 'name', id, FileType.UNKNOWN, 'content', DriveSource.newInstance('driveId'));
 
       Fakes.build(mockItemService.getItem)
           .when(id).return(originalItem)
@@ -64,8 +65,8 @@ describe('render.RenderServiceClass', () => {
       spyOn(ShowdownService, 'render').and.returnValue(showdownContent);
       spyOn(HandlebarsService, 'render').and.returnValue(handlebarsContent);
 
-      const originalItem = DriveFile
-          .newInstance(id, 'name', 'parentId', FileType.ASSET, content, 'driveId');
+      const originalItem = DriveFile.newInstance(
+          id, 'name', 'parentId', FileType.ASSET, content, DriveSource.newInstance('driveId'));
 
       Fakes.build(mockItemService.getItem)
           .when(id).return(originalItem);
@@ -114,8 +115,8 @@ describe('render.RenderServiceClass', () => {
 
       const childId = 'childId';
 
-      const previewItem = DriveFolder
-          .newInstance(id, 'name', null, ImmutableSet.of([childId]), 'driveId');
+      const previewItem = DriveFolder.newInstance(
+          id, 'name', null, ImmutableSet.of([childId]), DriveSource.newInstance('driveId'));
       mockPreviewService.get.and.returnValue(Promise.resolve(previewItem));
 
       mockItemService.getPath.and.returnValue(Promise.resolve('path'));
