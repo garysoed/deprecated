@@ -27,14 +27,15 @@ import { ThemeService } from 'external/gs_ui/src/theming';
 import {
   $driveService,
   $itemService,
-  DriveFile,
   DriveFolder,
   File,
   FileType,
   Folder,
   Item,
   ItemService,
+  MarkdownFile,
   ThothFolder } from '../data';
+import { DriveSource } from '../datasource';
 import { $renderService } from '../render';
 
 export const $ = resolveSelectors({
@@ -133,8 +134,8 @@ export class NavigatorItem extends BaseThemedElement2 {
     super(themeService);
   }
 
-  private async getDefaultItem_(item: Item<any>, itemService: ItemService):
-      Promise<Item<any> | null> {
+  private async getDefaultItem_(item: Item, itemService: ItemService):
+      Promise<Item | null> {
     if (!(item instanceof Folder)) {
       return item;
     }
@@ -220,7 +221,7 @@ export class NavigatorItem extends BaseThemedElement2 {
         $item,
         $driveService,
         $itemService);
-    if (!(item instanceof DriveFile) && !(item instanceof DriveFolder)) {
+    if (!(item instanceof MarkdownFile) && !(item instanceof DriveFolder)) {
       return;
     }
 
@@ -229,7 +230,13 @@ export class NavigatorItem extends BaseThemedElement2 {
       throw Errors.assert('parentId').shouldExist().butWas(parentId);
     }
 
-    const files = await driveService.recursiveGet(item.getSource(), parentId);
+    // TODO: Handle different sources.
+    const source = item.getSource();
+    if (!(source instanceof DriveSource)) {
+      throw Errors.assert('source').should('be an instance of DriveSource');
+    }
+
+    const files = await driveService.recursiveGet(source, parentId);
     files.mapItem((file) => itemService.save(file));
   }
 
@@ -296,7 +303,7 @@ export class NavigatorItem extends BaseThemedElement2 {
   @nodeOut($item)
   providesItem(
       @nodeIn($itemService) itemService: ItemService,
-      @nodeIn($.host.itemid.getId()) itemId: string | null): Promise<Item<any> | null> {
+      @nodeIn($.host.itemid.getId()) itemId: string | null): Promise<Item | null> {
     if (!itemId) {
       return Promise.resolve(null);
     }
@@ -305,8 +312,8 @@ export class NavigatorItem extends BaseThemedElement2 {
 
   @nodeOut($parent)
   providesParent(
-      @nodeIn($item) item: Item<any> | null,
-      @nodeIn($itemService) itemService: ItemService): Promise<Item<any> | null> {
+      @nodeIn($item) item: Item | null,
+      @nodeIn($itemService) itemService: ItemService): Promise<Item | null> {
     if (!item) {
       return Promise.resolve(null);
     }
@@ -325,12 +332,12 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @render.attribute($.host.deleteable)
-  renderDeleteable_(@nodeIn($parent) parent: Item<any> | null): boolean {
+  renderDeleteable_(@nodeIn($parent) parent: Item | null): boolean {
     return parent instanceof ThothFolder;
   }
 
   @render.innerText($.icon.innerText)
-  renderIcon_(@nodeIn($item) item: Item<any> | null): string {
+  renderIcon_(@nodeIn($item) item: Item | null): string {
     if (!item) {
       return '';
     }
@@ -355,7 +362,7 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @render.innerText($.name.innerText)
-  renderName_(@nodeIn($item) item: Item<any> | null): string {
+  renderName_(@nodeIn($item) item: Item | null): string {
     if (!item) {
       return '';
     }
@@ -364,12 +371,12 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @render.attribute($.host.refreshable)
-  renderRefreshable_(@nodeIn($item) item: Item<any> | null): boolean {
-    return item instanceof DriveFile || item instanceof DriveFolder;
+  renderRefreshable_(@nodeIn($item) item: Item | null): boolean {
+    return item instanceof MarkdownFile || item instanceof DriveFolder;
   }
 
   @render.attribute($.host.viewable)
-  renderViewable_(@nodeIn($item) item: Item<any> | null): boolean {
+  renderViewable_(@nodeIn($item) item: Item | null): boolean {
     return item instanceof File;
   }
 }

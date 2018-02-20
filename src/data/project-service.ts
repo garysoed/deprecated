@@ -11,7 +11,7 @@ export const PROJECT_ID = '$p';
 
 export class ProjectService {
   constructor(
-      private readonly itemsGraph_: DataGraph<Item<any>>,
+      private readonly itemsGraph_: DataGraph<Item>,
       private readonly projectsGraph_: DataGraph<Project>) { }
 
   async get(): Promise<Project> {

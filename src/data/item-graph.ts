@@ -4,7 +4,7 @@ import { LocalStorage } from 'external/gs_tools/src/store';
 
 import { Item } from '../data/item';
 
-export const $items = registerDataGraph<Item<any>>(
+export const $items = registerDataGraph<Item>(
     'items',
     new SimpleSearcher(),
-    new LocalStorage<Item<any>>(window, 'th-i', DataModelParser<Item<any>>()));
+    new LocalStorage<Item>(window, 'th-i', DataModelParser<Item>()));

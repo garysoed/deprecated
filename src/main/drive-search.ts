@@ -32,12 +32,14 @@ import {
   $driveService,
   $itemService,
   $selectedItem,
-  DriveFile,
   DriveFolder,
-  ThothFolder } from '../data';
+  MarkdownFile,
+  ThothFolder,
+  UnknownFile } from '../data';
 import { ApiDriveFileSummary, ApiDriveType, DriveSource, DriveStorage } from '../datasource';
 import { SearchItem } from '../main/search-item';
 
+type SupportedItem = MarkdownFile | UnknownFile | DriveFolder;
 type ItemSummaryType = {id: string, name: string, type: ApiDriveType};
 const DriveFileSummaryType = HasPropertiesType<ItemSummaryType>({
   id: StringType,
@@ -175,8 +177,8 @@ export class DriveSearch extends BaseThemedElement2 {
     const addedDriveItems = await Promise.all(addedDriveItemPromises);
 
     // Stores all the drive items.
-    const itemsToAddToSelectedFolder: (DriveFolder | DriveFile)[] = [];
-    for (const addedItem of Iterables.flatten<DriveFile | DriveFolder>(addedDriveItems)) {
+    const itemsToAddToSelectedFolder: SupportedItem[] = [];
+    for (const addedItem of Iterables.flatten<SupportedItem>(addedDriveItems)) {
       itemService.save(addedItem);
 
       if (addedItem.getParentId() === selectedId) {

@@ -4,11 +4,11 @@ TestBase.setup();
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Paths } from 'external/gs_tools/src/path';
 
-import { DriveFile } from 'src/data/drive-file';
 import {
   DriveFolder,
-  FileType,
-  PreviewFile } from '../data';
+  MarkdownFile,
+  PreviewFile,
+  UnknownFile } from '../data';
 import { DriveSource } from '../datasource';
 import { HandlebarsService } from '../render/handlebars-service';
 import { RenderService } from '../render/render-service';
@@ -41,8 +41,8 @@ describe('render.RenderServiceClass', () => {
       const childId = 'childId';
       const originalItem = DriveFolder.newInstance(
           id, 'name', null, ImmutableSet.of([childId]), DriveSource.newInstance('driveId'));
-      const childItem = DriveFile.newInstance(
-          childId, 'name', id, FileType.UNKNOWN, 'content', DriveSource.newInstance('driveId'));
+      const childItem = UnknownFile.newInstance(
+          childId, 'name', id, DriveSource.newInstance('driveId'));
 
       Fakes.build(mockItemService.getItem)
           .when(id).return(originalItem)
@@ -65,8 +65,8 @@ describe('render.RenderServiceClass', () => {
       spyOn(ShowdownService, 'render').and.returnValue(showdownContent);
       spyOn(HandlebarsService, 'render').and.returnValue(handlebarsContent);
 
-      const originalItem = DriveFile.newInstance(
-          id, 'name', 'parentId', FileType.ASSET, content, DriveSource.newInstance('driveId'));
+      const originalItem = MarkdownFile.newInstance(
+          id, 'name', 'parentId', content, DriveSource.newInstance('driveId'));
 
       Fakes.build(mockItemService.getItem)
           .when(id).return(originalItem);

@@ -4,22 +4,19 @@ TestBase.setup();
 import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import {
-  DriveFile,
-  FileType,
-  Item,
-  ThothFolder } from '../data';
+import { Item, ThothFolder } from '../data';
 import { ItemService } from '../data/item-service';
 import { DriveSource } from '../datasource';
+import { MarkdownFile } from './markdown-file';
 
 
 describe('data.ItemService', () => {
-  let itemsGraph: FakeDataGraph<Item<any>>;
+  let itemsGraph: FakeDataGraph<Item>;
   let mockProjectService: any;
   let service: ItemService;
 
   beforeEach(() => {
-    itemsGraph = new FakeDataGraph<Item<any>>();
+    itemsGraph = new FakeDataGraph<Item>();
     mockProjectService = jasmine.createSpyObj('ProjectService', ['get']);
     service = new ItemService(itemsGraph, mockProjectService);
   });
@@ -87,11 +84,10 @@ describe('data.ItemService', () => {
       spyOn(service, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
 
       const name1 = 'name1';
-      const item1 = DriveFile.newInstance(
+      const item1 = MarkdownFile.newInstance(
           name1,
           idRoot,
           'parentId',
-          FileType.ASSET,
           'content',
           DriveSource.newInstance('driveId'));
 
@@ -121,8 +117,8 @@ describe('data.ItemService', () => {
       const item2 = ThothFolder.newInstance(id2, name2, id1, ImmutableSet.of([id3]));
 
       const name3 = 'name3';
-      const item3 = DriveFile.newInstance(
-          id3, name3, id2, FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const item3 = MarkdownFile.newInstance(
+          id3, name3, id2, 'content', DriveSource.newInstance('driveId'));
       itemsGraph.set(id1, item1);
       itemsGraph.set(id2, item2);
       itemsGraph.set(id3, item3);
@@ -136,8 +132,8 @@ describe('data.ItemService', () => {
       const id2 = 'id2';
 
       const item1 = ThothFolder.newInstance(id1, 'name1', 'not exist', ImmutableSet.of([id2]));
-      const item2 = DriveFile.newInstance(
-          id2, 'name2', id1, FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const item2 = MarkdownFile.newInstance(
+          id2, 'name2', id1, 'content', DriveSource.newInstance('driveId'));
       itemsGraph.set(id1, item1);
       itemsGraph.set(id2, item2);
 

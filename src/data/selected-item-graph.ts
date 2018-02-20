@@ -11,7 +11,7 @@ export const ROOT_PATH = '/(root)';
 
 export async function providesSelectedItem(
     location: string,
-    itemService: ItemService): Promise<Item<any>> {
+    itemService: ItemService): Promise<Item> {
   if (!location) {
     navigateToHash(ROOT_PATH);
     return itemService.getRootFolder();

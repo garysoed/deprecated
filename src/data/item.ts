@@ -14,11 +14,11 @@ export function getInitMap_(id: string, name: string, parentId: string | null, s
   ]);
 }
 
-export abstract class Item<S extends Source> implements DataModel<string> {
+export abstract class Item implements DataModel<string> {
   @field('id', StringParser) readonly id_!: string;
   @field('name', StringParser) readonly name_!: string;
   @field('parentId', StringParser) readonly parentId_!: string | null;
-  @field('source', DataModelParser<S>()) readonly source_!: S;
+  @field('source', DataModelParser<Source>()) readonly source_!: Source;
 
   constructor() { }
 
@@ -30,7 +30,7 @@ export abstract class Item<S extends Source> implements DataModel<string> {
 
   abstract getSearchIndex(): string;
 
-  abstract getSource(): S;
+  abstract getSource(): Source;
 
   abstract setName(name: string): this;
 }

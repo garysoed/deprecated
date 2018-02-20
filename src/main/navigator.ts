@@ -78,7 +78,7 @@ export class Navigator extends BaseThemedElement2 {
   }
 
   @render.children($.items.children)
-  renderItems_(@nodeIn($selectedItem) selectedItem: Item<any> | null): ImmutableList<string> {
+  renderItems_(@nodeIn($selectedItem) selectedItem: Item | null): ImmutableList<string> {
     if (!(selectedItem instanceof Folder)) {
       return ImmutableList.of([]);
     }

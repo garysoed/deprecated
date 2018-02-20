@@ -6,7 +6,7 @@ import { Folder, getInitMap_ } from '../data/folder';
 import { DriveSource } from '../datasource';
 
 @Serializable('data.DriveFolder')
-export abstract class DriveFolder extends Folder<DriveSource> {
+export abstract class DriveFolder extends Folder {
   getSearchIndex(): string {
     return this.getName();
   }

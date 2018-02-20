@@ -9,12 +9,12 @@ import { Persona } from 'external/gs_tools/src/persona';
 import {
   $driveService,
   $itemService,
-  DriveFile,
   DriveFolder,
-  FileType,
   Folder,
   Item,
-  ThothFolder } from '../data';
+  MarkdownFile,
+  ThothFolder,
+  UnknownFile } from '../data';
 import { DriveSource } from '../datasource';
 import { DriveSourceMatcher } from '../datasource/testing';
 import {
@@ -215,8 +215,8 @@ describe('main.NavigatorItem', () => {
 
       const parentId = 'parentId';
       const driveId = 'driveId';
-      const driveItem = DriveFile.newInstance(
-          'id', 'name', parentId, FileType.ASSET, 'content', DriveSource.newInstance(driveId));
+      const driveItem = MarkdownFile.newInstance(
+          'id', 'name', parentId, 'content', DriveSource.newInstance(driveId));
       TestGraph.set($item, driveItem);
 
       await item.onRefreshButtonAction_(mockEvent);
@@ -335,7 +335,7 @@ describe('main.NavigatorItem', () => {
       assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beFalse();
 
       assert(mockItemService.save).to.haveBeenCalledWith(Matchers.anyThing());
-      const newItem: Item<any> = mockItemService.save.calls.argsFor(0)[0];
+      const newItem: Item = mockItemService.save.calls.argsFor(0)[0];
       assert(newItem.getName()).to.equal(newName);
       assert($.nameInput.value.getValue).to.haveBeenCalledWith(shadowRoot);
       assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
@@ -406,8 +406,8 @@ describe('main.NavigatorItem', () => {
     it(`should render the item correctly`, async () => {
       const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
       const id = 'id';
-      const driveItem = DriveFile.newInstance(
-          id, 'name', 'parentId', FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const driveItem = MarkdownFile.newInstance(
+          id, 'name', 'parentId', 'content', DriveSource.newInstance('driveId'));
       TestGraph.set($item, driveItem);
 
       const mockRenderService = jasmine.createSpyObj('RenderService', ['render']);
@@ -432,8 +432,8 @@ describe('main.NavigatorItem', () => {
     it(`should not navigate if path cannot be found`, async () => {
       const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
       const id = 'id';
-      const driveItem = DriveFile.newInstance(
-          id, 'name', 'parentId', FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const driveItem = MarkdownFile.newInstance(
+          id, 'name', 'parentId', 'content', DriveSource.newInstance('driveId'));
       TestGraph.set($item, driveItem);
 
       const mockRenderService = jasmine.createSpyObj('RenderService', ['render']);
@@ -455,8 +455,8 @@ describe('main.NavigatorItem', () => {
     it(`should not navigate if default item cannot be found`, async () => {
       const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
       const id = 'id';
-      const driveItem = DriveFile.newInstance(
-          id, 'name', 'parentId', FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const driveItem = MarkdownFile.newInstance(
+          id, 'name', 'parentId', 'content', DriveSource.newInstance('driveId'));
       TestGraph.set($item, driveItem);
 
       const mockRenderService = jasmine.createSpyObj('RenderService', ['render']);
@@ -489,8 +489,8 @@ describe('main.NavigatorItem', () => {
   describe('providesItem', () => {
     it(`should resolve with the correct item`, async () => {
       const id = 'id';
-      const selectedItem = DriveFile.newInstance(
-          id, 'name', 'parentId', FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const selectedItem = MarkdownFile.newInstance(
+          id, 'name', 'parentId', 'content', DriveSource.newInstance('driveId'));
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['getItem']);
       mockItemService.getItem.and.returnValue(Promise.resolve(selectedItem));
@@ -508,8 +508,8 @@ describe('main.NavigatorItem', () => {
   describe('providesParent', () => {
     it(`should return the correct parent`, async () => {
       const parentId = 'parentId';
-      const driveItem = DriveFile.newInstance(
-          'id', 'name', parentId, FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const driveItem = MarkdownFile.newInstance(
+          'id', 'name', parentId, 'content', DriveSource.newInstance('driveId'));
 
       const parent = ThothFolder.newInstance('parentId', 'parentName', null, ImmutableSet.of([]));
       const mockItemService = jasmine.createSpyObj('ItemService', ['getItem']);
@@ -556,12 +556,10 @@ describe('main.NavigatorItem', () => {
 
   describe('renderIcon_', () => {
     it(`should return "help" if the type is UNKNOWN`, () => {
-      const selectedItem = DriveFile.newInstance(
+      const selectedItem = UnknownFile.newInstance(
           'id',
           'name',
           'parentId',
-          FileType.UNKNOWN,
-          'content',
           DriveSource.newInstance('driveId'));
 
       assert(item.renderIcon_(selectedItem)).to.equal('help');
@@ -575,8 +573,8 @@ describe('main.NavigatorItem', () => {
     });
 
     it(`should return "web" if the type is ASSET file`, () => {
-      const selectedItem = DriveFile.newInstance(
-          'id', 'name', 'parentId', FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const selectedItem = MarkdownFile.newInstance(
+          'id', 'name', 'parentId', 'content', DriveSource.newInstance('driveId'));
 
       assert(item.renderIcon_(selectedItem)).to.equal('web');
     });
@@ -601,8 +599,8 @@ describe('main.NavigatorItem', () => {
 
   describe('renderRefreshable_', () => {
     it(`should return true if item is a DriveFile`, () => {
-      const inItem = DriveFile.newInstance(
-          'id', 'name', 'parentId', FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const inItem = MarkdownFile.newInstance(
+          'id', 'name', 'parentId', 'content', DriveSource.newInstance('driveId'));
 
       assert(item.renderRefreshable_(inItem)).to.beTrue();
     });
@@ -623,8 +621,8 @@ describe('main.NavigatorItem', () => {
 
   describe('renderViewable_', () => {
     it(`should return true if item is a File`, () => {
-      const inItem = DriveFile.newInstance(
-          'id', 'name', 'parentId', FileType.ASSET, 'content', DriveSource.newInstance('driveId'));
+      const inItem = MarkdownFile.newInstance(
+          'id', 'name', 'parentId', 'content', DriveSource.newInstance('driveId'));
 
       assert(item.renderViewable_(inItem)).to.beTrue();
     });

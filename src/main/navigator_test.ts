@@ -4,7 +4,7 @@ TestBase.setup();
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { DriveFile, FileType, ThothFolder } from '../data';
+import { MarkdownFile, ThothFolder } from '../data';
 import { DriveSource } from '../datasource';
 import { $, Navigator } from '../main/navigator';
 
@@ -46,11 +46,10 @@ describe('main.Navigator', () => {
     });
 
     it(`should return no items if the selected item is not a folder`, () => {
-      const selectedItem = DriveFile .newInstance(
+      const selectedItem = MarkdownFile.newInstance(
           'id',
           'name',
           'parentId',
-          FileType.ASSET,
           'content',
           DriveSource.newInstance('driveId'));
 

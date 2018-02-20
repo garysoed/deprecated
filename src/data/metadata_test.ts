@@ -4,14 +4,14 @@ TestBase.setup();
 import { ImmutableMap } from 'external/gs_tools/src/immutable';
 
 import { Paths } from 'external/gs_tools/src/path';
-import { Metadata } from '../data';
+import { ResolvedMetadata } from '../data';
 
 
 describe('data.Metadata', () => {
   describe('getDefaultShowdownConfig', () => {
     it(`should return the correct value`, () => {
       const config = Mocks.object('config');
-      const metadata = new Metadata(
+      const metadata = new ResolvedMetadata(
           ImmutableMap.of([]),
           ImmutableMap.of([['$default', config], ['a', Mocks.object('other')]]),
           ImmutableMap.of([]));
@@ -21,7 +21,7 @@ describe('data.Metadata', () => {
 
     it(`should return null if there are no defaults`, () => {
       const config = Mocks.object('config');
-      const metadata = new Metadata(
+      const metadata = new ResolvedMetadata(
           ImmutableMap.of([]),
           ImmutableMap.of([['a', config]]),
           ImmutableMap.of([]));
@@ -33,7 +33,7 @@ describe('data.Metadata', () => {
   describe('getDefaultTemplatePath', () => {
     it(`should return the correct path`, () => {
       const path = Paths.absolutePath('/a/b');
-      const metadata = new Metadata(
+      const metadata = new ResolvedMetadata(
           ImmutableMap.of([]),
           ImmutableMap.of([]),
           ImmutableMap.of([['$default', path], ['a', Paths.absolutePath('/other')]]));
@@ -43,7 +43,7 @@ describe('data.Metadata', () => {
 
     it(`should return null if there are no defaults`, () => {
       const path = Paths.absolutePath('/a/b');
-      const metadata = new Metadata(
+      const metadata = new ResolvedMetadata(
           ImmutableMap.of([]),
           ImmutableMap.of([]),
           ImmutableMap.of([['a', path]]));
@@ -54,7 +54,7 @@ describe('data.Metadata', () => {
 
   describe('getShowdownConfigForPath', () => {
     it(`should return te correct showdown config`, () => {
-      const metadata = new Metadata(
+      const metadata = new ResolvedMetadata(
           ImmutableMap.of([]),
           ImmutableMap.of([
             ['$default', ImmutableMap.of([['a', '1'], ['b', '2']])],
@@ -67,7 +67,7 @@ describe('data.Metadata', () => {
     });
 
     it(`should return default value if the entry does not exist`, () => {
-      const metadata = new Metadata(
+      const metadata = new ResolvedMetadata(
           ImmutableMap.of([]),
           ImmutableMap.of([
             ['$default', ImmutableMap.of([['a', '1'], ['b', '2']])],
@@ -79,7 +79,7 @@ describe('data.Metadata', () => {
     });
 
     it(`should return empty map if the entry does not exist`, () => {
-      const metadata = new Metadata(
+      const metadata = new ResolvedMetadata(
           ImmutableMap.of([]),
           ImmutableMap.of([]),
           ImmutableMap.of([]));

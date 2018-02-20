@@ -6,7 +6,7 @@ import { Folder, getInitMap_ } from '../data/folder';
 import { ThothSource } from '../datasource';
 
 @Serializable('data.ThothFolder')
-export abstract class ThothFolder extends Folder<ThothSource> {
+export abstract class ThothFolder extends Folder {
   getSearchIndex(): string {
     return this.getName();
   }

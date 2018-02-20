@@ -7,10 +7,9 @@ import {
   $itemService,
   $metadataService,
   $previewService,
-  File,
-  FileType,
   Folder,
   ItemService,
+  MarkdownFile,
   MetadataService,
   PreviewFile,
   PreviewService } from '../data';
@@ -57,7 +56,7 @@ export class RenderService {
       await Promise.all([
         ...item.getItems().mapItem((itemId) => this.render(itemId)),
       ]);
-    } else if ((item instanceof File) && item.getType() === FileType.ASSET) {
+    } else if (item instanceof MarkdownFile) {
       const metadata = await this.metadataService_.getMetadataForItem(item.getId());
 
       const renderedItem = HandlebarsService.render(

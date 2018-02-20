@@ -3,27 +3,25 @@ import { DataModels } from 'external/gs_tools/src/datamodel';
 
 import { File, getInitMap_ } from '../data/file';
 import { FileType } from '../data/file-type';
-import { DriveSource } from '../datasource';
+import { Source } from '../datasource';
 
-@Serializable('data.DriveFile')
-export abstract class DriveFile extends File<DriveSource> {
+@Serializable('data.UnknownFile')
+export abstract class UnknownFile extends File {
   getSearchIndex(): string {
     return this.getName();
   }
 
   toString(): string {
-    return `DriveFile(${this.name_})`;
+    return `UnknownFile(${this.name_})`;
   }
 
   static newInstance(
       id: string,
       name: string,
       parentId: string,
-      type: FileType,
-      content: string,
-      source: DriveSource): DriveFile {
+      source: Source): UnknownFile {
     return DataModels.newInstance(
-        DriveFile,
-        getInitMap_(id, name, parentId, type, content, source));
+        UnknownFile,
+        getInitMap_(id, name, parentId, FileType.UNKNOWN, source));
   }
 }

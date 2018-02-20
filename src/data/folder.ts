@@ -14,7 +14,7 @@ export function getInitMap_(
   return getInitItemMap_(id, name, parentId, source).set('items_', items);
 }
 
-export abstract class Folder<S extends Source> extends Item<S> {
+export abstract class Folder extends Item {
   @field('items', SetParser(StringParser))
   readonly items_!: ImmutableSet<string>;
 

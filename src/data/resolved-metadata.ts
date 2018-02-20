@@ -6,7 +6,10 @@ type TemplatePath = AbsolutePath;
 
 const DEFAULT_KEY = '$default';
 
-export class Metadata {
+/**
+ * Unliked Metadata file, this contains the *resolved* metadata values.
+ */
+export class ResolvedMetadata {
   constructor(
       private readonly globals_: ImmutableMap<string, string>,
       private readonly showdownConfigs_: ImmutableMap<string, ShowdownConfig>,

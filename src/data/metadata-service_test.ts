@@ -4,7 +4,7 @@ TestBase.setup();
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Paths } from 'external/gs_tools/src/path';
 
-import { DriveFile, DriveFolder, FileType, MetadataService } from '../data';
+import { DriveFolder, MarkdownFile, MetadataFile, MetadataService } from '../data';
 import { DEFAULT_METADATA } from '../data/metadata-service';
 import { DriveSource } from '../datasource';
 
@@ -163,19 +163,17 @@ describe('data.MetadataService', () => {
 
       const folderId = 'folderId';
       const otherId = 'otherId';
-      const otherFile = DriveFile.newInstance(
+      const otherFile = MarkdownFile.newInstance(
           otherId,
           'other',
           folderId,
-          FileType.ASSET,
           'content',
           DriveSource.newInstance('otherDriveId'));
       const metadataId = 'metadataId';
-      const metadataFile = DriveFile.newInstance(
+      const metadataFile = MetadataFile.newInstance(
           metadataId,
           'metadata',
           folderId,
-          FileType.METADATA,
           'content',
           DriveSource.newInstance('metadataDriveId'));
       Fakes.build(mockItemService.getItem)
@@ -199,11 +197,10 @@ describe('data.MetadataService', () => {
 
       const folderId = 'folderId';
       const otherId = 'otherId';
-      const otherFile = DriveFile.newInstance(
+      const otherFile = MarkdownFile.newInstance(
           otherId,
           'other',
           folderId,
-          FileType.ASSET,
           'content',
           DriveSource.newInstance('otherDriveId'));
       mockItemService.getItem.and.returnValue(otherFile);
@@ -222,11 +219,10 @@ describe('data.MetadataService', () => {
 
     it(`should return null if the path does not point to a folder`, async () => {
       const path = Paths.absolutePath('/a/b/c');
-      const otherFile = DriveFile.newInstance(
+      const otherFile = MarkdownFile.newInstance(
           'otherId',
           'other',
           'folderId',
-          FileType.ASSET,
           'content',
           DriveSource.newInstance('otherDriveId'));
       mockItemService.getItemByPath.and.returnValue(otherFile);
@@ -243,27 +239,24 @@ describe('data.MetadataService', () => {
       const content3 = 'content3';
 
       const item1Id = 'item1Id';
-      const item1 = DriveFile.newInstance(
+      const item1 = MetadataFile.newInstance(
           item1Id,
           'item1',
           'parentId',
-          FileType.METADATA,
           content1,
           DriveSource.newInstance('driveId'));
       const item2Id = 'item2Id';
-      const item2 = DriveFile.newInstance(
+      const item2 = MetadataFile.newInstance(
           item2Id,
           'item2',
           'parentId',
-          FileType.METADATA,
           content2,
           DriveSource.newInstance('driveId'));
       const item3Id = 'item3Id';
-      const item3 = DriveFile.newInstance(
+      const item3 = MetadataFile.newInstance(
           item3Id,
           'item3',
           'parentId',
-          FileType.METADATA,
           content3,
           DriveSource.newInstance('driveId'));
 
@@ -290,11 +283,10 @@ describe('data.MetadataService', () => {
         async () => {
       const content = 'content';
       const itemId = 'itemId';
-      const item = DriveFile.newInstance(
+      const item = MarkdownFile.newInstance(
           itemId,
           'item',
           'parentId',
-          FileType.METADATA,
           content,
           DriveSource.newInstance('driveId'));
 
