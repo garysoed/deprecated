@@ -83,7 +83,7 @@ export class RenderService {
       return;
     }
 
-    const renderConfig = await this.metadataService_.getMetadataForItem(item.getId());
+    const renderConfig = await this.metadataService_.getConfigForItem(item.getId());
     const template = await this.getTemplateContent_();
     const compiledPromises = this
         .compileItem_(item, renderConfig)

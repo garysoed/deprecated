@@ -46,8 +46,8 @@ const METADATA_JSON_TYPE = HasPropertiesType<MetadataJsonType>({
 export class MetadataService {
   constructor(private readonly itemService_: ItemService) { }
 
-  private createMetadata_(unparsedContent: string, metadataPath: string): RenderConfig {
-    const parsedContent = unparsedContent ? jsyaml.load(unparsedContent) : {};
+  private createConfig_(unparsedContent: string, metadataPath: string): RenderConfig {
+    const parsedContent = unparsedContent ? jsyaml.load(unparsedContent, {json: true}) : {};
     if (!METADATA_JSON_TYPE.check(parsedContent)) {
       throw Errors.assert(`content of metadata for file [${metadataPath}]`)
           .shouldBeA(METADATA_JSON_TYPE)
@@ -61,7 +61,7 @@ export class MetadataService {
         ImmutableMap.of(parsedContent.variables || {}));
   }
 
-  async getMetadataForItem(itemId: string): Promise<RenderConfig> {
+  async getConfigForItem(itemId: string): Promise<RenderConfig> {
     const [path, item] = await Promise.all([
       this.itemService_.getPath(itemId),
       this.itemService_.getItem(itemId),
@@ -79,15 +79,15 @@ export class MetadataService {
 
     // Check if there are any metadatas in this folder.
     const itemMetadataName = Paths.setFilenameExt(item.getName(), 'yml');
-    const itemMetadataPromise = this.getMetadataItemWithNameInFolder_(itemMetadataName, dirPath);
+    const itemMetadataPromise = this.getMetadataWithNameInFolder_(itemMetadataName, dirPath);
     const defaultMetadataPromise =
-        this.getMetadataItemWithNameInFolder_(DEFAULT_METADATA_FILENAME, dirPath);
+        this.getMetadataWithNameInFolder_(DEFAULT_METADATA_FILENAME, dirPath);
 
     // Now get the ancestors.
     const ancestorMetadataPromises = Paths
         .getSubPathsToRoot(Paths.getDirPath(Paths.getDirPath(path)))
         .map(async (subpath) => {
-          return this.getMetadataItemWithNameInFolder_(DEFAULT_METADATA_FILENAME, subpath);
+          return this.getMetadataWithNameInFolder_(DEFAULT_METADATA_FILENAME, subpath);
         });
     const metadataPromises: Promise<MetadataFile | null>[] = [
       itemMetadataPromise,
@@ -100,10 +100,10 @@ export class MetadataService {
         .reverse()
         .filterByType(InstanceofType(MetadataFile))
         .map((metadataFile) => metadataFile.getContent());
-    return this.createMetadata_([...contentList].join('\n'), path.toString());
+    return this.createConfig_([...contentList].join('\n'), path.toString());
   }
 
-  private async getMetadataItemWithNameInFolder_(
+  private async getMetadataWithNameInFolder_(
       metadataName: string, path: Path): Promise<MetadataFile | null> {
     const folder = await this.itemService_.getItemByPath(path);
     if (!(folder instanceof Folder)) {

@@ -23,7 +23,7 @@ describe('render.RenderServiceClass', () => {
 
   beforeEach(() => {
     mockItemService = jasmine.createSpyObj('ItemService', ['getItem', 'getPath']);
-    mockMetadataService = jasmine.createSpyObj('MetadataService', ['getMetadataForItem']);
+    mockMetadataService = jasmine.createSpyObj('MetadataService', ['getConfigForItem']);
     mockPreviewService = jasmine.createSpyObj('PreviewService', ['get', 'save']);
     mockTemplates = jasmine.createSpyObj('Templates', ['getTemplate']);
     service = new RenderService(
@@ -101,7 +101,7 @@ describe('render.RenderServiceClass', () => {
           ImmutableMap.of([]),
           Paths.absolutePath('/template'),
           ImmutableMap.of([]));
-      mockMetadataService.getMetadataForItem.and.returnValue(renderConfig);
+      mockMetadataService.getConfigForItem.and.returnValue(renderConfig);
 
       spyOn(service, 'renderItem_').and.returnValue(renderedContent);
 
@@ -118,7 +118,7 @@ describe('render.RenderServiceClass', () => {
       assert(previewFile.getContent()).to.equal(renderedContent);
 
       assert(mockPreviewService.save).to.haveBeenCalledWith(previewFile);
-      assert(mockMetadataService.getMetadataForItem).to.haveBeenCalledWith(id);
+      assert(mockMetadataService.getConfigForItem).to.haveBeenCalledWith(id);
 
       assert(service['renderItem_']).to.haveBeenCalledWith(
           showdownContent,
