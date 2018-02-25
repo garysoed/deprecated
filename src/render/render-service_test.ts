@@ -1,16 +1,16 @@
-import { assert, Fakes, Mocks, TestBase } from '../test-base';
+import { assert, Fakes, TestBase } from '../test-base';
 TestBase.setup();
 
-import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Paths } from 'external/gs_tools/src/path';
 
 import {
   DriveFolder,
   MarkdownFile,
   PreviewFile,
+  RenderConfig,
   UnknownFile } from '../data';
-import { DriveSource } from '../datasource';
-import { HandlebarsService } from '../render/handlebars-service';
+import { DriveSource, ThothSource } from '../datasource';
 import { RenderService } from '../render/render-service';
 import { ShowdownService } from '../render/showdown-service';
 
@@ -31,6 +31,28 @@ describe('render.RenderServiceClass', () => {
         mockMetadataService,
         mockPreviewService,
         mockTemplates);
+  });
+
+  describe('compileItem_', () => {
+    it(`should compile markdown files correctly`, () => {
+      const itemName = 'itemName';
+      const content = 'content';
+      const item = MarkdownFile.newInstance(
+          'itemId',
+          itemName,
+          'parentId',
+          content,
+          ThothSource.newInstance());
+
+      const showdownConfig = ImmutableMap.of([['key', 'value']]);
+      const config = new RenderConfig(showdownConfig, null, ImmutableMap.of([]));
+
+      const renderedMarkdown = 'renderedMarkdown';
+      spyOn(ShowdownService, 'render').and.returnValue(renderedMarkdown);
+
+      assert(service['compileItem_'](item, config)).to.haveElements([[itemName, renderedMarkdown]]);
+      assert(ShowdownService.render).to.haveBeenCalledWith(content, showdownConfig);
+    });
   });
 
   describe('render', () => {
@@ -60,10 +82,7 @@ describe('render.RenderServiceClass', () => {
       const id = `parentId/id`;
       const content = 'content';
 
-      const handlebarsContent = 'handlebarsContent';
-      const showdownContent = 'showdownContent';
-      spyOn(ShowdownService, 'render').and.returnValue(showdownContent);
-      spyOn(HandlebarsService, 'render').and.returnValue(handlebarsContent);
+      const renderedContent = 'handlebarsContent';
 
       const originalItem = MarkdownFile.newInstance(
           id, 'name', 'parentId', content, DriveSource.newInstance('driveId'));
@@ -71,35 +90,40 @@ describe('render.RenderServiceClass', () => {
       Fakes.build(mockItemService.getItem)
           .when(id).return(originalItem);
 
-      const path = Paths.absolutePath('/path');
+      const parentFolder = '/parent';
+      const path = Paths.absolutePath(`${parentFolder}/path`);
       mockItemService.getPath.and.returnValue(Promise.resolve(path));
 
       const templateContent = 'templateContent';
       spyOn(service, 'getTemplateContent_').and.returnValue(templateContent);
 
-      const showdownConfig = Mocks.object('showdownConfig');
-      const mockMetadata = jasmine
-          .createSpyObj('Metadata', ['getGlobals', 'getShowdownConfigForPath']);
-      const globals = Mocks.object('globals');
-      mockMetadata.getGlobals.and.returnValue(globals);
-      mockMetadata.getShowdownConfigForPath.and.returnValue(showdownConfig);
-      mockMetadataService.getMetadataForItem.and.returnValue(mockMetadata);
+      const renderConfig = new RenderConfig(
+          ImmutableMap.of([]),
+          Paths.absolutePath('/template'),
+          ImmutableMap.of([]));
+      mockMetadataService.getMetadataForItem.and.returnValue(renderConfig);
+
+      spyOn(service, 'renderItem_').and.returnValue(renderedContent);
+
+      const compiledPath = 'compiled/path';
+      const showdownContent = 'showdownContent';
+      spyOn(service, 'compileItem_').and.returnValue(ImmutableMap.of([
+        [compiledPath, showdownContent],
+      ]));
 
       await service.render(id);
 
       const previewFile: PreviewFile = mockPreviewService.save.calls.argsFor(0)[0];
-      assert(previewFile.getPath()).to.equal(path.toString());
-      assert(previewFile.getContent()).to.equal(handlebarsContent);
+      assert(previewFile.getPath()).to.equal(`${parentFolder}/${compiledPath}`);
+      assert(previewFile.getContent()).to.equal(renderedContent);
 
       assert(mockPreviewService.save).to.haveBeenCalledWith(previewFile);
       assert(mockMetadataService.getMetadataForItem).to.haveBeenCalledWith(id);
 
-      assert(ShowdownService.render).to.haveBeenCalledWith(content, showdownConfig);
-      assert(mockMetadata.getShowdownConfigForPath).to.haveBeenCalledWith(path);
-      assert(HandlebarsService.render).to.haveBeenCalledWith(
+      assert(service['renderItem_']).to.haveBeenCalledWith(
           showdownContent,
           templateContent,
-          globals);
+          renderConfig);
     });
 
     it(`should reject if the item type is not a file or a folder`, async () => {

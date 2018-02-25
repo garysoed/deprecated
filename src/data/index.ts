@@ -13,6 +13,6 @@ export { PreviewFile } from './preview-file';
 export { $previewService, PreviewService } from './preview-service';
 export { Project } from './project';
 export { $projectService, ProjectService } from './project-service';
-export { ResolvedMetadata } from './resolved-metadata';
+export { RenderConfig } from './render-config';
 export { ThothFolder } from './thoth-folder';
 export { UnknownFile } from './unknown-file';

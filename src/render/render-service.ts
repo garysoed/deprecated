@@ -1,6 +1,9 @@
 import { InstanceofType } from 'external/gs_tools/src/check';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
+import { ImmutableMap } from 'external/gs_tools/src/immutable';
+import { Paths } from 'external/gs_tools/src/path';
+import { assertUnreachable } from 'external/gs_tools/src/typescript';
 import { Templates } from 'external/gs_tools/src/webc';
 
 import {
@@ -12,10 +15,12 @@ import {
   MarkdownFile,
   MetadataService,
   PreviewFile,
-  PreviewService } from '../data';
+  PreviewService,
+  RenderConfig } from '../data';
 import { HandlebarsService } from '../render/handlebars-service';
 import { ShowdownService } from '../render/showdown-service';
 
+type AssetItem = MarkdownFile;
 const DEFAULT_TEMPLATE_KEY = 'src/render/render-default-template';
 
 export class RenderService {
@@ -25,8 +30,20 @@ export class RenderService {
       private readonly previewService_: PreviewService,
       private readonly templates_: Templates) { }
 
-  async getTemplateContent_(): Promise<string> {
+  private compileItem_(item: AssetItem, renderConfig: RenderConfig): ImmutableMap<string, string> {
+    if (item instanceof MarkdownFile) {
+      const renderedMarkdown = ShowdownService.render(
+          item.getContent(),
+          renderConfig.getShowdownConfig());
+      return ImmutableMap.of([[item.getName(), renderedMarkdown]]);
+    }
+
+    throw assertUnreachable(item);
+  }
+
+  private async getTemplateContent_(): Promise<string> {
     // TODO: Use the specified template.
+
     const content = this.templates_.getTemplate(DEFAULT_TEMPLATE_KEY);
     if (!content) {
       throw Errors.assert('default template').shouldExist().butNot();
@@ -34,7 +51,7 @@ export class RenderService {
     return content;
   }
 
-  async render(id: string): Promise<void> {
+  async render(id: string): Promise<any> {
     const path = await this.itemService_.getPath(id);
     if (!path) {
       throw Errors.assert(`Path for item [${id}]`).shouldExist().butWas(path);
@@ -47,25 +64,41 @@ export class RenderService {
     }
 
     // Preview doesn't exist, so create a new one.
-    const item = await this.itemService_.getItem(id);
-    if (!item) {
+    const [item, itemPath] = await Promise.all([
+      this.itemService_.getItem(id),
+      this.itemService_.getPath(id),
+    ]);
+    if (!item || !itemPath) {
       throw Errors.assert(`Item for id ${id}`).shouldExist().butNot();
     }
 
     if (item instanceof Folder) {
-      await Promise.all([
-        ...item.getItems().mapItem((itemId) => this.render(itemId)),
-      ]);
-    } else if (item instanceof MarkdownFile) {
-      const metadata = await this.metadataService_.getMetadataForItem(item.getId());
-
-      const renderedItem = HandlebarsService.render(
-          ShowdownService.render(item.getContent(), metadata.getShowdownConfigForPath(path)),
-          await this.getTemplateContent_(),
-          metadata.getGlobals());
-      await this.previewService_.save(
-          PreviewFile.newInstance(path.toString(), renderedItem));
+      return Promise
+          .all([
+            ...item.getItems().mapItem((itemId) => this.render(itemId)),
+          ]);
     }
+
+    if (!(item instanceof MarkdownFile)) {
+      return;
+    }
+
+    const renderConfig = await this.metadataService_.getMetadataForItem(item.getId());
+    const template = await this.getTemplateContent_();
+    const compiledPromises = this
+        .compileItem_(item, renderConfig)
+        .mapItem(([filename, content]) => {
+          const renderedContent = this.renderItem_(content, template, renderConfig);
+          const renderedFileName = Paths.normalize(
+              Paths.join(Paths.getDirPath(itemPath), Paths.relativePath(filename)));
+          const previewFile = PreviewFile.newInstance(renderedFileName.toString(), renderedContent);
+          return this.previewService_.save(previewFile);
+        });
+    return Promise.all(compiledPromises);
+  }
+
+  private renderItem_(content: string, template: string, renderConfig: RenderConfig): string {
+    return HandlebarsService.render(content, template, renderConfig.getVariables());
   }
 }
 

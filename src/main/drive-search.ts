@@ -186,7 +186,7 @@ export class DriveSearch extends BaseThemedElement2 {
       }
     }
 
-    // Now add the folders to the selected folder.
+    // Now add the files to the selected folder.
     itemService.save(
         selectedItem.setItems(
             selectedItem

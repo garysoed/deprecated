@@ -5,8 +5,8 @@ import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Paths } from 'external/gs_tools/src/path';
 
 import { DriveFolder, MarkdownFile, MetadataFile, MetadataService } from '../data';
-import { DEFAULT_METADATA } from '../data/metadata-service';
-import { DriveSource } from '../datasource';
+import { DEFAULT_CONFIG, DEFAULT_METADATA_FILENAME } from '../data/metadata-service';
+import { DriveSource, ThothSource } from '../datasource';
 
 
 describe('data.MetadataService', () => {
@@ -28,47 +28,30 @@ describe('data.MetadataService', () => {
     it(`should return the correct metadata object`, () => {
       const unparsedContent = 'unparsedContent';
       const path = 'path';
-      const globals = {a: '1', b: '2'};
-      const defaultTemplate = '/defaultTemplate';
+      const variables = {a: '1', b: '2'};
+      const template = '/template';
       mockJsYaml.load.and.returnValue({
-        globals,
-        templates: {
-          $default: defaultTemplate,
-        },
+        template,
+        variables,
       });
 
       const metadata = service['createMetadata_'](unparsedContent, path);
-      assert(metadata.getGlobals()).to.haveElements([['a', '1'], ['b', '2']]);
-      assert(metadata.getDefaultTemplatePath()).to.equal(PathMatcher.with(defaultTemplate));
+      assert(metadata.getVariables()).to.haveElements([['a', '1'], ['b', '2']]);
+      assert(metadata.getTemplate()).to.equal(PathMatcher.with(template));
       assert(jsyaml.load).to.haveBeenCalledWith(unparsedContent);
     });
 
-    it(`should default the default template to null if it isn't specified`, () => {
+    it(`should set the template to null if there are no templates objects`, () => {
       const unparsedContent = 'unparsedContent';
       const path = 'path';
-      const globals = {a: '1', b: '2'};
+      const variables = {a: '1', b: '2'};
       mockJsYaml.load.and.returnValue({
-        globals,
-        templates: { },
+        variables,
       });
 
       const metadata = service['createMetadata_'](unparsedContent, path);
-      assert(metadata.getGlobals()).to.haveElements([['a', '1'], ['b', '2']]);
-      assert(metadata.getDefaultTemplatePath()).to.beNull();
-      assert(jsyaml.load).to.haveBeenCalledWith(unparsedContent);
-    });
-
-    it(`should default the default template to null if there are no templates objects`, () => {
-      const unparsedContent = 'unparsedContent';
-      const path = 'path';
-      const globals = {a: '1', b: '2'};
-      mockJsYaml.load.and.returnValue({
-        globals,
-      });
-
-      const metadata = service['createMetadata_'](unparsedContent, path);
-      assert(metadata.getGlobals()).to.haveElements([['a', '1'], ['b', '2']]);
-      assert(metadata.getDefaultTemplatePath()).to.beNull();
+      assert(metadata.getVariables()).to.haveElements([['a', '1'], ['b', '2']]);
+      assert(metadata.getTemplate()).to.beNull();
       assert(jsyaml.load).to.haveBeenCalledWith(unparsedContent);
     });
 
@@ -76,7 +59,7 @@ describe('data.MetadataService', () => {
       const unparsedContent = 'unparsedContent';
       const path = 'path';
       mockJsYaml.load.and.returnValue({
-        globals: 1,
+        variables: 1,
       });
 
       assert(() => {
@@ -88,77 +71,134 @@ describe('data.MetadataService', () => {
   describe('getMetadataForItem', () => {
     it(`should return the resolved metadata if one exists in the corrent folder`, async () => {
       const itemId = 'itemId';
-      const resolvedItem = Mocks.object('resolvedItem');
-      spyOn(service, 'resolveMetadataItem_').and.returnValue(resolvedItem);
+      const content1 = 'content1';
+      const metadataFile1 = MetadataFile.newInstance(
+          'metadata1Id',
+          'metadata1Name',
+          'parentId',
+          content1,
+          ThothSource.newInstance());
+      const content2 = 'content2';
+      const metadataFile2 = MetadataFile.newInstance(
+          'metadata2Id',
+          'metadata2Name',
+          'parentId',
+          content2,
+          ThothSource.newInstance());
+      const content3 = 'content3';
+      const metadataFile3 = MetadataFile.newInstance(
+          'metadata3Id',
+          'metadata3Name',
+          'parentId',
+          content3,
+          ThothSource.newInstance());
+      const content4 = 'content4';
+      const metadataFile4 = MetadataFile.newInstance(
+          'metadata4Id',
+          'metadata4Name',
+          'parentId',
+          content4,
+          ThothSource.newInstance());
 
-      const metadataItem = Mocks.object('metadataItem');
-      spyOn(service, 'getMetadataItemInFolder_').and.returnValue(metadataItem);
+      const itemName = 'item';
+      const itemPath = `/a/b/c/${itemName}.md`;
+      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath(itemPath)));
 
-      const folder = Mocks.object('folder');
-      mockItemService.getItemByPath.and.returnValue(folder);
+      const item = MarkdownFile.newInstance(
+          itemId,
+          `${itemName}.md`,
+          'parentId',
+          'itemContent',
+          ThothSource.newInstance());
+      mockItemService.getItem.and.returnValue(Promise.resolve(item));
+      const folder = DriveFolder.newInstance(
+          'folderId',
+          'folderName',
+          'folderParentId',
+          ImmutableSet.of([itemId]),
+          DriveSource.newInstance('driveId'));
+      mockItemService.getItemByPath.and.returnValue(Promise.resolve(folder));
 
-      mockItemService.getPath.and.returnValue(Paths.absolutePath('/a/b/c/item'));
+      Fakes.build(spyOn(service, 'getMetadataItemWithNameInFolder_'))
+          .when(`${itemName}.yml`, PathMatcher.with('/a/b/c')).resolve(metadataFile1)
+          .when(DEFAULT_METADATA_FILENAME, PathMatcher.with('/a/b/c')).resolve(metadataFile2)
+          .when(DEFAULT_METADATA_FILENAME, PathMatcher.with('/a/b')).resolve(metadataFile3)
+          .when(DEFAULT_METADATA_FILENAME, PathMatcher.with('/a')).resolve(metadataFile4);
 
-      assert(await service.getMetadataForItem(itemId)).to.equal(resolvedItem);
-      assert(service['resolveMetadataItem_']).to.haveBeenCalledWith(metadataItem);
-      assert(service['getMetadataItemInFolder_']).to.haveBeenCalledWith(PathMatcher.with('/a/b/c'));
+      const renderConfig = Mocks.object('renderConfig');
+      spyOn(service, 'createMetadata_').and.returnValue(renderConfig);
+
+      assert(await service.getMetadataForItem(itemId)).to.equal(renderConfig);
+      const expectedContents = [content4, content3, content2, content1].join('\n');
+      assert(service['createMetadata_']).to.haveBeenCalledWith(expectedContents, itemPath);
       assert(mockItemService.getItemByPath).to.haveBeenCalledWith(PathMatcher.with('/a/b/c'));
+      assert(mockItemService.getItem).to.haveBeenCalledWith(itemId);
       assert(mockItemService.getPath).to.haveBeenCalledWith(itemId);
     });
 
-    it(`should return the parent folder's metadata if one doesn't exist in the current folder`,
-        async () => {
+    it(`should return the default config if the item is not in any directories`, async () => {
       const itemId = 'itemId';
-      const parentResolvedItem = Mocks.object('parentResolvedItem');
-      spyOn(service, 'resolveMetadataItem_').and.returnValue(parentResolvedItem);
+      const itemName = 'item';
+      const itemPath = `/a/b/c/${itemName}.md`;
+      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath(itemPath)));
 
-      const parentMetadataItem = Mocks.object('parentMetadataItem');
-      Fakes.build(spyOn(service, 'getMetadataItemInFolder_'))
-          .when(PathMatcher.with('/a/b/c')).return(null)
-          .when(PathMatcher.with('/a/b')).return(parentMetadataItem);
+      const item = MarkdownFile.newInstance(
+          itemId,
+          `${itemName}.md`,
+          'parentId',
+          'itemContent',
+          ThothSource.newInstance());
+      mockItemService.getItem.and.returnValue(Promise.resolve(item));
+      mockItemService.getItemByPath.and.returnValue(Promise.resolve(null));
 
-      const parentItemId = 'parentItemId';
-      const mockFolder = jasmine.createSpyObj('Folder', ['getId']);
-      mockFolder.getId.and.returnValue(parentItemId);
+      spyOn(service, 'createMetadata_');
 
-      const parentFolder = Mocks.object('parentFolder');
-      Fakes.build(mockItemService.getItemByPath)
-          .when(PathMatcher.with('/a/b/c')).return(mockFolder)
-          .when(PathMatcher.with('/a/b')).return(parentFolder);
-
-      Fakes.build(mockItemService.getPath)
-          .when(itemId).return(Paths.absolutePath('/a/b/c/item'))
-          .when(parentItemId).return(Paths.absolutePath('/a/b/c'));
-
-      assert(await service.getMetadataForItem(itemId)).to.equal(parentResolvedItem);
-      assert(service['resolveMetadataItem_']).to.haveBeenCalledWith(parentMetadataItem);
-      assert(mockItemService.getPath).to.haveBeenCalledWith(itemId);
-      assert(mockItemService.getPath).to.haveBeenCalledWith(parentItemId);
-    });
-
-    it(`should return default metadata if the item's folder cannot be found`, async () => {
-      const itemId = 'itemId';
-
-      mockItemService.getItemByPath.and.returnValue(null);
-      mockItemService.getPath.and.returnValue(Paths.absolutePath('/a/b/c/item'));
-
-      assert(await service.getMetadataForItem(itemId)).to.equal(DEFAULT_METADATA);
+      assert(await service.getMetadataForItem(itemId)).to.equal(DEFAULT_CONFIG);
+      assert(service['createMetadata_']).toNot.haveBeenCalled();
       assert(mockItemService.getItemByPath).to.haveBeenCalledWith(PathMatcher.with('/a/b/c'));
+      assert(mockItemService.getItem).to.haveBeenCalledWith(itemId);
       assert(mockItemService.getPath).to.haveBeenCalledWith(itemId);
     });
 
-    it(`should return default metadata if the item's path cannot be found`, async () => {
+    it(`should return the default config if the item's path cannot be found`, async () => {
       const itemId = 'itemId';
+      const itemName = 'item';
+      mockItemService.getPath.and.returnValue(Promise.resolve(null));
 
-      mockItemService.getPath.and.returnValue(null);
+      const item = MarkdownFile.newInstance(
+          itemId,
+          `${itemName}.md`,
+          'parentId',
+          'itemContent',
+          ThothSource.newInstance());
+      mockItemService.getItem.and.returnValue(Promise.resolve(item));
 
-      assert(await service.getMetadataForItem(itemId)).to.equal(DEFAULT_METADATA);
+      spyOn(service, 'createMetadata_');
+
+      assert(await service.getMetadataForItem(itemId)).to.equal(DEFAULT_CONFIG);
+      assert(service['createMetadata_']).toNot.haveBeenCalled();
+      assert(mockItemService.getItem).to.haveBeenCalledWith(itemId);
+      assert(mockItemService.getPath).to.haveBeenCalledWith(itemId);
+    });
+
+    it(`should return the default config if the item cannot be found`, async () => {
+      const itemId = 'itemId';
+      const itemName = 'item';
+      const itemPath = `/a/b/c/${itemName}.md`;
+      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath(itemPath)));
+      mockItemService.getItem.and.returnValue(Promise.resolve(null));
+
+      spyOn(service, 'createMetadata_');
+
+      assert(await service.getMetadataForItem(itemId)).to.equal(DEFAULT_CONFIG);
+      assert(service['createMetadata_']).toNot.haveBeenCalled();
+      assert(mockItemService.getItem).to.haveBeenCalledWith(itemId);
       assert(mockItemService.getPath).to.haveBeenCalledWith(itemId);
     });
   });
 
-  describe('getMetadataItemInFolder_', () => {
-    it(`should return the first metadata item in the folder`, async () => {
+  describe('getMetadataItemWithNameInFolder_', () => {
+    it(`should return the first matching metadata item in the folder`, async () => {
       const path = Paths.absolutePath('/a/b/c');
 
       const folderId = 'folderId';
@@ -170,9 +210,10 @@ describe('data.MetadataService', () => {
           'content',
           DriveSource.newInstance('otherDriveId'));
       const metadataId = 'metadataId';
+      const metadataName = 'metadataName';
       const metadataFile = MetadataFile.newInstance(
           metadataId,
-          'metadata',
+          metadataName,
           folderId,
           'content',
           DriveSource.newInstance('metadataDriveId'));
@@ -188,16 +229,17 @@ describe('data.MetadataService', () => {
           DriveSource.newInstance('folderDriveId'));
       mockItemService.getItemByPath.and.returnValue(folder);
 
-      assert(await service['getMetadataItemInFolder_'](path)).to.equal(metadataFile);
+      assert(await service['getMetadataItemWithNameInFolder_'](metadataName, path))
+          .to.equal(metadataFile);
       assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
     });
 
-    it(`should return null if there are no metadata items in the folder`, async () => {
+    it(`should return null if there are no matching metadata items in the folder`, async () => {
       const path = Paths.absolutePath('/a/b/c');
 
       const folderId = 'folderId';
       const otherId = 'otherId';
-      const otherFile = MarkdownFile.newInstance(
+      const otherFile = MetadataFile.newInstance(
           otherId,
           'other',
           folderId,
@@ -213,7 +255,33 @@ describe('data.MetadataService', () => {
           DriveSource.newInstance('folderDriveId'));
       mockItemService.getItemByPath.and.returnValue(folder);
 
-      assert(await service['getMetadataItemInFolder_'](path)).to.beNull();
+      assert(await service['getMetadataItemWithNameInFolder_']('metadata', path)).to.beNull();
+      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
+    });
+
+    it(`should return null if there are no metadata items in the folder`, async () => {
+      const path = Paths.absolutePath('/a/b/c');
+
+      const folderId = 'folderId';
+      const otherId = 'otherId';
+      const fileName = 'fileName';
+      const otherFile = MarkdownFile.newInstance(
+          otherId,
+          fileName,
+          folderId,
+          'content',
+          DriveSource.newInstance('otherDriveId'));
+      mockItemService.getItem.and.returnValue(otherFile);
+
+      const folder = DriveFolder.newInstance(
+          folderId,
+          'folder',
+          null,
+          ImmutableSet.of([otherId]),
+          DriveSource.newInstance('folderDriveId'));
+      mockItemService.getItemByPath.and.returnValue(folder);
+
+      assert(await service['getMetadataItemWithNameInFolder_'](fileName, path)).to.beNull();
       assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
     });
 
@@ -227,77 +295,8 @@ describe('data.MetadataService', () => {
           DriveSource.newInstance('otherDriveId'));
       mockItemService.getItemByPath.and.returnValue(otherFile);
 
-      assert(await service['getMetadataItemInFolder_'](path)).to.beNull();
+      assert(await service['getMetadataItemWithNameInFolder_']('metadata', path)).to.beNull();
       assert(mockItemService.getItemByPath).to.haveBeenCalledWith(path);
-    });
-  });
-
-  describe('resolveMetadataItem_', () => {
-    it(`should concatenate the content with the ancestors`, async () => {
-      const content1 = 'content1';
-      const content2 = 'content2';
-      const content3 = 'content3';
-
-      const item1Id = 'item1Id';
-      const item1 = MetadataFile.newInstance(
-          item1Id,
-          'item1',
-          'parentId',
-          content1,
-          DriveSource.newInstance('driveId'));
-      const item2Id = 'item2Id';
-      const item2 = MetadataFile.newInstance(
-          item2Id,
-          'item2',
-          'parentId',
-          content2,
-          DriveSource.newInstance('driveId'));
-      const item3Id = 'item3Id';
-      const item3 = MetadataFile.newInstance(
-          item3Id,
-          'item3',
-          'parentId',
-          content3,
-          DriveSource.newInstance('driveId'));
-
-      const pathString = '/a/b/c/d';
-      mockItemService.getPath.and.returnValue(Paths.absolutePath(pathString));
-
-      const metadata = Mocks.object('metadata');
-      spyOn(service, 'createMetadata_').and.returnValue(Promise.resolve(metadata));
-
-      Fakes.build(spyOn(service, 'getMetadataItemInFolder_'))
-          .when(PathMatcher.with('/a/b/c/d')).return(item3)
-          .when(PathMatcher.with('/a/b')).return(item2)
-          .when(PathMatcher.with('/a')).return(item1)
-          .else().return(null);
-
-      assert(await service['resolveMetadataItem_'](item3)).to.equal(metadata);
-      assert(service['createMetadata_']).to.haveBeenCalledWith(
-          [content1, content2, content3].join('\n'),
-          pathString);
-      assert(mockItemService.getPath).to.haveBeenCalledWith(item3Id);
-    });
-
-    it(`should return the content of the current item if the item's path cannot be found`,
-        async () => {
-      const content = 'content';
-      const itemId = 'itemId';
-      const item = MarkdownFile.newInstance(
-          itemId,
-          'item',
-          'parentId',
-          content,
-          DriveSource.newInstance('driveId'));
-
-      mockItemService.getPath.and.returnValue(null);
-
-      const metadata = Mocks.object('metadata');
-      spyOn(service, 'createMetadata_').and.returnValue(Promise.resolve(metadata));
-
-      assert(await service['resolveMetadataItem_'](item)).to.equal(metadata);
-      assert(service['createMetadata_']).to.haveBeenCalledWith(content, '');
-      assert(mockItemService.getPath).to.haveBeenCalledWith(itemId);
     });
   });
 });

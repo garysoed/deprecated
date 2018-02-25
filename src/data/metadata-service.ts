@@ -8,36 +8,36 @@ import {
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableMap } from 'external/gs_tools/src/immutable';
-import { AbsolutePath, AbsolutePathParser, Path, Paths } from 'external/gs_tools/src/path';
+import { Path, Paths } from 'external/gs_tools/src/path';
 
 import { FileType } from '../data/file-type';
 import { Folder } from '../data/folder';
 import { $itemService, ItemService } from '../data/item-service';
 import { MetadataFile } from '../data/metadata-file';
-import { ResolvedMetadata } from '../data/resolved-metadata';
+import { RenderConfig } from '../data/render-config';
 
-export const DEFAULT_METADATA = new ResolvedMetadata(
+export const DEFAULT_METADATA_FILENAME = '$default.yml';
+export const DEFAULT_CONFIG = new RenderConfig(
     ImmutableMap.of({}),
-    ImmutableMap.of({}),
+    null,
     ImmutableMap.of({}));
 
 type ShowdownConfig =  {[key: string]: string};
 type MetadataJsonType = {
-  globals?: {[key: string]: string},
-  showdown?: {[key: string]: ShowdownConfig},
-  templates?: {[key: string]: string},
+  showdown?: ShowdownConfig,
+  template?: string,
+  variables?: {[key: string]: string},
 };
 const METADATA_JSON_TYPE = HasPropertiesType<MetadataJsonType>({
-  'globals': UnionType.builder<undefined | {[key: string]: string}>()
+  'showdown': UnionType.builder<undefined | {[key: string]: string}>()
       .addType(UndefinedType)
       .addType(ObjectType.stringKeyed<string>(StringType))
       .build(),
-  'showdown': UnionType.builder<undefined | {[key: string]: ShowdownConfig}>()
+  'template': UnionType.builder<undefined | string>()
+      .addType(StringType)
       .addType(UndefinedType)
-      .addType(ObjectType.stringKeyed<{[key: string]: string}>(
-          ObjectType.stringKeyed<string>(StringType)))
       .build(),
-  'templates': UnionType.builder<undefined | {[key: string]: string}>()
+  'variables': UnionType.builder<undefined | {[key: string]: string}>()
       .addType(UndefinedType)
       .addType(ObjectType.stringKeyed<string>(StringType))
       .build(),
@@ -46,47 +46,65 @@ const METADATA_JSON_TYPE = HasPropertiesType<MetadataJsonType>({
 export class MetadataService {
   constructor(private readonly itemService_: ItemService) { }
 
-  private createMetadata_(unparsedContent: string, metadataPath: string): ResolvedMetadata {
-    const parsedContent = jsyaml.load(unparsedContent);
+  private createMetadata_(unparsedContent: string, metadataPath: string): RenderConfig {
+    const parsedContent = unparsedContent ? jsyaml.load(unparsedContent) : {};
     if (!METADATA_JSON_TYPE.check(parsedContent)) {
-      throw Errors.assert(`content of metadata [${metadataPath}]`).shouldBeA(METADATA_JSON_TYPE)
-          .butWas(parsedContent);
+      throw Errors.assert(`content of metadata for file [${metadataPath}]`)
+          .shouldBeA(METADATA_JSON_TYPE)
+          .butWas(JSON.stringify(parsedContent));
     }
 
-    const templates = ImmutableMap.of(parsedContent.templates || {})
-        .map((value) => AbsolutePathParser.parse(value))
-        .filter((value) => !!value) as ImmutableMap<string, AbsolutePath>;
-
-    return new ResolvedMetadata(
-        ImmutableMap.of(parsedContent.globals || {}),
-        ImmutableMap
-            .of(parsedContent.showdown || {})
-            .map((value) => ImmutableMap.of(value)),
-        templates);
+    const templateString = parsedContent.template;
+    return new RenderConfig(
+        ImmutableMap.of(parsedContent.showdown || {}),
+        templateString ? Paths.absolutePath(templateString) : null,
+        ImmutableMap.of(parsedContent.variables || {}));
   }
 
-  async getMetadataForItem(itemId: string): Promise<ResolvedMetadata> {
-    const path = await this.itemService_.getPath(itemId);
-    if (!path) {
-      return DEFAULT_METADATA;
+  async getMetadataForItem(itemId: string): Promise<RenderConfig> {
+    const [path, item] = await Promise.all([
+      this.itemService_.getPath(itemId),
+      this.itemService_.getItem(itemId),
+    ]);
+
+    if (!path || !item) {
+      return DEFAULT_CONFIG;
     }
 
     const dirPath = Paths.getDirPath(path);
     const folder = await this.itemService_.getItemByPath(dirPath);
     if (!folder) {
-      return DEFAULT_METADATA;
+      return DEFAULT_CONFIG;
     }
 
     // Check if there are any metadatas in this folder.
-    const metadataItem = await this.getMetadataItemInFolder_(dirPath);
-    if (metadataItem) {
-      return this.resolveMetadataItem_(metadataItem);
-    }
+    const itemMetadataName = Paths.setFilenameExt(item.getName(), 'yml');
+    const itemMetadataPromise = this.getMetadataItemWithNameInFolder_(itemMetadataName, dirPath);
+    const defaultMetadataPromise =
+        this.getMetadataItemWithNameInFolder_(DEFAULT_METADATA_FILENAME, dirPath);
 
-    return this.getMetadataForItem(folder.getId());
+    // Now get the ancestors.
+    const ancestorMetadataPromises = Paths
+        .getSubPathsToRoot(Paths.getDirPath(Paths.getDirPath(path)))
+        .map(async (subpath) => {
+          return this.getMetadataItemWithNameInFolder_(DEFAULT_METADATA_FILENAME, subpath);
+        });
+    const metadataPromises: Promise<MetadataFile | null>[] = [
+      itemMetadataPromise,
+      defaultMetadataPromise,
+      ...ancestorMetadataPromises,
+    ];
+
+    const contentList = ImmutableList
+        .of(await Promise.all(metadataPromises))
+        .reverse()
+        .filterByType(InstanceofType(MetadataFile))
+        .map((metadataFile) => metadataFile.getContent());
+    return this.createMetadata_([...contentList].join('\n'), path.toString());
   }
 
-  private async getMetadataItemInFolder_(path: Path): Promise<MetadataFile | null> {
+  private async getMetadataItemWithNameInFolder_(
+      metadataName: string, path: Path): Promise<MetadataFile | null> {
     const folder = await this.itemService_.getItemByPath(path);
     if (!(folder instanceof Folder)) {
       return null;
@@ -97,28 +115,8 @@ export class MetadataService {
         .of(await Promise.all(contentPromises))
         .filterByType(InstanceofType(MetadataFile))
         .find((item) => {
-          return item.getType() === FileType.METADATA;
+          return item.getType() === FileType.METADATA && item.getName() === metadataName;
         });
-  }
-
-  private async resolveMetadataItem_(item: MetadataFile): Promise<ResolvedMetadata> {
-    const path = await this.itemService_.getPath(item.getId());
-    if (!path) {
-      return this.createMetadata_(item.getContent(), '');
-    }
-
-    const contentPromises = Paths.getSubPathsToRoot(path)
-        .map(async (subpath) => {
-          const metadataItem = await this.getMetadataItemInFolder_(subpath);
-          if (!metadataItem) {
-            return '';
-          }
-
-          return metadataItem.getContent();
-        });
-    const contents = await Promise.all(contentPromises);
-    const combinedContent = contents.reverse().filter((content) => !!content).join('\n');
-    return this.createMetadata_(combinedContent, path.toString());
   }
 }
 
