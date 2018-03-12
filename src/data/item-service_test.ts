@@ -1,14 +1,20 @@
-import { assert, TestBase } from '../test-base';
+import { assert, Matchers, TestBase } from '../test-base';
 TestBase.setup();
 
 import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
-import { Item, ThothFolder } from '../data';
+import { DriveFolder, Folder, Item, MetadataFile, ThothFolder } from '../data';
 import { ItemService } from '../data/item-service';
-import { DriveSource } from '../datasource';
+import { DriveSource, ThothSource } from '../datasource';
 import { MarkdownFile } from './markdown-file';
 
+function folderToJson(folder: Folder): {} {
+  return {
+    id: folder.getId(),
+    itemIds: [...folder.getItems()],
+  };
+}
 
 describe('data.ItemService', () => {
   let itemsGraph: FakeDataGraph<Item>;
@@ -19,6 +25,97 @@ describe('data.ItemService', () => {
     itemsGraph = new FakeDataGraph<Item>();
     mockProjectService = jasmine.createSpyObj('ProjectService', ['get']);
     service = new ItemService(itemsGraph, mockProjectService);
+  });
+
+  describe('deleteItem', () => {
+    it(`should delete the item correctly`, async () => {
+      const child1Id = 'child1Id';
+      const parentId = 'parentId';
+      const itemId = 'itemId';
+
+      const item = MetadataFile.newInstance(
+          itemId,
+          'itemName',
+          parentId,
+          'content',
+          ThothSource.newInstance());
+
+      const parent = ThothFolder.newInstance(
+          parentId,
+          'parent',
+          null,
+          ImmutableSet.of([itemId, child1Id]));
+      await Promise.all([
+        itemsGraph.set(itemId, item),
+        itemsGraph.set(parentId, parent),
+      ]);
+
+      spyOn(service, 'save');
+
+      await service.deleteItem(itemId);
+      assert(service.save).to.haveBeenCalledWith(
+          Matchers
+              .map(folderToJson)
+              .objectContaining({id: parentId, itemIds: [child1Id]}));
+      assert(await itemsGraph.get(itemId)).to.beNull();
+    });
+
+    it(`should not save if parent is not a ThothFolder`, async () => {
+      const child1Id = 'child1Id';
+      const parentId = 'parentId';
+      const itemId = 'itemId';
+
+      const item = MetadataFile.newInstance(
+          itemId,
+          'itemName',
+          parentId,
+          'content',
+          ThothSource.newInstance());
+
+      const parent = DriveFolder.newInstance(
+          parentId,
+          'parent',
+          null,
+          ImmutableSet.of([itemId, child1Id]),
+          DriveSource.newInstance('driveId'));
+      await Promise.all([
+        itemsGraph.set(itemId, item),
+        itemsGraph.set(parentId, parent),
+      ]);
+
+      spyOn(service, 'save');
+
+      await service.deleteItem(itemId);
+      assert(service.save).toNot.haveBeenCalled();
+      assert(await itemsGraph.get(itemId)).to.beNull();
+    });
+
+    it(`should not save if there are no parents`, async () => {
+      const itemId = 'itemId';
+
+      const item = ThothFolder.newInstance(
+          itemId,
+          'itemName',
+          null,
+          ImmutableSet.of([]));
+
+      await Promise.all([
+        itemsGraph.set(itemId, item),
+      ]);
+
+      spyOn(service, 'save');
+
+      await service.deleteItem(itemId);
+      assert(service.save).toNot.haveBeenCalled();
+      assert(await itemsGraph.get(itemId)).to.beNull();
+    });
+
+    it(`should not throw errors if there are no items`, async () => {
+      spyOn(service, 'save');
+
+      await service.deleteItem('itemId');
+      assert(service.save).toNot.haveBeenCalled();
+    });
   });
 
   describe('getItem', () => {

@@ -21,7 +21,6 @@ import {
   $,
   $isEditing,
   $item,
-  $parent,
   NavigatorItem,
   PREVIEW_PATH_ROOT,
   PREVIEW_WINDOW_NAME } from '../main/navigator-item';
@@ -102,64 +101,14 @@ describe('main.NavigatorItem', () => {
 
   describe('onDeleteButtonAction_', () => {
     it(`should delete the item correctly`, async () => {
-      const idOld = 'idOld';
-      const idDelete = 'idDelete';
-      TestGraph.set($.host.itemid.getId(), idDelete);
+      const itemId = 'itemId';
+      TestGraph.set($.host.itemid.getId(), itemId);
 
-      const parent = ThothFolder
-          .newInstance('idParent', 'name', null, ImmutableSet.of([idOld, idDelete]));
-      TestGraph.set($parent, parent);
-
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
+      const mockItemService = jasmine.createSpyObj('ItemService', ['deleteItem']);
       TestGraph.set($itemService, mockItemService);
 
       await item.onDeleteButtonAction_();
-      assert(mockItemService.save).to.haveBeenCalledWith(Matchers.anyThing());
-
-      const newParent: ThothFolder = mockItemService.save.calls.argsFor(0)[0];
-      assert(newParent.getItems()).to.haveElements([idOld]);
-    });
-
-    it(`should not save if the parent is not a ThothFolder`, async () => {
-      const idDelete = 'idDelete';
-      TestGraph.set($.host.itemid.getId(), idDelete);
-
-      const parent = DriveFolder.newInstance(
-          'idParent', 'name', null, ImmutableSet.of([]), DriveSource.newInstance('driveId'));
-      TestGraph.set($parent, parent);
-
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
-
-      await item.onDeleteButtonAction_();
-      assert(mockItemService.save).toNot.haveBeenCalled();
-    });
-
-    it(`should not save if the parent is null`, async () => {
-      const idDelete = 'idDelete';
-      TestGraph.set($.host.itemid.getId(), idDelete);
-
-      TestGraph.set($parent, null);
-
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
-
-      await item.onDeleteButtonAction_();
-      assert(mockItemService.save).toNot.haveBeenCalled();
-    });
-
-    it(`should not save if itemId does not exist`, async () => {
-      TestGraph.set($.host.itemid.getId(), '');
-
-      const parent = ThothFolder
-          .newInstance('idParent', 'name', null, ImmutableSet.of([]));
-      TestGraph.set($parent, parent);
-
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
-
-      await item.onDeleteButtonAction_();
-      assert(mockItemService.save).toNot.haveBeenCalled();
+      assert(mockItemService.deleteItem).to.haveBeenCalledWith(itemId);
     });
   });
 

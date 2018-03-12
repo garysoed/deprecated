@@ -21,6 +21,29 @@ export class ItemService {
       private readonly itemsGraph_: DataGraph<Item>,
       private readonly projectService_: ProjectService) { }
 
+  async deleteItem(id: string): Promise<void> {
+    // Now delete the item from the parent.
+    const item = await this.getItem(id);
+    if (!item) {
+      return;
+    }
+
+    // Delete the item
+    this.itemsGraph_.delete(id);
+
+    const parentId = item.getParentId();
+    if (!parentId) {
+      return;
+    }
+
+    const parent = await this.getItem(parentId);
+    if (!(parent instanceof ThothFolder)) {
+      return;
+    }
+
+    return this.save(parent.setItems(parent.getItems().delete(id)));
+  }
+
   async getItem(id: string): Promise<Item | null> {
     return this.itemsGraph_.get(id);
   }

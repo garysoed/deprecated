@@ -176,22 +176,13 @@ export class NavigatorItem extends BaseThemedElement2 {
   @onDom.event($.deleteButton.el, 'gs-action')
   async onDeleteButtonAction_(): Promise<void> {
     const time = Graph.getTimestamp();
-    const [itemId, parent, itemService] = await Graph.getAll(
+    const [itemId, itemService] = await Graph.getAll(
         time,
         this,
         $.host.itemid.getId(),
-        $parent,
         $itemService);
 
-    if (!itemId) {
-      return;
-    }
-
-    if (!(parent instanceof ThothFolder)) {
-      return;
-    }
-
-    itemService.save(parent.setItems(parent.getItems().delete(itemId)));
+    return itemService.deleteItem(itemId);
   }
 
   @onDom.event($.host.el, 'click')
