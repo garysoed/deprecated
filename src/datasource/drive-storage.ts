@@ -2,6 +2,11 @@ import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { GapiLibrary } from 'external/gs_tools/src/net';
 import { GapiRequestQueue, GapiStorage } from 'external/gs_tools/src/store';
 
+import {
+  ExponentialBackoffRetryStrategy,
+  LimitedCountRetryStrategy,
+  Promises,
+  RetryStrategies } from 'external/gs_tools/src/async';
 import { drive } from '../api';
 import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../datasource/drive';
 import { DriveSource } from '../datasource/drive-source';
@@ -17,6 +22,11 @@ const TYPE_MAPPING = new Map([
   [DRIVE_FOLDER_MIMETYPE, ApiDriveType.FOLDER],
   ['application/json', ApiDriveType.YAML],
   ['text/x-markdown', ApiDriveType.MARKDOWN],
+]);
+
+const GET_RETRY_STRATEGY = RetryStrategies.all([
+  new ExponentialBackoffRetryStrategy(500),
+  new LimitedCountRetryStrategy(5),
 ]);
 
 export function convertToType_(driveType: string): ApiDriveType {
@@ -101,7 +111,9 @@ export class DriveStorageImpl extends GapiStorage<
     }
 
     const drive = await this.driveLibrary.get();
-    const response = await drive.files.get({alt: 'media', fileId: summary.source.getDriveId()});
+    const response = await Promises.withRetry(
+        () => drive.files.get({alt: 'media', fileId: summary.source.getDriveId()}),
+        GET_RETRY_STRATEGY);
     return response.body;
   }
 
