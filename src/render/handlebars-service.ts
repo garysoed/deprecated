@@ -2,16 +2,15 @@ import { ImmutableMap } from 'external/gs_tools/src/immutable';
 
 export class HandlebarsServiceClass {
   render(
-      content: string,
+      context: {},
       template: string,
       globals: Iterable<[string, string]> = ImmutableMap.of({})): string {
-    const context = {
-      $mainContent: content,
-    };
+    const globalContexts = {};
     for (const [key, value] of globals) {
-      context[key] = value;
+      globalContexts[key] = value;
     }
-    return Handlebars.compile(template)(context);
+
+    return Handlebars.compile(template)({...globalContexts, ...context});
   }
 }
 

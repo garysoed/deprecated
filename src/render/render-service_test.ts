@@ -50,7 +50,9 @@ describe('render.RenderServiceClass', () => {
       const renderedMarkdown = 'renderedMarkdown';
       spyOn(ShowdownService, 'render').and.returnValue(renderedMarkdown);
 
-      assert(service['compileItem_'](item, config)).to.haveElements([[itemName, renderedMarkdown]]);
+      assert(service['compileItem_'](item, config)).to.haveElements([
+        [itemName, {$mainContent: renderedMarkdown}],
+      ]);
       assert(ShowdownService.render).to.haveBeenCalledWith(content, showdownConfig);
     });
   });
@@ -106,9 +108,9 @@ describe('render.RenderServiceClass', () => {
       spyOn(service, 'renderItem_').and.returnValue(renderedContent);
 
       const compiledPath = 'compiled/path';
-      const showdownContent = 'showdownContent';
+      const compiledItem = 'compiledItem';
       spyOn(service, 'compileItem_').and.returnValue(ImmutableMap.of([
-        [compiledPath, showdownContent],
+        [compiledPath, compiledItem],
       ]));
 
       await service.render(id);
@@ -121,7 +123,7 @@ describe('render.RenderServiceClass', () => {
       assert(mockMetadataService.getConfigForItem).to.haveBeenCalledWith(id);
 
       assert(service['renderItem_']).to.haveBeenCalledWith(
-          showdownContent,
+          compiledItem,
           templateContent,
           renderConfig);
     });

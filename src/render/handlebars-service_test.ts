@@ -18,7 +18,7 @@ describe('render.HandlebarsServiceClass', () => {
 
   describe('render', () => {
     it(`should compile correctly`, () => {
-      const content = 'content';
+      const context = {a: 'a', c: 'c'};
       const template = 'template';
       const globalsJson = {a: '1', b: '2'};
       const globals = ImmutableMap.of(globalsJson);
@@ -28,10 +28,11 @@ describe('render.HandlebarsServiceClass', () => {
       mockCompiledTemplate.and.returnValue(compiled);
       mockHandlebars.compile.and.returnValue(mockCompiledTemplate);
 
-      assert(service.render(content, template, globals)).to.equal(compiled);
+      assert(service.render(context, template, globals)).to.equal(compiled);
       assert(mockCompiledTemplate).to.haveBeenCalledWith({
-        $mainContent: content,
-        ...globalsJson,
+        a: 'a',
+        b: '2',
+        c: 'c',
       });
       assert(mockHandlebars.compile).to.haveBeenCalledWith(template);
     });

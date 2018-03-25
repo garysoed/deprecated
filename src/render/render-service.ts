@@ -23,6 +23,9 @@ import { ShowdownService } from '../render/showdown-service';
 type AssetItem = MarkdownFile;
 const DEFAULT_TEMPLATE_KEY = 'src/render/render-default-template';
 
+// Type of item that can be compiled. Map of output filename to context for handlebars.
+type CompiledItem = ImmutableMap<string, {}>;
+
 export class RenderService {
   constructor(
       private readonly itemService_: ItemService,
@@ -30,12 +33,14 @@ export class RenderService {
       private readonly previewService_: PreviewService,
       private readonly templates_: Templates) { }
 
-  private compileItem_(item: AssetItem, renderConfig: RenderConfig): ImmutableMap<string, string> {
+  private compileItem_(item: AssetItem, renderConfig: RenderConfig): CompiledItem {
     if (item instanceof MarkdownFile) {
       const renderedMarkdown = ShowdownService.render(
           item.getContent(),
           renderConfig.getShowdownConfig());
-      return ImmutableMap.of([[item.getName(), renderedMarkdown]]);
+      return ImmutableMap.of([
+        [item.getName(), {$mainContent: renderedMarkdown}],
+      ]);
     }
 
     throw assertUnreachable(item);
@@ -87,8 +92,8 @@ export class RenderService {
     const template = await this.getTemplateContent_();
     const compiledPromises = this
         .compileItem_(item, renderConfig)
-        .mapItem(([filename, content]) => {
-          const renderedContent = this.renderItem_(content, template, renderConfig);
+        .mapItem(([filename, context]) => {
+          const renderedContent = this.renderItem_(context, template, renderConfig);
           const renderedFileName = Paths.normalize(
               Paths.join(Paths.getDirPath(itemPath), Paths.relativePath(filename)));
           const previewFile = PreviewFile.newInstance(renderedFileName.toString(), renderedContent);
@@ -97,8 +102,8 @@ export class RenderService {
     return Promise.all(compiledPromises);
   }
 
-  private renderItem_(content: string, template: string, renderConfig: RenderConfig): string {
-    return HandlebarsService.render(content, template, renderConfig.getVariables());
+  private renderItem_(context: {}, template: string, renderConfig: RenderConfig): string {
+    return HandlebarsService.render(context, template, renderConfig.getVariables());
   }
 }
 

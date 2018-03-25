@@ -108,7 +108,7 @@ describe('data.MetadataService', () => {
           itemId,
           `${itemName}.md`,
           'parentId',
-          'itemContent',
+          'compiledItem',
           ThothSource.newInstance());
       mockItemService.getItem.and.returnValue(Promise.resolve(item));
       const folder = DriveFolder.newInstance(
@@ -146,7 +146,7 @@ describe('data.MetadataService', () => {
           itemId,
           `${itemName}.md`,
           'parentId',
-          'itemContent',
+          'compiledItem',
           ThothSource.newInstance());
       mockItemService.getItem.and.returnValue(Promise.resolve(item));
       mockItemService.getItemByPath.and.returnValue(Promise.resolve(null));
@@ -169,7 +169,7 @@ describe('data.MetadataService', () => {
           itemId,
           `${itemName}.md`,
           'parentId',
-          'itemContent',
+          'compiledItem',
           ThothSource.newInstance());
       mockItemService.getItem.and.returnValue(Promise.resolve(item));
 
