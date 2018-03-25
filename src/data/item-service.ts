@@ -11,6 +11,7 @@ import { AbsolutePath, Path } from 'external/gs_tools/src/path';
 import { Folder } from '../data/folder';
 
 import { DriveFolder } from '.';
+import { DataFile } from '../data/data-file';
 import { Item } from '../data/item';
 import { $items } from '../data/item-graph';
 import { MarkdownFile } from '../data/markdown-file';
@@ -20,6 +21,8 @@ import { ROOT_PATH } from '../data/selected-item-graph';
 import { ThothFolder } from '../data/thoth-folder';
 import { UnknownFile } from '../data/unknown-file';
 import { ApiFile, ApiFileType, DriveSource, Source } from '../datasource';
+
+import { assertUnreachable } from 'external/gs_tools/src/typescript';
 
 export class ItemService {
   constructor(
@@ -38,6 +41,16 @@ export class ItemService {
     }
     const content = driveItem.content || '';
     switch (type) {
+      case ApiFileType.TSV:
+        const contentData = content.split('\n').map(line => {
+          return line.split('\t');
+        });
+        return DataFile.newInstance(
+            itemId,
+            filename,
+            containerId,
+            contentData,
+            source);
       case ApiFileType.MARKDOWN:
         return MarkdownFile.newInstance(itemId, filename, containerId, content, source);
       case ApiFileType.METADATA:
@@ -59,8 +72,10 @@ export class ItemService {
               return itemId;
             })),
             source);
-      default:
+      case ApiFileType.UNKNOWN:
         return UnknownFile.newInstance(itemId, filename, containerId, source);
+      default:
+        throw assertUnreachable(type);
     }
   }
 

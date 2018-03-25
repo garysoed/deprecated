@@ -1,10 +1,11 @@
-import { assert, Fakes, TestBase } from '../test-base';
+import { assert, Fakes, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
 import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Paths } from 'external/gs_tools/src/path';
 
 import {
+  DataFile,
   DriveFolder,
   MarkdownFile,
   PreviewFile,
@@ -35,11 +36,10 @@ describe('render.RenderServiceClass', () => {
 
   describe('compileItem_', () => {
     it(`should compile markdown files correctly`, () => {
-      const itemName = 'itemName';
       const content = 'content';
       const item = MarkdownFile.newInstance(
           'itemId',
-          itemName,
+          'itemName',
           'parentId',
           content,
           ThothSource.newInstance());
@@ -50,10 +50,22 @@ describe('render.RenderServiceClass', () => {
       const renderedMarkdown = 'renderedMarkdown';
       spyOn(ShowdownService, 'render').and.returnValue(renderedMarkdown);
 
-      assert(service['compileItem_'](item, config)).to.haveElements([
-        [itemName, {$mainContent: renderedMarkdown}],
-      ]);
+      assert(service['compileItem_'](item, config)).to.equal(renderedMarkdown);
       assert(ShowdownService.render).to.haveBeenCalledWith(content, showdownConfig);
+    });
+
+    it(`should compile data files correctly`, () => {
+      const content = Mocks.object('content');
+      const item = DataFile.newInstance(
+          'itemId',
+          'itemName',
+          'parentId',
+          content,
+          ThothSource.newInstance());
+
+      const showdownConfig = Mocks.object('showdownConfig');
+      const config = new RenderConfig(showdownConfig, null, ImmutableMap.of([]));
+      assert(service['compileItem_'](item, config)).to.equal(content);
     });
   });
 
@@ -86,8 +98,9 @@ describe('render.RenderServiceClass', () => {
 
       const renderedContent = 'handlebarsContent';
 
+      const filename = 'filename';
       const originalItem = MarkdownFile.newInstance(
-          id, 'name', 'parentId', content, DriveSource.newInstance('driveId'));
+          id, filename, 'parentId', content, DriveSource.newInstance('driveId'));
 
       Fakes.build(mockItemService.getItem)
           .when(id).return(originalItem);
@@ -107,23 +120,20 @@ describe('render.RenderServiceClass', () => {
 
       spyOn(service, 'renderItem_').and.returnValue(renderedContent);
 
-      const compiledPath = 'compiled/path';
       const compiledItem = 'compiledItem';
-      spyOn(service, 'compileItem_').and.returnValue(ImmutableMap.of([
-        [compiledPath, compiledItem],
-      ]));
+      spyOn(service, 'compileItem_').and.returnValue(compiledItem);
 
       await service.render(id);
 
       const previewFile: PreviewFile = mockPreviewService.save.calls.argsFor(0)[0];
-      assert(previewFile.getPath()).to.equal(`${parentFolder}/${compiledPath}`);
+      assert(previewFile.getPath()).to.equal(`${parentFolder}/${filename}`);
       assert(previewFile.getContent()).to.equal(renderedContent);
 
       assert(mockPreviewService.save).to.haveBeenCalledWith(previewFile);
       assert(mockMetadataService.getConfigForItem).to.haveBeenCalledWith(id);
 
       assert(service['renderItem_']).to.haveBeenCalledWith(
-          compiledItem,
+          {$mainContent: compiledItem},
           templateContent,
           renderConfig);
     });

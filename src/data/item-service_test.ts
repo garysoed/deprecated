@@ -4,7 +4,7 @@ TestBase.setup();
 import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
 import { ImmutableMap, ImmutableSet, TreeMap } from 'external/gs_tools/src/immutable';
 
-import { DriveFolder, Folder, Item, MetadataFile, ThothFolder, UnknownFile } from '../data';
+import { DataFile, DriveFolder, Folder, Item, MetadataFile, ThothFolder, UnknownFile } from '../data';
 import { ItemService } from '../data/item-service';
 import { ApiFile, ApiFileType, DriveSource, ThothSource } from '../datasource';
 import { MarkdownFile } from './markdown-file';
@@ -79,6 +79,40 @@ describe('data.ItemService', () => {
       assert(item.getName()).to.equal(filename);
       assert(item.getParentId()).to.equal(containerId);
       assert((item as MetadataFile).getContent()).to.equal(content);
+      assert(item.getSource()).to.equal(source);
+    });
+
+    it(`should create the correct item for tsv files`, () => {
+      const filename = 'filename';
+      const itemId = 'itemId';
+      const containerId = 'containerId';
+      const driveId = 'driveId';
+      const source = DriveSource.newInstance(driveId);
+      const driveItem = {
+        content: [
+          ['1', '2', '3'].join('\t'),
+          ['2', '3', '5', '7'].join('\t'),
+          ['a', 'c'].join('\t'),
+        ].join('\n'),
+        files: [],
+        summary: {
+          name: filename,
+          source,
+          type: ApiFileType.TSV,
+        },
+      };
+
+      const item = service['createItem_'](
+          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+      assert(item).to.beAnInstanceOf(DataFile);
+      assert(item.getId()).to.equal(itemId);
+      assert(item.getName()).to.equal(filename);
+      assert(item.getParentId()).to.equal(containerId);
+      assert((item as DataFile).getContent()).to.equal([
+        ['1', '2', '3'],
+        ['2', '3', '5', '7'],
+        ['a', 'c'],
+      ]);
       assert(item.getSource()).to.equal(source);
     });
 

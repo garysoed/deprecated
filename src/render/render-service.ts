@@ -10,6 +10,7 @@ import {
   $itemService,
   $metadataService,
   $previewService,
+  DataFile,
   Folder,
   ItemService,
   MarkdownFile,
@@ -20,11 +21,8 @@ import {
 import { HandlebarsService } from '../render/handlebars-service';
 import { ShowdownService } from '../render/showdown-service';
 
-type AssetItem = MarkdownFile;
+type AssetItem = DataFile | MarkdownFile;
 const DEFAULT_TEMPLATE_KEY = 'src/render/render-default-template';
-
-// Type of item that can be compiled. Map of output filename to context for handlebars.
-type CompiledItem = ImmutableMap<string, {}>;
 
 export class RenderService {
   constructor(
@@ -33,14 +31,14 @@ export class RenderService {
       private readonly previewService_: PreviewService,
       private readonly templates_: Templates) { }
 
-  private compileItem_(item: AssetItem, renderConfig: RenderConfig): CompiledItem {
+  private compileItem_(item: AssetItem, renderConfig: RenderConfig): {} {
     if (item instanceof MarkdownFile) {
       const renderedMarkdown = ShowdownService.render(
           item.getContent(),
           renderConfig.getShowdownConfig());
-      return ImmutableMap.of([
-        [item.getName(), {$mainContent: renderedMarkdown}],
-      ]);
+      return renderedMarkdown;
+    } else if (item instanceof DataFile) {
+      return item.getContent();
     }
 
     throw assertUnreachable(item);
@@ -90,8 +88,11 @@ export class RenderService {
 
     const renderConfig = await this.metadataService_.getConfigForItem(item.getId());
     const template = await this.getTemplateContent_();
-    const compiledPromises = this
-        .compileItem_(item, renderConfig)
+
+    // TODO: Process the compiled item before rendering.
+    const content = this.compileItem_(item, renderConfig);
+    const compiledPromises = ImmutableMap
+        .of([[item.getName(), {$mainContent: content}]])
         .mapItem(([filename, context]) => {
           const renderedContent = this.renderItem_(context, template, renderConfig);
           const renderedFileName = Paths.normalize(

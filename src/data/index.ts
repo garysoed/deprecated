@@ -1,4 +1,5 @@
 export { $selectedItem } from './selected-item-graph';
+export { DataFile } from './data-file';
 export { DriveFolder } from './drive-folder';
 export { $driveService, DriveService } from './drive-service';
 export { File } from './file';

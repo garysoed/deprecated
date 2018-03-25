@@ -336,6 +336,8 @@ export class NavigatorItem extends BaseThemedElement2 {
           return 'web';
         case FileType.METADATA:
           return 'settings';
+        case FileType.DATA:
+          return 'storage';
         default:
           return 'help';
       }
