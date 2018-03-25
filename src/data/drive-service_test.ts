@@ -2,10 +2,10 @@ import { assert, Fakes, TestBase } from '../test-base';
 TestBase.setup();
 
 import { DriveService } from '../data/drive-service';
-import { ApiDriveType, DriveSource, DriveStorage } from '../datasource';
+import { ApiFileType, DriveSource, DriveStorage } from '../datasource';
 
-function createDriveSummary(id: string, name: string, type: ApiDriveType):
-    {name: string, source: DriveSource, type: ApiDriveType} {
+function createDriveSummary(id: string, name: string, type: ApiFileType):
+    {name: string, source: DriveSource, type: ApiFileType} {
   return {
     name,
     source: DriveSource.newInstance(id),
@@ -43,25 +43,25 @@ describe('data.DriveServiceImpl', () => {
       const apiItem1 = {
         content: content1,
         files: [],
-        summary: createDriveSummary(id1, name1, ApiDriveType.UNKNOWN),
+        summary: createDriveSummary(id1, name1, ApiFileType.UNKNOWN),
       };
       const apiItem21 = {
         content: content21,
         files: [],
-        summary: createDriveSummary(id21, name21, ApiDriveType.MARKDOWN),
+        summary: createDriveSummary(id21, name21, ApiFileType.MARKDOWN),
       };
       const apiItem22 = {
         content: content22,
         files: [],
-        summary: createDriveSummary(id22, name22, ApiDriveType.MARKDOWN),
+        summary: createDriveSummary(id22, name22, ApiFileType.MARKDOWN),
       };
       const apiItemSub = {
         files: [apiItem21, apiItem22],
-        summary: createDriveSummary(idSub, nameSub, ApiDriveType.FOLDER),
+        summary: createDriveSummary(idSub, nameSub, ApiFileType.FOLDER),
       };
       const rootItem = {
         files: [apiItem1, apiItemSub],
-        summary: createDriveSummary(idRoot, nameRoot, ApiDriveType.FOLDER),
+        summary: createDriveSummary(idRoot, nameRoot, ApiFileType.FOLDER),
       };
 
       Fakes.build(spyOn(DriveStorage, 'read'))

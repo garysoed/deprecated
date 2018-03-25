@@ -6,7 +6,7 @@ import { ImmutableMap, ImmutableSet, TreeMap } from 'external/gs_tools/src/immut
 
 import { DriveFolder, Folder, Item, MetadataFile, ThothFolder, UnknownFile } from '../data';
 import { ItemService } from '../data/item-service';
-import { ApiDriveFile, ApiDriveType, DriveSource, ThothSource } from '../datasource';
+import { ApiFile, ApiFileType, DriveSource, ThothSource } from '../datasource';
 import { MarkdownFile } from './markdown-file';
 
 function folderToJson(folder: Folder): {} {
@@ -41,7 +41,7 @@ describe('data.ItemService', () => {
         summary: {
           name: filename,
           source,
-          type: ApiDriveType.MARKDOWN,
+          type: ApiFileType.MARKDOWN,
         },
       };
 
@@ -68,7 +68,7 @@ describe('data.ItemService', () => {
         summary: {
           name: filename,
           source,
-          type: ApiDriveType.YAML,
+          type: ApiFileType.METADATA,
         },
       };
 
@@ -94,13 +94,13 @@ describe('data.ItemService', () => {
       const driveItem = {
         content,
         files: [
-          {summary: {source: DriveSource.newInstance(childDriveId1)}} as ApiDriveFile,
-          {summary: {source: DriveSource.newInstance(childDriveId2)}} as ApiDriveFile,
+          {summary: {source: DriveSource.newInstance(childDriveId1)}} as ApiFile<DriveSource>,
+          {summary: {source: DriveSource.newInstance(childDriveId2)}} as ApiFile<DriveSource>,
         ],
         summary: {
           name: filename,
           source,
-          type: ApiDriveType.FOLDER,
+          type: ApiFileType.FOLDER,
         },
       };
 
@@ -132,13 +132,13 @@ describe('data.ItemService', () => {
       const driveItem = {
         content,
         files: [
-          {summary: {source: DriveSource.newInstance(childDriveId1)}} as ApiDriveFile,
-          {summary: {source: DriveSource.newInstance(childDriveId2)}} as ApiDriveFile,
+          {summary: {source: DriveSource.newInstance(childDriveId1)}} as ApiFile<DriveSource>,
+          {summary: {source: DriveSource.newInstance(childDriveId2)}} as ApiFile<DriveSource>,
         ],
         summary: {
           name: filename,
           source,
-          type: ApiDriveType.FOLDER,
+          type: ApiFileType.FOLDER,
         },
       };
 
@@ -161,7 +161,7 @@ describe('data.ItemService', () => {
         summary: {
           name: 'filename',
           source,
-          type: ApiDriveType.MARKDOWN,
+          type: ApiFileType.MARKDOWN,
         },
       };
 
@@ -182,7 +182,7 @@ describe('data.ItemService', () => {
         summary: {
           name: filename,
           source,
-          type: ApiDriveType.UNKNOWN,
+          type: ApiFileType.UNKNOWN,
         },
       };
 
@@ -440,12 +440,12 @@ describe('data.ItemService', () => {
   });
 
   describe('recursiveCreate', () => {
-    function createApiDriveFile(driveId: string): ApiDriveFile {
+    function createApiDriveFile(driveId: string): ApiFile<DriveSource> {
       return {
         summary: {
           source: DriveSource.newInstance(driveId),
         },
-      } as ApiDriveFile;
+      } as ApiFile<DriveSource>;
     }
 
     it(`should create the items correctly`, async () => {
@@ -457,7 +457,7 @@ describe('data.ItemService', () => {
       const rootDrive = createApiDriveFile(rootDriveId);
       const child1Drive = createApiDriveFile(child1DriveId);
       const child2Drive = createApiDriveFile(child2DriveId);
-      const driveTree = TreeMap.of<string, ApiDriveFile>(rootDrive)
+      const driveTree = TreeMap.of<string, ApiFile<DriveSource>>(rootDrive)
           .set(child1DriveId, TreeMap.of(child1Drive))
           .set(child2DriveId, TreeMap.of(child2Drive));
 

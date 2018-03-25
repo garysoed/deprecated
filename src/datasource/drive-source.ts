@@ -9,7 +9,9 @@ import { Source } from '../datasource/source';
 export abstract class DriveSource extends Source {
   @field('driveId', StringParser) readonly driveId_!: string;
 
-  abstract getDriveId(): string;
+  getId(): string {
+    return this.driveId_;
+  }
 
   getSearchIndex(): string {
     return this.driveId_;

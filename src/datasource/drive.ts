@@ -1,24 +1,22 @@
-import { DriveSource } from '../datasource/drive-source';
+import { Source } from '../datasource/source';
 
-// TODO: Rename to remove Drive.
-// TODO: This should be MARKDOWN, METADATA, UNKNOWN, FOLDER.
-export enum ApiDriveType {
+export enum ApiFileType {
   UNKNOWN,
   FOLDER,
-  YAML,
   MARKDOWN,
+  METADATA,
 }
 
 // TODO: source should be generic type.
-export type ApiDriveFileSummary = {
+export type ApiFileSummary<S extends Source> = {
   name: string,
-  source: DriveSource,
-  type: ApiDriveType,
+  source: S,
+  type: ApiFileType,
 };
 
 // TODO: should have generic type of source.
-export type ApiDriveFile = {
+export type ApiFile<S extends Source> = {
   content?: string,
-  files: ApiDriveFile[],
-  summary: ApiDriveFileSummary,
+  files: ApiFile<S>[],
+  summary: ApiFileSummary<S>,
 };

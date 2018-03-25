@@ -12,7 +12,7 @@ export class DriveSourceMatcher implements Matcher {
       return false;
     }
 
-    return target.getDriveId() === this.expectedDriveId_;
+    return target.getId() === this.expectedDriveId_;
   }
 
   static with(driveId: string): DriveSource {

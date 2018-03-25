@@ -8,7 +8,7 @@ import {
   Promises,
   RetryStrategies } from 'external/gs_tools/src/async';
 import { drive } from '../api';
-import { ApiDriveFile, ApiDriveFileSummary, ApiDriveType } from '../datasource/drive';
+import { ApiFile, ApiFileSummary, ApiFileType } from '../datasource/drive';
 import { DriveSource } from '../datasource/drive-source';
 
 type ListQueryConfig = {
@@ -19,9 +19,9 @@ type ListQueryConfig = {
 
 export const DRIVE_FOLDER_MIMETYPE = 'application/vnd.google-apps.folder';
 const TYPE_MAPPING = new Map([
-  [DRIVE_FOLDER_MIMETYPE, ApiDriveType.FOLDER],
-  ['application/json', ApiDriveType.YAML],
-  ['text/x-markdown', ApiDriveType.MARKDOWN],
+  [DRIVE_FOLDER_MIMETYPE, ApiFileType.FOLDER],
+  ['application/json', ApiFileType.METADATA],
+  ['text/x-markdown', ApiFileType.MARKDOWN],
 ]);
 
 const GET_RETRY_STRATEGY = RetryStrategies.all([
@@ -29,11 +29,11 @@ const GET_RETRY_STRATEGY = RetryStrategies.all([
   new LimitedCountRetryStrategy(5),
 ]);
 
-export function convertToType_(driveType: string): ApiDriveType {
-  return TYPE_MAPPING.get(driveType) || ApiDriveType.UNKNOWN;
+export function convertToType_(driveType: string): ApiFileType {
+  return TYPE_MAPPING.get(driveType) || ApiFileType.UNKNOWN;
 }
 
-export function convertToFileSummary_(file: goog.drive.files.File): ApiDriveFileSummary {
+export function convertToFileSummary_(file: goog.drive.files.File): ApiFileSummary<DriveSource> {
   return {
     name: file.name,
     source: DriveSource.newInstance(file.id),
@@ -47,8 +47,8 @@ export class DriveStorageImpl extends GapiStorage<
     goog.drive.files.ListResponse,
     goog.drive.files.ListResponse,
     goog.drive.files.File,
-    ApiDriveFile,
-    ApiDriveFileSummary> {
+    ApiFile<DriveSource>,
+    ApiFileSummary<DriveSource>> {
   constructor(private readonly driveLibrary: GapiLibrary<goog.Drive>) {
     super(driveLibrary);
   }
@@ -88,12 +88,12 @@ export class DriveStorageImpl extends GapiStorage<
   protected async listIdsImpl_(
       queueRequest: GapiRequestQueue<goog.Drive, goog.drive.files.ListResponse>):
       Promise<ImmutableSet<string>> {
-    return (await this.listImpl_(queueRequest)).mapItem((item) => item.source.getDriveId());
+    return (await this.listImpl_(queueRequest)).mapItem((item) => item.source.getId());
   }
 
   protected async listImpl_(
       queueRequest: GapiRequestQueue<goog.Drive, goog.drive.files.ListResponse>):
-      Promise<ImmutableSet<ApiDriveFileSummary>> {
+      Promise<ImmutableSet<ApiFileSummary<DriveSource>>> {
     const response = await queueRequest((api) => api.files.list(this.createListConfig_({
       mimeTypes: [DRIVE_FOLDER_MIMETYPE],
     })));
@@ -101,23 +101,23 @@ export class DriveStorageImpl extends GapiStorage<
     return ImmutableSet.of(files);
   }
 
-  private async readFileContent_(summary: ApiDriveFileSummary): Promise<string | null> {
-    if (summary.type === ApiDriveType.UNKNOWN) {
+  private async readFileContent_(summary: ApiFileSummary<DriveSource>): Promise<string | null> {
+    if (summary.type === ApiFileType.UNKNOWN) {
       return null;
     }
 
-    if (summary.type === ApiDriveType.FOLDER) {
+    if (summary.type === ApiFileType.FOLDER) {
       return null;
     }
 
     const drive = await this.driveLibrary.get();
     const response = await Promises.withRetry(
-        () => drive.files.get({alt: 'media', fileId: summary.source.getDriveId()}),
+        () => drive.files.get({alt: 'media', fileId: summary.source.getId()}),
         GET_RETRY_STRATEGY);
     return response.body;
   }
 
-  private async readFolderContents_(folderId: string): Promise<ApiDriveFile[]> {
+  private async readFolderContents_(folderId: string): Promise<ApiFile<DriveSource>[]> {
     const drive = await this.driveLibrary.get();
 
     // Get the contents.
@@ -126,28 +126,28 @@ export class DriveStorageImpl extends GapiStorage<
     }));
 
     const contents = await Promise.all(response.result.files.map((file) => this.read(file.id)));
-    return contents.filter((content) => !!content) as ApiDriveFile[];
+    return contents.filter((content) => !!content) as ApiFile<DriveSource>[];
   }
 
   protected async readImpl_(
       queueRequest: GapiRequestQueue<goog.Drive, goog.drive.files.File>,
-      id: string): Promise<ApiDriveFile> {
+      id: string): Promise<ApiFile<DriveSource>> {
     const getResponse = await queueRequest((drive) => drive.files.get({fileId: id}));
     const summary = convertToFileSummary_(getResponse);
     switch (summary.type) {
-      case ApiDriveType.FOLDER:
+      case ApiFileType.FOLDER:
         return {
-          files: await this.readFolderContents_(summary.source.getDriveId()),
+          files: await this.readFolderContents_(summary.source.getId()),
           summary,
         };
-      case ApiDriveType.MARKDOWN:
-      case ApiDriveType.YAML:
+      case ApiFileType.MARKDOWN:
+      case ApiFileType.METADATA:
         return {
           content: await this.readFileContent_(summary) || undefined,
           files: [],
           summary,
         };
-      case ApiDriveType.UNKNOWN:
+      case ApiFileType.UNKNOWN:
         return {
           files: [],
           summary,
@@ -155,7 +155,7 @@ export class DriveStorageImpl extends GapiStorage<
     }
   }
 
-  async search(filename: string): Promise<ImmutableList<ApiDriveFileSummary>> {
+  async search(filename: string): Promise<ImmutableList<ApiFileSummary<DriveSource>>> {
     const drive = await this.driveLibrary.get();
     const response = await drive.files.list(this.createListConfig_({
       filename,

@@ -5,17 +5,17 @@ import { InstanceofType } from 'external/gs_tools/src/check';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { TreeMap } from 'external/gs_tools/src/immutable';
 
-import { ApiDriveFile, DriveSource, DriveStorage } from '../datasource';
+import { ApiFile, DriveSource, DriveStorage } from '../datasource';
 
 export class DriveService {
-  async recursiveGet(source: DriveSource): Promise<TreeMap<string, ApiDriveFile> | null> {
-    const driveId = source.getDriveId();
+  async recursiveGet(source: DriveSource): Promise<TreeMap<string, ApiFile<DriveSource>> | null> {
+    const driveId = source.getId();
     const apiDriveItem = await DriveStorage.read(driveId);
     if (!apiDriveItem) {
       return null;
     }
 
-    let rootNode = TreeMap.of<string, ApiDriveFile>(apiDriveItem);
+    let rootNode = TreeMap.of<string, ApiFile<DriveSource>>(apiDriveItem);
     const children = await Promise
         .all(apiDriveItem.files.map((file) => this.recursiveGet(file.summary.source)));
 
@@ -24,7 +24,7 @@ export class DriveService {
         continue;
       }
 
-      rootNode = rootNode.set(childNode.getValue().summary.source.getDriveId(), childNode);
+      rootNode = rootNode.set(childNode.getValue().summary.source.getId(), childNode);
     }
     return rootNode;
   }

@@ -19,7 +19,7 @@ import { $projectService, ProjectService } from '../data/project-service';
 import { ROOT_PATH } from '../data/selected-item-graph';
 import { ThothFolder } from '../data/thoth-folder';
 import { UnknownFile } from '../data/unknown-file';
-import { ApiDriveFile, ApiDriveType } from '../datasource';
+import { ApiFile, ApiFileType, DriveSource, Source } from '../datasource';
 
 export class ItemService {
   constructor(
@@ -28,28 +28,31 @@ export class ItemService {
 
   private createItem_(
       containerId: string,
-      driveItem: ApiDriveFile,
-      driveItemIdToItemIdMap: ImmutableMap<string, string>): Item {
+      driveItem: ApiFile<Source>,
+      sourceItemIdToItemIdMap: ImmutableMap<string, string>): Item {
     const {type, name: filename, source} = driveItem.summary;
-    const driveId = source.getDriveId();
-    const itemId = driveItemIdToItemIdMap.get(driveId);
+    const driveId = source.getId();
+    const itemId = sourceItemIdToItemIdMap.get(driveId);
     if (!itemId) {
       throw Errors.assert(`itemId for driveId ${driveId}`).shouldExist().butNot();
     }
     const content = driveItem.content || '';
     switch (type) {
-      case ApiDriveType.MARKDOWN:
+      case ApiFileType.MARKDOWN:
         return MarkdownFile.newInstance(itemId, filename, containerId, content, source);
-      case ApiDriveType.YAML:
+      case ApiFileType.METADATA:
         return MetadataFile.newInstance(itemId, filename, containerId, content, source);
-      case ApiDriveType.FOLDER:
+      case ApiFileType.FOLDER:
+        if (!(source instanceof DriveSource)) {
+          throw Errors.assert('type of source').should('be supported').butWas(source);
+        }
         return DriveFolder.newInstance(
             itemId,
             filename,
             containerId,
             ImmutableSet.of(driveItem.files.map((driveFile) => {
-              const driveId = driveFile.summary.source.getDriveId();
-              const itemId = driveItemIdToItemIdMap.get(driveId);
+              const driveId = driveFile.summary.source.getId();
+              const itemId = sourceItemIdToItemIdMap.get(driveId);
               if (!itemId) {
                 throw Errors.assert(`itemId for ${driveId}`).shouldExist().butNot();
               }
@@ -162,24 +165,24 @@ export class ItemService {
     return this.itemsGraph_.generateId();
   }
 
-  async recursiveCreate(driveTree: TreeMap<string, ApiDriveFile>, containerId: string):
+  async recursiveCreate(driveTree: TreeMap<string, ApiFile<Source>>, containerId: string):
       Promise<TreeMap<string, Item>> {
     const idPromises = driveTree.preOrder()
         .map(async (node) => {
           const itemId = await this.newId();
-          const driveId = node.getValue().summary.source.getDriveId();
-          return [driveId, itemId] as [string, string];
+          const sourceId = node.getValue().summary.source.getId();
+          return [sourceId, itemId] as [string, string];
         });
-    const driveIdToItemIdMap = ImmutableMap.of(await Promise.all([...idPromises]));
+    const sourceIdToItemIdMap = ImmutableMap.of(await Promise.all([...idPromises]));
 
     return driveTree.map((node, _, parent) => {
       const value = node.getValue();
-      const driveId = value.summary.source.getDriveId();
-      const itemId = driveIdToItemIdMap.get(driveId)!;
+      const driveId = value.summary.source.getId();
+      const itemId = sourceIdToItemIdMap.get(driveId)!;
       const parentItemId = parent ?
-          driveIdToItemIdMap.get(parent.getValue().summary.source.getDriveId())! :
+          sourceIdToItemIdMap.get(parent.getValue().summary.source.getId())! :
           containerId;
-      return [itemId, this.createItem_(parentItemId, value, driveIdToItemIdMap)];
+      return [itemId, this.createItem_(parentItemId, value, sourceIdToItemIdMap)];
     });
   }
 

@@ -34,18 +34,18 @@ import {
   $selectedItem,
   ThothFolder } from '../data';
 import {
-  ApiDriveFile,
-  ApiDriveFileSummary,
-  ApiDriveType,
+  ApiFile,
+  ApiFileSummary,
+  ApiFileType,
   DriveSource,
   DriveStorage } from '../datasource';
 import { SearchItem } from '../main/search-item';
 
-type ItemSummaryType = {id: string, name: string, type: ApiDriveType};
+type ItemSummaryType = {id: string, name: string, type: ApiFileType};
 const DriveFileSummaryType = HasPropertiesType<ItemSummaryType>({
   id: StringType,
   name: StringType,
-  type: EnumType(ApiDriveType),
+  type: EnumType(ApiFileType),
 });
 
 type DriveFileItemData = {
@@ -62,7 +62,7 @@ export function driveItemsGetter(element: HTMLElement): DriveFileItemData {
   const item = element.children[0];
   const id = item.getAttribute('itemid');
   const name = item.getAttribute('text');
-  const type = EnumParser<ApiDriveType>(ApiDriveType).parse(item.getAttribute('type'));
+  const type = EnumParser<ApiFileType>(ApiFileType).parse(item.getAttribute('type'));
   if (!id) {
     throw Errors.assert('itemid').should('exist').butWas(id);
   }
@@ -91,7 +91,7 @@ export function driveItemsSetter({summary}: DriveFileItemData, element: HTMLElem
   const item = element.children[0];
   item.setAttribute('text', summary.name);
   item.setAttribute('itemId', summary.id);
-  item.setAttribute('type', EnumParser<ApiDriveType>(ApiDriveType).stringify(summary.type));
+  item.setAttribute('type', EnumParser<ApiFileType>(ApiFileType).stringify(summary.type));
 }
 
 export const $ = resolveSelectors({
@@ -140,9 +140,9 @@ export class DriveSearch extends BaseThemedElement2 {
   async onInputChange_(): Promise<void> {
     const query = Persona.getValue($.input.value, this);
     const folders = (await DriveStorage.search(query || ''))
-        .map((summary: ApiDriveFileSummary) => {
+        .map((summary: ApiFileSummary<DriveSource>) => {
           return {
-            id: summary.source.getDriveId(),
+            id: summary.source.getId(),
             name: summary.name,
             type: summary.type,
           };
@@ -178,7 +178,7 @@ export class DriveSearch extends BaseThemedElement2 {
 
     const addedDriveItems = await Promise.all(addedDriveItemPromises);
     const createdPromises = ImmutableList.of(addedDriveItems)
-        .filterByType(InstanceofType<TreeMap<string, ApiDriveFile>>(TreeMap))
+        .filterByType(InstanceofType<TreeMap<string, ApiFile<DriveSource>>>(TreeMap))
         .map((tree) => itemService.recursiveCreate(tree, selectedId));
     const createdItems = await Promise.all(createdPromises);
     const savedPromises = createdItems

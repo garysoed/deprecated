@@ -12,7 +12,7 @@ import {
   DriveFolder,
   Item,
   ThothFolder } from '../data';
-import { ApiDriveType, DriveSource, DriveStorage } from '../datasource';
+import { ApiFileType, DriveSource, DriveStorage } from '../datasource';
 import {
   $,
   $driveItems,
@@ -36,7 +36,7 @@ describe('driveItemsGetter', () => {
 
     assert(driveItemsGetter(element)).to.equal({
       selected: true,
-      summary: {id, name, type: ApiDriveType.MARKDOWN},
+      summary: {id, name, type: ApiFileType.MARKDOWN},
     });
   });
 
@@ -94,7 +94,7 @@ describe('driveItemsSetter', () => {
     const element = document.createElement('div');
     element.appendChild(itemEl);
 
-    driveItemsSetter({selected: false, summary: {id, name, type: ApiDriveType.MARKDOWN}}, element);
+    driveItemsSetter({selected: false, summary: {id, name, type: ApiFileType.MARKDOWN}}, element);
     assert(itemEl.getAttribute('itemid')).to.equal(id);
     assert(itemEl.getAttribute('text')).to.equal(name);
     assert(itemEl.getAttribute('type')).to.equal('markdown');
@@ -124,20 +124,20 @@ describe('main.DriveSearch', () => {
         {
           name: name1,
           source: DriveSource.newInstance(id1),
-          type: ApiDriveType.MARKDOWN,
+          type: ApiFileType.MARKDOWN,
         },
         {
           name: name2,
           source: DriveSource.newInstance(id2),
-          type: ApiDriveType.FOLDER,
+          type: ApiFileType.FOLDER,
         },
       ])));
 
       await search.onInputChange_();
       const items = await Graph.get($driveItems, Graph.getTimestamp(), search);
       assert([...items]).to.equal([
-        {id: id1, name: name1, type: ApiDriveType.MARKDOWN},
-        {id: id2, name: name2, type: ApiDriveType.FOLDER},
+        {id: id1, name: name1, type: ApiFileType.MARKDOWN},
+        {id: id2, name: name2, type: ApiFileType.FOLDER},
       ]);
       assert(DriveStorage.search).to.haveBeenCalledWith(query);
       assert(Persona.getValue).to.haveBeenCalledWith($.input.value, search);
@@ -173,7 +173,7 @@ describe('main.DriveSearch', () => {
 
       const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
       Fakes.build(mockDriveService.recursiveGet).call((source: DriveSource) => {
-        const driveId = source.getDriveId();
+        const driveId = source.getId();
         switch (driveId) {
           case id1:
             return Promise.resolve(drive1Tree);
@@ -290,8 +290,8 @@ describe('main.DriveSearch', () => {
       const name1 = 'name1';
       const name2 = 'name2';
 
-      const item1 = {id: id1, name: name1, type: ApiDriveType.MARKDOWN};
-      const item2 = {id: id2, name: name2, type: ApiDriveType.FOLDER};
+      const item1 = {id: id1, name: name1, type: ApiFileType.MARKDOWN};
+      const item2 = {id: id2, name: name2, type: ApiFileType.FOLDER};
       const items = [item1, item2];
       assert(search.renderDriveItems_(items)).to.haveElements([
         {

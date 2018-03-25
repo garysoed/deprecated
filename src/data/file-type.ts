@@ -1,4 +1,4 @@
-import { ApiDriveType } from '../datasource';
+import { ApiFileType } from '../datasource';
 
 export enum FileType {
   UNKNOWN,
@@ -9,16 +9,16 @@ export enum FileType {
 
 const METADATA_NAME = '$metadata.yml';
 
-export function convertToItemType(apiType: ApiDriveType, name: string): FileType {
-  if (apiType === ApiDriveType.UNKNOWN) {
+export function convertToItemType(apiType: ApiFileType, name: string): FileType {
+  if (apiType === ApiFileType.UNKNOWN) {
     return FileType.UNKNOWN;
   }
 
-  if (apiType === ApiDriveType.MARKDOWN) {
+  if (apiType === ApiFileType.MARKDOWN) {
     return FileType.ASSET;
   }
 
-  if (apiType === ApiDriveType.YAML && name === METADATA_NAME) {
+  if (apiType === ApiFileType.METADATA && name === METADATA_NAME) {
     return FileType.METADATA;
   }
 
