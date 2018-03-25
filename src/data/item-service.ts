@@ -5,21 +5,61 @@ import { InstanceofType } from 'external/gs_tools/src/check';
 import { DataGraph } from 'external/gs_tools/src/datamodel';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
-import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableMap, ImmutableSet, TreeMap } from 'external/gs_tools/src/immutable';
 import { AbsolutePath, Path } from 'external/gs_tools/src/path';
 
 import { Folder } from '../data/folder';
 
+import { DriveFolder } from '.';
 import { Item } from '../data/item';
 import { $items } from '../data/item-graph';
+import { MarkdownFile } from '../data/markdown-file';
+import { MetadataFile } from '../data/metadata-file';
 import { $projectService, ProjectService } from '../data/project-service';
 import { ROOT_PATH } from '../data/selected-item-graph';
 import { ThothFolder } from '../data/thoth-folder';
+import { UnknownFile } from '../data/unknown-file';
+import { ApiDriveFile, ApiDriveType } from '../datasource';
 
 export class ItemService {
   constructor(
       private readonly itemsGraph_: DataGraph<Item>,
       private readonly projectService_: ProjectService) { }
+
+  private createItem_(
+      containerId: string,
+      driveItem: ApiDriveFile,
+      driveItemIdToItemIdMap: ImmutableMap<string, string>): Item {
+    const {type, name: filename, source} = driveItem.summary;
+    const driveId = source.getDriveId();
+    const itemId = driveItemIdToItemIdMap.get(driveId);
+    if (!itemId) {
+      throw Errors.assert(`itemId for driveId ${driveId}`).shouldExist().butNot();
+    }
+    const content = driveItem.content || '';
+    switch (type) {
+      case ApiDriveType.MARKDOWN:
+        return MarkdownFile.newInstance(itemId, filename, containerId, content, source);
+      case ApiDriveType.YAML:
+        return MetadataFile.newInstance(itemId, filename, containerId, content, source);
+      case ApiDriveType.FOLDER:
+        return DriveFolder.newInstance(
+            itemId,
+            filename,
+            containerId,
+            ImmutableSet.of(driveItem.files.map((driveFile) => {
+              const driveId = driveFile.summary.source.getDriveId();
+              const itemId = driveItemIdToItemIdMap.get(driveId);
+              if (!itemId) {
+                throw Errors.assert(`itemId for ${driveId}`).shouldExist().butNot();
+              }
+              return itemId;
+            })),
+            source);
+      default:
+        return UnknownFile.newInstance(itemId, filename, containerId, source);
+    }
+  }
 
   async deleteItem(id: string): Promise<void> {
     // Now delete the item from the parent.
@@ -120,6 +160,27 @@ export class ItemService {
 
   async newId(): Promise<string> {
     return this.itemsGraph_.generateId();
+  }
+
+  async recursiveCreate(driveTree: TreeMap<string, ApiDriveFile>, containerId: string):
+      Promise<TreeMap<string, Item>> {
+    const idPromises = driveTree.preOrder()
+        .map(async (node) => {
+          const itemId = await this.newId();
+          const driveId = node.getValue().summary.source.getDriveId();
+          return [driveId, itemId] as [string, string];
+        });
+    const driveIdToItemIdMap = ImmutableMap.of(await Promise.all([...idPromises]));
+
+    return driveTree.map((node, _, parent) => {
+      const value = node.getValue();
+      const driveId = value.summary.source.getDriveId();
+      const itemId = driveIdToItemIdMap.get(driveId)!;
+      const parentItemId = parent ?
+          driveIdToItemIdMap.get(parent.getValue().summary.source.getDriveId())! :
+          containerId;
+      return [itemId, this.createItem_(parentItemId, value, driveIdToItemIdMap)];
+    });
   }
 
   async save(...items: Item[]): Promise<void> {

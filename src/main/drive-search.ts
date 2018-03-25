@@ -9,7 +9,7 @@ import {
   StringType } from 'external/gs_tools/src/check';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
-import { ImmutableList, ImmutableSet, Iterables } from 'external/gs_tools/src/immutable';
+import { ImmutableList, ImmutableSet, TreeMap } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
 import { BooleanParser, EnumParser, StringParser } from 'external/gs_tools/src/parse';
 import {
@@ -32,14 +32,15 @@ import {
   $driveService,
   $itemService,
   $selectedItem,
-  DriveFolder,
-  MarkdownFile,
-  ThothFolder,
-  UnknownFile } from '../data';
-import { ApiDriveFileSummary, ApiDriveType, DriveSource, DriveStorage } from '../datasource';
+  ThothFolder } from '../data';
+import {
+  ApiDriveFile,
+  ApiDriveFileSummary,
+  ApiDriveType,
+  DriveSource,
+  DriveStorage } from '../datasource';
 import { SearchItem } from '../main/search-item';
 
-type SupportedItem = MarkdownFile | UnknownFile | DriveFolder;
 type ItemSummaryType = {id: string, name: string, type: ApiDriveType};
 const DriveFileSummaryType = HasPropertiesType<ItemSummaryType>({
   id: StringType,
@@ -172,26 +173,29 @@ export class DriveSearch extends BaseThemedElement2 {
     const addedItems = items.filter((item) => !!item.selected);
     const addedDriveItemPromises = addedItems
         .map((item) => {
-          return driveService.recursiveGet(DriveSource.newInstance(item.summary.id), selectedId);
+          return driveService.recursiveGet(DriveSource.newInstance(item.summary.id));
         });
+
     const addedDriveItems = await Promise.all(addedDriveItemPromises);
-
-    // Stores all the drive items.
-    const itemsToAddToSelectedFolder: SupportedItem[] = [];
-    for (const addedItem of Iterables.flatten<SupportedItem>(addedDriveItems)) {
-      itemService.save(addedItem);
-
-      if (addedItem.getParentId() === selectedId) {
-        itemsToAddToSelectedFolder.push(addedItem);
-      }
-    }
+    const createdPromises = ImmutableList.of(addedDriveItems)
+        .filterByType(InstanceofType<TreeMap<string, ApiDriveFile>>(TreeMap))
+        .map((tree) => itemService.recursiveCreate(tree, selectedId));
+    const createdItems = await Promise.all(createdPromises);
+    const savedPromises = createdItems
+        .map(async (itemTree) => {
+          const savePromises = itemTree
+              .preOrder()
+              .map((node) => itemService.save(node.getValue()));
+          return Promise.all(savePromises);
+        });
+    await Promise.all(savedPromises);
 
     // Now add the files to the selected folder.
     itemService.save(
         selectedItem.setItems(
             selectedItem
                 .getItems()
-                .addAll(ImmutableSet.of(itemsToAddToSelectedFolder.map((item) => item.getId())))));
+                .addAll(ImmutableSet.of(createdItems.map((tree) => tree.getValue().getId())))));
 
     const dispatcher = Persona.getValue($.host.dispatcher, this);
     if (!dispatcher) {

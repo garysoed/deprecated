@@ -1,12 +1,12 @@
-import { assert, Matchers, TestBase } from '../test-base';
+import { assert, Fakes, Matchers, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
 import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
-import { ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableMap, ImmutableSet, TreeMap } from 'external/gs_tools/src/immutable';
 
-import { DriveFolder, Folder, Item, MetadataFile, ThothFolder } from '../data';
+import { DriveFolder, Folder, Item, MetadataFile, ThothFolder, UnknownFile } from '../data';
 import { ItemService } from '../data/item-service';
-import { DriveSource, ThothSource } from '../datasource';
+import { ApiDriveFile, ApiDriveType, DriveSource, ThothSource } from '../datasource';
 import { MarkdownFile } from './markdown-file';
 
 function folderToJson(folder: Folder): {} {
@@ -25,6 +25,175 @@ describe('data.ItemService', () => {
     itemsGraph = new FakeDataGraph<Item>();
     mockProjectService = jasmine.createSpyObj('ProjectService', ['get']);
     service = new ItemService(itemsGraph, mockProjectService);
+  });
+
+  describe('createItem_', () => {
+    it(`should create the correct item for markdown files`, () => {
+      const filename = 'filename';
+      const content = 'content';
+      const itemId = 'itemId';
+      const containerId = 'containerId';
+      const driveId = 'driveId';
+      const source = DriveSource.newInstance(driveId);
+      const driveItem = {
+        content,
+        files: [],
+        summary: {
+          name: filename,
+          source,
+          type: ApiDriveType.MARKDOWN,
+        },
+      };
+
+      const item = service['createItem_'](
+          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+      assert(item).to.beAnInstanceOf(MarkdownFile);
+      assert(item.getId()).to.equal(itemId);
+      assert(item.getName()).to.equal(filename);
+      assert(item.getParentId()).to.equal(containerId);
+      assert((item as MarkdownFile).getContent()).to.equal(content);
+      assert(item.getSource()).to.equal(source);
+    });
+
+    it(`should create the correct item for metadata files`, () => {
+      const filename = 'filename';
+      const content = 'content';
+      const itemId = 'itemId';
+      const containerId = 'containerId';
+      const driveId = 'driveId';
+      const source = DriveSource.newInstance(driveId);
+      const driveItem = {
+        content,
+        files: [],
+        summary: {
+          name: filename,
+          source,
+          type: ApiDriveType.YAML,
+        },
+      };
+
+      const item = service['createItem_'](
+          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+      assert(item).to.beAnInstanceOf(MetadataFile);
+      assert(item.getId()).to.equal(itemId);
+      assert(item.getName()).to.equal(filename);
+      assert(item.getParentId()).to.equal(containerId);
+      assert((item as MetadataFile).getContent()).to.equal(content);
+      assert(item.getSource()).to.equal(source);
+    });
+
+    it(`should create the correct item for drive folders`, () => {
+      const filename = 'filename';
+      const content = 'content';
+      const itemId = 'itemId';
+      const containerId = 'containerId';
+      const driveId = 'driveId';
+      const source = DriveSource.newInstance(driveId);
+      const childDriveId1 = 'childDriveId1';
+      const childDriveId2 = 'childDriveId2';
+      const driveItem = {
+        content,
+        files: [
+          {summary: {source: DriveSource.newInstance(childDriveId1)}} as ApiDriveFile,
+          {summary: {source: DriveSource.newInstance(childDriveId2)}} as ApiDriveFile,
+        ],
+        summary: {
+          name: filename,
+          source,
+          type: ApiDriveType.FOLDER,
+        },
+      };
+
+      const childId1 = 'childId1';
+      const childId2 = 'childId2';
+      const driveIdMap = ImmutableMap.of([
+        [driveId, itemId],
+        [childDriveId1, childId1],
+        [childDriveId2, childId2],
+      ]);
+      const item = service['createItem_'](containerId, driveItem, driveIdMap);
+      assert(item).to.beAnInstanceOf(DriveFolder);
+      assert(item.getId()).to.equal(itemId);
+      assert(item.getName()).to.equal(filename);
+      assert(item.getParentId()).to.equal(containerId);
+      assert((item as DriveFolder).getItems()).to.haveElements([childId1, childId2]);
+      assert(item.getSource()).to.equal(source);
+    });
+
+    it(`should throw error if an item ID in the drive folder does not exist`, () => {
+      const filename = 'filename';
+      const content = 'content';
+      const itemId = 'itemId';
+      const containerId = 'containerId';
+      const driveId = 'driveId';
+      const source = DriveSource.newInstance(driveId);
+      const childDriveId1 = 'childDriveId1';
+      const childDriveId2 = 'childDriveId2';
+      const driveItem = {
+        content,
+        files: [
+          {summary: {source: DriveSource.newInstance(childDriveId1)}} as ApiDriveFile,
+          {summary: {source: DriveSource.newInstance(childDriveId2)}} as ApiDriveFile,
+        ],
+        summary: {
+          name: filename,
+          source,
+          type: ApiDriveType.FOLDER,
+        },
+      };
+
+      const childId = 'childId';
+      const driveIdMap = ImmutableMap.of([
+        [driveId, itemId],
+        [childDriveId1, childId],
+      ]);
+      assert(() => {
+        service['createItem_'](containerId, driveItem, driveIdMap);
+      }).to.throwError(/should exist/);
+    });
+
+    it(`should throw error if item ID for the drive ID does not exist`, () => {
+      const content = 'content';
+      const source = DriveSource.newInstance('driveId');
+      const driveItem = {
+        content,
+        files: [],
+        summary: {
+          name: 'filename',
+          source,
+          type: ApiDriveType.MARKDOWN,
+        },
+      };
+
+      assert(() => {
+        service['createItem_']('containerId', driveItem, ImmutableMap.of([]));
+      }).to.throwError(/should exist/);
+    });
+
+    it(`should create the correct item for unknown files`, () => {
+      const filename = 'filename';
+      const itemId = 'itemId';
+      const containerId = 'containerId';
+      const driveId = 'driveId';
+      const source = DriveSource.newInstance(driveId);
+      const driveItem = {
+        content: 'content',
+        files: [],
+        summary: {
+          name: filename,
+          source,
+          type: ApiDriveType.UNKNOWN,
+        },
+      };
+
+      const item = service['createItem_'](
+          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+      assert(item).to.beAnInstanceOf(UnknownFile);
+      assert(item.getId()).to.equal(itemId);
+      assert(item.getName()).to.equal(filename);
+      assert(item.getParentId()).to.equal(containerId);
+      assert(item.getSource()).to.equal(source);
+    });
   });
 
   describe('deleteItem', () => {
@@ -267,6 +436,64 @@ describe('data.ItemService', () => {
       assert(await service.getRootFolder()).to.equal(rootFolder);
       assert(service.save).toNot.haveBeenCalled();
       assert(mockProjectService.get).to.haveBeenCalledWith();
+    });
+  });
+
+  describe('recursiveCreate', () => {
+    function createApiDriveFile(driveId: string): ApiDriveFile {
+      return {
+        summary: {
+          source: DriveSource.newInstance(driveId),
+        },
+      } as ApiDriveFile;
+    }
+
+    it(`should create the items correctly`, async () => {
+      const rootDriveId = 'rootDriveId';
+      const child1DriveId = 'child1DriveId';
+      const child2DriveId = 'child2DriveId';
+      const containerId = 'containerId';
+
+      const rootDrive = createApiDriveFile(rootDriveId);
+      const child1Drive = createApiDriveFile(child1DriveId);
+      const child2Drive = createApiDriveFile(child2DriveId);
+      const driveTree = TreeMap.of<string, ApiDriveFile>(rootDrive)
+          .set(child1DriveId, TreeMap.of(child1Drive))
+          .set(child2DriveId, TreeMap.of(child2Drive));
+
+      const rootItem = Mocks.object('rootItem');
+      const child1Item = Mocks.object('child1Item');
+      const child2Item = Mocks.object('child2Item');
+      Fakes.build(spyOn(service, 'createItem_'))
+          .when(Matchers.anyString(), rootDrive).return(rootItem)
+          .when(Matchers.anyString(), child1Drive).return(child1Item)
+          .when(Matchers.anyString(), child2Drive).return(child2Item);
+
+      const rootId = 'rootId';
+      const child1Id = 'child1Id';
+      const child2Id = 'child2Id';
+      spyOn(service, 'newId').and.returnValues(
+          Promise.resolve(rootId),
+          Promise.resolve(child1Id),
+          Promise.resolve(child2Id));
+
+      const tree = await service.recursiveCreate(driveTree, containerId);
+      assert(tree.preOrder().map((node) => node.getValue())).to
+          .haveElements([rootItem, child1Item, child2Item]);
+
+      const expectedDriveIdMapMatcher = Matchers
+          .map((map: ImmutableMap<string, string>) => [...map])
+          .arrayContaining<[string, string]>([
+            [rootDriveId, rootId],
+            [child1DriveId, child1Id],
+            [child2DriveId, child2Id],
+          ]) as any;
+      assert(service['createItem_']).to
+          .haveBeenCalledWith(containerId, rootDrive, expectedDriveIdMapMatcher);
+      assert(service['createItem_']).to
+          .haveBeenCalledWith(rootId, child1Drive, expectedDriveIdMapMatcher);
+      assert(service['createItem_']).to
+          .haveBeenCalledWith(rootId, child2Drive, expectedDriveIdMapMatcher);
     });
   });
 

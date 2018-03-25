@@ -7,7 +7,6 @@ import { $location } from 'external/gs_tools/src/ui';
 
 import { Persona } from 'external/gs_tools/src/persona';
 import {
-  $driveService,
   $itemService,
   DriveFolder,
   Folder,
@@ -16,7 +15,6 @@ import {
   ThothFolder,
   UnknownFile } from '../data';
 import { DriveSource } from '../datasource';
-import { DriveSourceMatcher } from '../datasource/testing';
 import {
   $,
   $isEditing,
@@ -146,104 +144,104 @@ describe('main.NavigatorItem', () => {
     });
   });
 
-  describe('onRefreshButtonAction_', () => {
-    it(`should get and save the items again for files`, async () => {
-      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+  // describe('onRefreshButtonAction_', () => {
+  //   it(`should get and save the items again for files`, async () => {
+  //     const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
 
-      const item1 = Mocks.object('item1');
-      const item2 = Mocks.object('item2');
-      const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
-      mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableSet.of([
-        item1,
-        item2,
-      ])));
-      TestGraph.set($driveService, mockDriveService);
+  //     const item1 = Mocks.object('item1');
+  //     const item2 = Mocks.object('item2');
+  //     const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
+  //     mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableSet.of([
+  //       item1,
+  //       item2,
+  //     ])));
+  //     TestGraph.set($driveService, mockDriveService);
 
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
+  //     const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
+  //     TestGraph.set($itemService, mockItemService);
 
-      const parentId = 'parentId';
-      const driveId = 'driveId';
-      const driveItem = MarkdownFile.newInstance(
-          'id', 'name', parentId, 'content', DriveSource.newInstance(driveId));
-      TestGraph.set($item, driveItem);
+  //     const parentId = 'parentId';
+  //     const driveId = 'driveId';
+  //     const driveItem = MarkdownFile.newInstance(
+  //         'id', 'name', parentId, 'content', DriveSource.newInstance(driveId));
+  //     TestGraph.set($item, driveItem);
 
-      await item.onRefreshButtonAction_(mockEvent);
-      assert(mockItemService.save).to.haveBeenCalledWith(item1);
-      assert(mockItemService.save).to.haveBeenCalledWith(item2);
-      assert(mockDriveService.recursiveGet).to
-          .haveBeenCalledWith(DriveSourceMatcher.with(driveId), parentId);
-      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
-    });
+  //     await item.onRefreshButtonAction_(mockEvent);
+  //     assert(mockItemService.save).to.haveBeenCalledWith(item1);
+  //     assert(mockItemService.save).to.haveBeenCalledWith(item2);
+  //     assert(mockDriveService.recursiveGet).to
+  //         .haveBeenCalledWith(DriveSourceMatcher.with(driveId), parentId);
+  //     assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+  //   });
 
-    it(`should get and save the items again for folders`, async () => {
-      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+  //   it(`should get and save the items again for folders`, async () => {
+  //     const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
 
-      const item1 = Mocks.object('item1');
-      const item2 = Mocks.object('item2');
-      const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
-      mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableSet.of([
-        item1,
-        item2,
-      ])));
-      TestGraph.set($driveService, mockDriveService);
+  //     const item1 = Mocks.object('item1');
+  //     const item2 = Mocks.object('item2');
+  //     const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
+  //     mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableSet.of([
+  //       item1,
+  //       item2,
+  //     ])));
+  //     TestGraph.set($driveService, mockDriveService);
 
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
+  //     const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
+  //     TestGraph.set($itemService, mockItemService);
 
-      const parentId = 'parentId';
-      const driveId = 'driveId';
-      const driveItem = DriveFolder.newInstance(
-          'id', 'name', parentId, ImmutableSet.of([]), DriveSource.newInstance(driveId));
-      TestGraph.set($item, driveItem);
+  //     const parentId = 'parentId';
+  //     const driveId = 'driveId';
+  //     const driveItem = DriveFolder.newInstance(
+  //         'id', 'name', parentId, ImmutableSet.of([]), DriveSource.newInstance(driveId));
+  //     TestGraph.set($item, driveItem);
 
-      await item.onRefreshButtonAction_(mockEvent);
-      assert(mockItemService.save).to.haveBeenCalledWith(item1);
-      assert(mockItemService.save).to.haveBeenCalledWith(item2);
-      assert(mockDriveService.recursiveGet).to
-          .haveBeenCalledWith(DriveSourceMatcher.with(driveId), parentId);
-      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
-    });
+  //     await item.onRefreshButtonAction_(mockEvent);
+  //     assert(mockItemService.save).to.haveBeenCalledWith(item1);
+  //     assert(mockItemService.save).to.haveBeenCalledWith(item2);
+  //     assert(mockDriveService.recursiveGet).to
+  //         .haveBeenCalledWith(DriveSourceMatcher.with(driveId), parentId);
+  //     assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+  //   });
 
-    it(`should not reject if the item has no parent IDs`, async () => {
-      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+  //   it(`should not reject if the item has no parent IDs`, async () => {
+  //     const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
 
-      const item1 = Mocks.object('item1');
-      const item2 = Mocks.object('item2');
-      const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
-      mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableSet.of([
-        item1,
-        item2,
-      ])));
+  //     const item1 = Mocks.object('item1');
+  //     const item2 = Mocks.object('item2');
+  //     const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
+  //     mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableSet.of([
+  //       item1,
+  //       item2,
+  //     ])));
 
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
+  //     const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
+  //     TestGraph.set($itemService, mockItemService);
 
-      const driveId = 'driveId';
-      const driveItem = DriveFolder
-          .newInstance('id', 'name', null, ImmutableSet.of([]), DriveSource.newInstance(driveId));
-      TestGraph.set($item, driveItem);
+  //     const driveId = 'driveId';
+  //     const driveItem = DriveFolder
+  //       .newInstance('id', 'name', null, ImmutableSet.of([]), DriveSource.newInstance(driveId));
+  //     TestGraph.set($item, driveItem);
 
-      await assert(item.onRefreshButtonAction_(mockEvent)).to.rejectWithError(/should exist/);
-      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
-    });
+  //     await assert(item.onRefreshButtonAction_(mockEvent)).to.rejectWithError(/should exist/);
+  //     assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+  //   });
 
-    it(`should not reject if the item is not a DriveFile or DriveFolder`, async () => {
-      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+  //   it(`should not reject if the item is not a DriveFile or DriveFolder`, async () => {
+  //     const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
 
 
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
+  //     const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
+  //     TestGraph.set($itemService, mockItemService);
 
-      const parentId = 'parentId';
-      const driveItem = ThothFolder.newInstance('id', 'name', parentId, ImmutableSet.of([]));
-      TestGraph.set($item, driveItem);
+  //     const parentId = 'parentId';
+  //     const driveItem = ThothFolder.newInstance('id', 'name', parentId, ImmutableSet.of([]));
+  //     TestGraph.set($item, driveItem);
 
-      await item.onRefreshButtonAction_(mockEvent);
-      assert(mockItemService.save).toNot.haveBeenCalled();
-      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
-    });
-  });
+  //     await item.onRefreshButtonAction_(mockEvent);
+  //     assert(mockItemService.save).toNot.haveBeenCalled();
+  //     assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+  //   });
+  // });
 
   describe('onRenameButtonAction_', () => {
     it(`should set the input to the name and set the edit flag if not editing`, async () => {

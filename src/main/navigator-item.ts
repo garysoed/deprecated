@@ -4,7 +4,6 @@ import {
   InstanceofType,
   NullableType,
   StringType } from 'external/gs_tools/src/check';
-import { Errors } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn, nodeOut } from 'external/gs_tools/src/graph';
 import { inject } from 'external/gs_tools/src/inject';
 import { BooleanParser, StringParser } from 'external/gs_tools/src/parse';
@@ -25,7 +24,6 @@ import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
 import {
-  $driveService,
   $itemService,
   DriveFolder,
   File,
@@ -35,7 +33,6 @@ import {
   ItemService,
   MarkdownFile,
   ThothFolder } from '../data';
-import { DriveSource } from '../datasource';
 import { $renderService } from '../render';
 
 export const $ = resolveSelectors({
@@ -201,35 +198,35 @@ export class NavigatorItem extends BaseThemedElement2 {
     navigateToHash(`${path}/${item.getName()}`);
   }
 
-  @onDom.event($.refreshButton.el, 'gs-action')
-  async onRefreshButtonAction_(event: MouseEvent): Promise<void> {
-    event.stopPropagation();
+  // @onDom.event($.refreshButton.el, 'gs-action')
+  // async onRefreshButtonAction_(event: MouseEvent): Promise<void> {
+  //   event.stopPropagation();
 
-    const time = Graph.getTimestamp();
-    const [item, driveService, itemService] = await Graph.getAll(
-        time,
-        this,
-        $item,
-        $driveService,
-        $itemService);
-    if (!(item instanceof MarkdownFile) && !(item instanceof DriveFolder)) {
-      return;
-    }
+  //   const time = Graph.getTimestamp();
+  //   const [item, driveService, itemService] = await Graph.getAll(
+  //       time,
+  //       this,
+  //       $item,
+  //       $driveService,
+  //       $itemService);
+  //   if (!(item instanceof MarkdownFile) && !(item instanceof DriveFolder)) {
+  //     return;
+  //   }
 
-    const parentId = item.getParentId();
-    if (!parentId) {
-      throw Errors.assert('parentId').shouldExist().butWas(parentId);
-    }
+  //   const parentId = item.getParentId();
+  //   if (!parentId) {
+  //     throw Errors.assert('parentId').shouldExist().butWas(parentId);
+  //   }
 
-    // TODO: Handle different sources.
-    const source = item.getSource();
-    if (!(source instanceof DriveSource)) {
-      throw Errors.assert('source').should('be an instance of DriveSource');
-    }
+  //   // TODO: Handle different sources.
+  //   const source = item.getSource();
+  //   if (!(source instanceof DriveSource)) {
+  //     throw Errors.assert('source').should('be an instance of DriveSource');
+  //   }
 
-    const files = await driveService.recursiveGet(source, parentId);
-    files.mapItem((file) => itemService.save(file));
-  }
+  //   const files = await driveService.recursiveGet(source, parentId);
+  //   files.mapItem((file) => itemService.save(file));
+  // }
 
   @onDom.event($.renameButton.el, 'gs-action')
   async onRenameButtonAction_(): Promise<void> {

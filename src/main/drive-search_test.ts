@@ -2,7 +2,7 @@ import { assert, Fakes, Mocks, TestBase, TestDispose, TestGraph } from '../test-
 TestBase.setup();
 
 import { FLAGS as GraphFlags, Graph } from 'external/gs_tools/src/graph';
-import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableList, ImmutableSet, TreeMap } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
 import {
@@ -10,6 +10,7 @@ import {
   $itemService,
   $selectedItem,
   DriveFolder,
+  Item,
   ThothFolder } from '../data';
 import { ApiDriveType, DriveSource, DriveStorage } from '../datasource';
 import {
@@ -150,42 +151,45 @@ describe('main.DriveSearch', () => {
           $selectedItem,
           ThothFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
 
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
+      const mockItemService = jasmine.createSpyObj('ItemService', ['recursiveCreate', 'save']);
       TestGraph.set($itemService, mockItemService);
 
       const id1 = 'id1';
       const name1 = 'name1';
-      const mockItem1 = jasmine.createSpyObj('Item1', ['getId', 'getParentId']);
+      const mockItem1 = jasmine.createSpyObj('Item1', ['getId']);
       mockItem1.getId.and.returnValue(id1);
-      mockItem1.getParentId.and.returnValue(idSelected);
-      const id11 = 'id11';
-      const mockItem11 = jasmine.createSpyObj('Item11', ['getId', 'getParentId']);
-      mockItem11.getId.and.returnValue(id11);
-      mockItem11.getParentId.and.returnValue(id1);
-      const id12 = 'id12';
-      const mockItem12 = jasmine.createSpyObj('Item12', ['getId', 'getParentId']);
-      mockItem12.getId.and.returnValue(id12);
-      mockItem12.getParentId.and.returnValue(id1);
+      const item11 = Mocks.object('item11');
+      const item12 = Mocks.object('item12');
       const id2 = 'id2';
       const name2 = 'name2';
-      const mockItem2 = jasmine.createSpyObj('Item2', ['getId', 'getParentId']);
+      const mockItem2 = jasmine.createSpyObj('Item2', ['getId']);
       mockItem2.getId.and.returnValue(id2);
-      mockItem2.getParentId.and.returnValue(idSelected);
 
       const idUnadded = 'idUnadded';
       const mockDispatcher = jasmine.createSpy('Dispatcher');
+
+      const drive1Tree = Mocks.object('drive1Tree', TreeMap);
+      const drive2Tree = Mocks.object('drive2Tree', TreeMap);
 
       const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
       Fakes.build(mockDriveService.recursiveGet).call((source: DriveSource) => {
         const driveId = source.getDriveId();
         switch (driveId) {
           case id1:
-            return ImmutableList.of([mockItem1, mockItem11, mockItem12]);
+            return Promise.resolve(drive1Tree);
           case id2:
-            return ImmutableList.of([mockItem2]);
+            return Promise.resolve(drive2Tree);
         }
       });
       TestGraph.set($driveService, mockDriveService);
+
+      const item1Tree = TreeMap.of<string, Item>(mockItem1)
+          .set('item11Id', TreeMap.of(item11))
+          .set('item12Id', TreeMap.of(item12));
+      const item2Tree = TreeMap.of<string, Item>(mockItem2);
+      Fakes.build(mockItemService.recursiveCreate)
+          .when(drive1Tree).resolve(item1Tree)
+          .when(drive2Tree).resolve(item2Tree);
 
       Fakes.build(spyOn(Persona, 'getValue'))
           .when($.results.children, search).return(ImmutableList.of([
@@ -199,15 +203,15 @@ describe('main.DriveSearch', () => {
       assert(mockDispatcher).to.haveBeenCalledWith('th-item-added', {});
 
       const selectedFolder = mockItemService.save.calls.argsFor(4)[0];
-      assert((selectedFolder as ThothFolder).getItems()).to.haveElements([
-        id1,
-        id2,
-      ]);
+      assert((selectedFolder as ThothFolder).getItems()).to.haveElements([id1, id2]);
 
       assert(mockItemService.save).to.haveBeenCalledWith(mockItem1);
-      assert(mockItemService.save).to.haveBeenCalledWith(mockItem11);
-      assert(mockItemService.save).to.haveBeenCalledWith(mockItem12);
+      assert(mockItemService.save).to.haveBeenCalledWith(item11);
+      assert(mockItemService.save).to.haveBeenCalledWith(item12);
       assert(mockItemService.save).to.haveBeenCalledWith(mockItem2);
+
+      assert(mockItemService.recursiveCreate).to.haveBeenCalledWith(drive1Tree, idSelected);
+      assert(mockItemService.recursiveCreate).to.haveBeenCalledWith(drive2Tree, idSelected);
     });
 
     it(`should reject if dispatcher cannot be found`, async () => {
