@@ -6,18 +6,7 @@ import { Paths } from 'external/gs_tools/src/path';
 import { assertUnreachable } from 'external/gs_tools/src/typescript';
 import { Templates } from 'external/gs_tools/src/webc';
 
-import {
-  $itemService,
-  $metadataService,
-  $previewService,
-  DataFile,
-  Folder,
-  ItemService,
-  MarkdownFile,
-  MetadataService,
-  PreviewFile,
-  PreviewService,
-  RenderConfig } from '../data';
+import { $itemService, $metadataService, $previewService, DataFile, Folder, ItemService, MarkdownFile, MetadataService, PreviewFile, PreviewService, RenderConfig } from '../data';
 import { HandlebarsService } from '../render/handlebars-service';
 import { ShowdownService } from '../render/showdown-service';
 
