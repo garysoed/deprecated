@@ -23,6 +23,7 @@ import { UnknownFile } from '../data/unknown-file';
 import { ApiFile, ApiFileType, DriveSource, Source } from '../datasource';
 
 import { assertUnreachable } from 'external/gs_tools/src/typescript';
+import { ProcessorFile } from './processor-file';
 
 export class ItemService {
   constructor(
@@ -72,6 +73,8 @@ export class ItemService {
               return itemId;
             })),
             source);
+      case ApiFileType.PROCESSOR:
+        return ProcessorFile.newInstance(itemId, filename, containerId, content, source);
       case ApiFileType.UNKNOWN:
         return UnknownFile.newInstance(itemId, filename, containerId, source);
       default:

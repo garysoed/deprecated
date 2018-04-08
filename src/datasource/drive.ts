@@ -6,6 +6,7 @@ export enum ApiFileType {
   FOLDER,
   MARKDOWN,
   METADATA,
+  PROCESSOR,
 }
 
 export type ApiFileSummary<S extends Source> = {

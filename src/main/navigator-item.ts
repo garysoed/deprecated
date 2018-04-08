@@ -338,6 +338,8 @@ export class NavigatorItem extends BaseThemedElement2 {
           return 'settings';
         case FileType.DATA:
           return 'storage';
+        case FileType.PROCESSOR:
+          return 'functions';
         default:
           return 'help';
       }

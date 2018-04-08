@@ -3,5 +3,6 @@ export enum FileType {
   ASSET,
   DATA,
   METADATA,
+  PROCESSOR,
   TEMPLATE,
 }

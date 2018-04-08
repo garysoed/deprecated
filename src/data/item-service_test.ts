@@ -8,6 +8,7 @@ import { DataFile, DriveFolder, Folder, Item, MetadataFile, ThothFolder, Unknown
 import { ItemService } from '../data/item-service';
 import { ApiFile, ApiFileType, DriveSource, ThothSource } from '../datasource';
 import { MarkdownFile } from './markdown-file';
+import { ProcessorFile } from './processor-file';
 
 function folderToJson(folder: Folder): {} {
   return {
@@ -113,6 +114,32 @@ describe('data.ItemService', () => {
         ['2', '3', '5', '7'],
         ['a', 'c'],
       ]);
+      assert(item.getSource()).to.equal(source);
+    });
+
+    it(`should create the correct item for js files`, () => {
+      const filename = 'filename';
+      const itemId = 'itemId';
+      const containerId = 'containerId';
+      const driveId = 'driveId';
+      const source = DriveSource.newInstance(driveId);
+      const driveItem = {
+        content: 'function test(a) { return "a" + a; }',
+        files: [],
+        summary: {
+          name: filename,
+          source,
+          type: ApiFileType.PROCESSOR,
+        },
+      };
+
+      const item = service['createItem_'](
+          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+      assert(item).to.beAnInstanceOf(ProcessorFile);
+      assert(item.getId()).to.equal(itemId);
+      assert(item.getName()).to.equal(filename);
+      assert(item.getParentId()).to.equal(containerId);
+      assert((item as ProcessorFile).getFunction()(1)).to.equal('a1');
       assert(item.getSource()).to.equal(source);
     });
 

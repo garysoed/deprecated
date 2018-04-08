@@ -21,6 +21,7 @@ export const DRIVE_FOLDER_MIMETYPE = 'application/vnd.google-apps.folder';
 const TYPE_MAPPING = new Map([
   [DRIVE_FOLDER_MIMETYPE, ApiFileType.FOLDER],
   ['application/json', ApiFileType.METADATA],
+  ['application/x-javascript', ApiFileType.PROCESSOR],
   ['text/tab-separated-values', ApiFileType.TSV],
   ['text/x-markdown', ApiFileType.MARKDOWN],
 ]);
@@ -118,6 +119,7 @@ export class DriveStorageImpl extends GapiStorage<
       case ApiFileType.MARKDOWN:
       case ApiFileType.METADATA:
       case ApiFileType.TSV:
+      case ApiFileType.PROCESSOR:
         const getResponse = await Promises.withRetry(
             () => drive.files.get({alt: 'media', fileId: summary.source.getId()}),
             GET_RETRY_STRATEGY);
@@ -151,6 +153,7 @@ export class DriveStorageImpl extends GapiStorage<
       case ApiFileType.TSV:
       case ApiFileType.MARKDOWN:
       case ApiFileType.METADATA:
+      case ApiFileType.PROCESSOR:
         return {
           content: await this.readFileContent_(summary) || undefined,
           files: [],
