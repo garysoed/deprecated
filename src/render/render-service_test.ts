@@ -1,4 +1,4 @@
-import { assert, Fakes, Mocks, TestBase } from '../test-base';
+import { assert, Fakes, Matchers, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
 import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
@@ -8,9 +8,8 @@ import {
   DataFile,
   DriveFolder,
   MarkdownFile,
-  PreviewFile,
-  RenderConfig,
-  UnknownFile } from '../data';
+  PreviewFile } from '../data';
+import { ProcessorFile } from '../data/processor-file';
 import { DriveSource, ThothSource } from '../datasource';
 import { RenderService } from '../render/render-service';
 import { ShowdownService } from '../render/showdown-service';
@@ -23,7 +22,7 @@ describe('render.RenderServiceClass', () => {
   let service: RenderService;
 
   beforeEach(() => {
-    mockItemService = jasmine.createSpyObj('ItemService', ['getItem', 'getPath']);
+    mockItemService = jasmine.createSpyObj('ItemService', ['getItem', 'getItemByPath', 'getPath']);
     mockMetadataService = jasmine.createSpyObj('MetadataService', ['getConfigForItem']);
     mockPreviewService = jasmine.createSpyObj('PreviewService', ['get', 'save']);
     mockTemplates = jasmine.createSpyObj('Templates', ['getTemplate']);
@@ -45,7 +44,12 @@ describe('render.RenderServiceClass', () => {
           ThothSource.newInstance());
 
       const showdownConfig = ImmutableMap.of([['key', 'value']]);
-      const config = new RenderConfig(showdownConfig, null, ImmutableMap.of([]));
+      const config = {
+        processor: null,
+        showdownConfig,
+        template: null,
+        variables: ImmutableMap.of<string, string>([]),
+      };
 
       const renderedMarkdown = 'renderedMarkdown';
       spyOn(ShowdownService, 'render').and.returnValue(renderedMarkdown);
@@ -64,34 +68,69 @@ describe('render.RenderServiceClass', () => {
           ThothSource.newInstance());
 
       const showdownConfig = Mocks.object('showdownConfig');
-      const config = new RenderConfig(showdownConfig, null, ImmutableMap.of([]));
+      const config = {
+        processor: null,
+        showdownConfig,
+        template: null,
+        variables: ImmutableMap.of<string, string>([]),
+      };
       assert(service['compileItem_'](item, config)).to.equal(content);
     });
   });
 
-  describe('render', () => {
-    it(`should create the preview items for a folder correctly and resolve with the preview ID`,
-        async () => {
-      const id = `id`;
+  describe('processOutputMap_', () => {
+    it(`should return the correct map`, async () => {
+      const originalMap = ImmutableMap.of([['a', 1]]);
+      const newOutputMap = ImmutableMap.of([['b', 2]]);
+      const mockProcessorFn = jasmine.createSpy('ProcessorFn');
+      mockProcessorFn.and.returnValue(newOutputMap);
+      const mockProcessor = jasmine.createSpyObj('Processor', ['getFunction']);
+      mockProcessor.getFunction.and.returnValue(mockProcessorFn);
+      Object.setPrototypeOf(mockProcessor, ProcessorFile.prototype);
+      mockItemService.getItemByPath.and.returnValue(Promise.resolve(mockProcessor));
 
-      const childId = 'childId';
-      const originalItem = DriveFolder.newInstance(
-          id, 'name', null, ImmutableSet.of([childId]), DriveSource.newInstance('driveId'));
-      const childItem = UnknownFile.newInstance(
-          childId, 'name', id, DriveSource.newInstance('driveId'));
-
-      Fakes.build(mockItemService.getItem)
-          .when(id).return(originalItem)
-          .when(childId).return(childItem);
-
-      mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath('/path')));
-
-      spyOn(service, 'render').and.callThrough();
-
-      await service.render(id);
-      assert(service.render).to.haveBeenCalledWith(childId);
+      const processorPath = Paths.absolutePath('/processor');
+      const config = {
+        processor: processorPath,
+        showdownConfig: ImmutableMap.of<string, string>([]),
+        template: null,
+        variables: ImmutableMap.of<string, string>([]),
+      };
+      assert(await service['processOutputMap_'](originalMap, config)).to
+          .haveElements([...newOutputMap]);
+      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(processorPath);
+      assert(mockProcessorFn).to.haveBeenCalledWith([...originalMap]);
     });
 
+    it(`should reject if processor item is not a ProcessorFile`, async () => {
+      const mockProcessor = jasmine.createSpyObj('Processor', ['getFunction']);
+      mockItemService.getItemByPath.and.returnValue(Promise.resolve(mockProcessor));
+
+      const config = {
+        processor: Paths.absolutePath('/processor'),
+        showdownConfig: ImmutableMap.of<string, string>([]),
+        template: null,
+        variables: ImmutableMap.of<string, string>([]),
+      };
+      await assert(service['processOutputMap_'](ImmutableMap.of([['a', 1]]), config)).to
+          .rejectWithError(/a ProcessorFile/);
+    });
+
+    it(`should return the original map if there are no processors`, async () => {
+      const originalMap = ImmutableMap.of([['a', 1]]);
+
+      const config = {
+        processor: null,
+        showdownConfig: ImmutableMap.of<string, string>([]),
+        template: null,
+        variables: ImmutableMap.of<string, string>([]),
+      };
+      assert(await service['processOutputMap_'](originalMap, config)).to
+          .haveElements([...originalMap]);
+    });
+  });
+
+  describe('render', () => {
     it(`should create the preview items for a file correctly`, async () => {
       const id = `parentId/id`;
       const content = 'content';
@@ -112,10 +151,12 @@ describe('render.RenderServiceClass', () => {
       const templateContent = 'templateContent';
       spyOn(service, 'getTemplateContent_').and.returnValue(templateContent);
 
-      const renderConfig = new RenderConfig(
-          ImmutableMap.of([]),
-          Paths.absolutePath('/template'),
-          ImmutableMap.of([]));
+      const renderConfig = {
+        processor: Paths.absolutePath('/processor'),
+        showdownConfig: ImmutableMap.of<string, string>([]),
+        template: Paths.absolutePath('/template'),
+        variables: ImmutableMap.of<string, string>([]),
+      };
       mockMetadataService.getConfigForItem.and.returnValue(renderConfig);
 
       spyOn(service, 'renderItem_').and.returnValue(renderedContent);
@@ -123,19 +164,32 @@ describe('render.RenderServiceClass', () => {
       const compiledItem = 'compiledItem';
       spyOn(service, 'compileItem_').and.returnValue(compiledItem);
 
+      const processedContent = Mocks.object('processedContent');
+      const processedName = 'processedName';
+      const processOutputMapSpy = spyOn(service, 'processOutputMap_').and
+          .returnValue(Promise.resolve(ImmutableMap.of([
+            [processedName, processedContent],
+          ])));
+
       await service.render(id);
 
       const previewFile: PreviewFile = mockPreviewService.save.calls.argsFor(0)[0];
-      assert(previewFile.getPath()).to.equal(`${parentFolder}/${filename}`);
+      assert(previewFile.getPath()).to.equal(`${parentFolder}/${processedName}`);
       assert(previewFile.getContent()).to.equal(renderedContent);
 
       assert(mockPreviewService.save).to.haveBeenCalledWith(previewFile);
       assert(mockMetadataService.getConfigForItem).to.haveBeenCalledWith(id);
 
       assert(service['renderItem_']).to.haveBeenCalledWith(
-          {$mainContent: compiledItem},
+          processedContent,
           templateContent,
           renderConfig);
+      assert(service['processOutputMap_']).to.haveBeenCalledWith(
+          Matchers.any<ImmutableMap<string, {}>>(ImmutableMap),
+          renderConfig);
+      assert(processOutputMapSpy.calls.argsFor(0)[0] as ImmutableMap<string, {}>).to
+          .haveElements([[filename, {$mainContent: compiledItem}]]);
+      assert(service['compileItem_']).to.haveBeenCalledWith(originalItem, renderConfig);
     });
 
     it(`should reject if the item type is not a file or a folder`, async () => {

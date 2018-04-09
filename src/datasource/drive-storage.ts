@@ -1,12 +1,13 @@
-import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
-import { GapiLibrary } from 'external/gs_tools/src/net';
-import { GapiRequestQueue, GapiStorage } from 'external/gs_tools/src/store';
-
 import {
   ExponentialBackoffRetryStrategy,
   LimitedCountRetryStrategy,
   Promises,
   RetryStrategies } from 'external/gs_tools/src/async';
+import { ImmutableList, ImmutableSet } from 'external/gs_tools/src/immutable';
+import { GapiLibrary } from 'external/gs_tools/src/net';
+import { Paths } from 'external/gs_tools/src/path';
+import { GapiRequestQueue, GapiStorage } from 'external/gs_tools/src/store';
+
 import { drive } from '../api';
 import { ApiFile, ApiFileSummary, ApiFileType } from '../datasource/drive';
 import { DriveSource } from '../datasource/drive-source';
@@ -31,15 +32,24 @@ const GET_RETRY_STRATEGY = RetryStrategies.all([
   new LimitedCountRetryStrategy(5),
 ]);
 
-export function convertToType_(driveType: string): ApiFileType {
-  return TYPE_MAPPING.get(driveType) || ApiFileType.UNKNOWN;
+export function convertToType_(driveType: string, filename: string): ApiFileType {
+  const type = TYPE_MAPPING.get(driveType);
+  if (type) {
+    return type;
+  }
+
+  if (Paths.getFilenameParts(filename).extension === 'yml') {
+    return ApiFileType.METADATA;
+  }
+
+  return ApiFileType.UNKNOWN;
 }
 
 export function convertToFileSummary_(file: goog.drive.files.File): ApiFileSummary<DriveSource> {
   return {
     name: file.name,
     source: DriveSource.newInstance(file.id),
-    type: convertToType_(file.mimeType),
+    type: convertToType_(file.mimeType, file.name),
   };
 }
 

@@ -148,7 +148,7 @@ export class ItemService {
     return this.getItemByPath_(rest, nextItem);
   }
 
-  async getPath(id: string, suffixes: string[] = []): Promise<Path | null> {
+  async getPath(id: string, suffixes: string[] = []): Promise<AbsolutePath | null> {
     const item = await this.getItem(id);
     if (!item) {
       return null;

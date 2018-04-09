@@ -8,7 +8,6 @@ import { DriveFolder, MarkdownFile, MetadataFile, MetadataService } from '../dat
 import { DEFAULT_CONFIG, DEFAULT_METADATA_FILENAME } from '../data/metadata-service';
 import { DriveSource, ThothSource } from '../datasource';
 
-
 describe('data.MetadataService', () => {
   let mockItemService: any;
   let mockJsYaml: any;
@@ -27,44 +26,71 @@ describe('data.MetadataService', () => {
   describe('createConfig_', () => {
     it(`should return the correct metadata object`, () => {
       const unparsedContent = 'unparsedContent';
-      const path = 'path';
+      const root = '/root/metadata.yml';
+      const path = Paths.absolutePath(root);
       const variables = {a: '1', b: '2'};
-      const template = '/template';
+      const template = './template';
+      const processor = './processor';
+      mockJsYaml.load.and.returnValue({
+        processor,
+        template,
+        variables,
+      });
+
+      const metadata = service['createConfig_'](unparsedContent, path);
+      assert(metadata.processor!.toString()).to.equal(`/root/processor`);
+      assert(metadata.variables).to.haveElements([['a', '1'], ['b', '2']]);
+      assert(metadata.template!.toString()).to.equal(`/root/template`);
+      assert(jsyaml.load).to.haveBeenCalledWith(unparsedContent, Matchers.any(Object));
+    });
+
+    it(`should set the template to null if there are no templates`, () => {
+      const unparsedContent = 'unparsedContent';
+      const root = '/root/metadata.yml';
+      const path = Paths.absolutePath(root);
+      const variables = {a: '1', b: '2'};
+      const processor = './processor';
+      mockJsYaml.load.and.returnValue({
+        processor,
+        variables,
+      });
+
+      const metadata = service['createConfig_'](unparsedContent, path);
+      assert(metadata.processor!.toString()).to.equal(`/root/processor`);
+      assert(metadata.variables).to.haveElements([['a', '1'], ['b', '2']]);
+      assert(metadata.template).to.beNull();
+      assert(jsyaml.load).to.haveBeenCalledWith(unparsedContent, Matchers.any(Object));
+    });
+
+    it(`should set the processor to null if there are no processors`, () => {
+      const unparsedContent = 'unparsedContent';
+      const root = '/root/metadata.yml';
+      const path = Paths.absolutePath(root);
+      const variables = {a: '1', b: '2'};
+      const template = './template';
       mockJsYaml.load.and.returnValue({
         template,
         variables,
       });
 
       const metadata = service['createConfig_'](unparsedContent, path);
-      assert(metadata.getVariables()).to.haveElements([['a', '1'], ['b', '2']]);
-      assert(metadata.getTemplate()).to.equal(PathMatcher.with(template));
-      assert(jsyaml.load).to.haveBeenCalledWith(unparsedContent, Matchers.any(Object));
-    });
-
-    it(`should set the template to null if there are no templates objects`, () => {
-      const unparsedContent = 'unparsedContent';
-      const path = 'path';
-      const variables = {a: '1', b: '2'};
-      mockJsYaml.load.and.returnValue({
-        variables,
-      });
-
-      const metadata = service['createConfig_'](unparsedContent, path);
-      assert(metadata.getVariables()).to.haveElements([['a', '1'], ['b', '2']]);
-      assert(metadata.getTemplate()).to.beNull();
+      assert(metadata.processor).to.beNull();
+      assert(metadata.variables).to.haveElements([['a', '1'], ['b', '2']]);
+      assert(metadata.template!.toString()).to.equal(`/root/template`);
       assert(jsyaml.load).to.haveBeenCalledWith(unparsedContent, Matchers.any(Object));
     });
 
     it(`should throw error if the content is not the correct type`, () => {
       const unparsedContent = 'unparsedContent';
-      const path = 'path';
+      const root = '/root/metadata.yml';
+      const path = Paths.absolutePath(root);
       mockJsYaml.load.and.returnValue({
         variables: 1,
       });
 
       assert(() => {
         service['createConfig_'](unparsedContent, path);
-      }).to.throwError(new RegExp(path));
+      }).to.throwError(new RegExp(root));
     });
   });
 
@@ -130,7 +156,8 @@ describe('data.MetadataService', () => {
 
       assert(await service.getConfigForItem(itemId)).to.equal(renderConfig);
       const expectedContents = [content4, content3, content2, content1].join('\n');
-      assert(service['createConfig_']).to.haveBeenCalledWith(expectedContents, itemPath);
+      assert(service['createConfig_']).to
+          .haveBeenCalledWith(expectedContents, PathMatcher.with(itemPath));
       assert(mockItemService.getItemByPath).to.haveBeenCalledWith(PathMatcher.with('/a/b/c'));
       assert(mockItemService.getItem).to.haveBeenCalledWith(itemId);
       assert(mockItemService.getPath).to.haveBeenCalledWith(itemId);

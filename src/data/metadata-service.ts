@@ -8,27 +8,33 @@ import {
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableList, ImmutableMap } from 'external/gs_tools/src/immutable';
-import { Path, Paths } from 'external/gs_tools/src/path';
+import { AbsolutePath, Path, Paths } from 'external/gs_tools/src/path';
 
-import { FileType } from '../data/file-type';
 import { Folder } from '../data/folder';
 import { $itemService, ItemService } from '../data/item-service';
 import { MetadataFile } from '../data/metadata-file';
 import { RenderConfig } from '../data/render-config';
 
 export const DEFAULT_METADATA_FILENAME = '$default.yml';
-export const DEFAULT_CONFIG = new RenderConfig(
-    ImmutableMap.of({}),
-    null,
-    ImmutableMap.of({}));
+export const DEFAULT_CONFIG: RenderConfig = {
+  processor: null,
+  showdownConfig: ImmutableMap.of({}),
+  template: null,
+  variables: ImmutableMap.of({}),
+};
 
 type ShowdownConfig =  {[key: string]: string};
 type MetadataJsonType = {
+  processor?: string,
   showdown?: ShowdownConfig,
   template?: string,
   variables?: {[key: string]: string},
 };
 const METADATA_JSON_TYPE = HasPropertiesType<MetadataJsonType>({
+  'processor': UnionType.builder<undefined | string>()
+      .addType(StringType)
+      .addType(UndefinedType)
+      .build(),
   'showdown': UnionType.builder<undefined | {[key: string]: string}>()
       .addType(UndefinedType)
       .addType(ObjectType.stringKeyed<string>(StringType))
@@ -46,7 +52,7 @@ const METADATA_JSON_TYPE = HasPropertiesType<MetadataJsonType>({
 export class MetadataService {
   constructor(private readonly itemService_: ItemService) { }
 
-  private createConfig_(unparsedContent: string, metadataPath: string): RenderConfig {
+  private createConfig_(unparsedContent: string, metadataPath: AbsolutePath): RenderConfig {
     const parsedContent = unparsedContent ? jsyaml.load(unparsedContent, {json: true}) : {};
     if (!METADATA_JSON_TYPE.check(parsedContent)) {
       throw Errors.assert(`content of metadata for file [${metadataPath}]`)
@@ -54,11 +60,19 @@ export class MetadataService {
           .butWas(JSON.stringify(parsedContent));
     }
 
+    const directoryPath = Paths.getDirPath(metadataPath);
     const templateString = parsedContent.template;
-    return new RenderConfig(
-        ImmutableMap.of(parsedContent.showdown || {}),
-        templateString ? Paths.absolutePath(templateString) : null,
-        ImmutableMap.of(parsedContent.variables || {}));
+    const processorString = parsedContent.processor;
+    return {
+      processor: processorString ?
+          Paths.join(directoryPath, Paths.relativePath(processorString)) :
+          null,
+      showdownConfig: ImmutableMap.of(parsedContent.showdown || {}),
+      template: templateString ?
+          Paths.join(directoryPath, Paths.relativePath(templateString)) :
+          null,
+      variables: ImmutableMap.of(parsedContent.variables || {}),
+    };
   }
 
   async getConfigForItem(itemId: string): Promise<RenderConfig> {
@@ -100,7 +114,7 @@ export class MetadataService {
         .reverse()
         .filterByType(InstanceofType(MetadataFile))
         .map((metadataFile) => metadataFile.getContent());
-    return this.createConfig_([...contentList].join('\n'), path.toString());
+    return this.createConfig_([...contentList].join('\n'), path);
   }
 
   private async getMetadataWithNameInFolder_(
@@ -114,9 +128,7 @@ export class MetadataService {
     return ImmutableList
         .of(await Promise.all(contentPromises))
         .filterByType(InstanceofType(MetadataFile))
-        .find((item) => {
-          return item.getType() === FileType.METADATA && item.getName() === metadataName;
-        });
+        .find((item) => item.getName() === metadataName);
   }
 }
 

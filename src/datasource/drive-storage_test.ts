@@ -5,7 +5,7 @@ import { ImmutableSet } from 'external/gs_tools/src/immutable';
 
 import { DriveSource } from '../datasource';
 import { ApiFileType } from '../datasource/drive';
-import { DRIVE_FOLDER_MIMETYPE, DriveStorageImpl } from '../datasource/drive-storage';
+import { convertToType_, DRIVE_FOLDER_MIMETYPE, DriveStorageImpl } from '../datasource/drive-storage';
 import { DriveSourceMatcher } from './testing';
 
 
@@ -16,6 +16,20 @@ describe('datasource.DriveStorage', () => {
   beforeEach(() => {
     mockDriveLibrary = jasmine.createSpyObj('DriveLibrary', ['get']);
     storage = new DriveStorageImpl(mockDriveLibrary);
+  });
+
+  describe('convertToType_', () => {
+    it(`should return the correct type`, () => {
+      assert(convertToType_('application/json', 'file.json')).to.equal(ApiFileType.METADATA);
+    });
+
+    it(`should return METADATA if extension is 'yml'`, () => {
+      assert(convertToType_('octet/binary', 'file.yml')).to.equal(ApiFileType.METADATA);
+    });
+
+    it(`should return UNKNOWN if mimeType is unknown`, () => {
+      assert(convertToType_('octet/binary', 'file.bin')).to.equal(ApiFileType.UNKNOWN);
+    });
   });
 
   describe('createListConfig_', () => {
@@ -229,6 +243,7 @@ describe('datasource.DriveStorage', () => {
       mockQueueRequest.and.returnValue(Promise.resolve({
         id,
         mimeType: 'text/plain',
+        name: 'unknown',
       }));
 
       await assert(storage['readImpl_'](mockQueueRequest, id)).to.resolveWith({
