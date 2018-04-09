@@ -27,6 +27,10 @@ describe('datasource.DriveStorage', () => {
       assert(convertToType_('octet/binary', 'file.yml')).to.equal(ApiFileType.METADATA);
     });
 
+    it(`should return TEMPLATE if extension is 'hbs'`, () => {
+      assert(convertToType_('octet/binary', 'file.hbs')).to.equal(ApiFileType.TEMPLATE);
+    });
+
     it(`should return UNKNOWN if mimeType is unknown`, () => {
       assert(convertToType_('octet/binary', 'file.bin')).to.equal(ApiFileType.UNKNOWN);
     });

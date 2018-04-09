@@ -2,11 +2,12 @@ import { Source } from '../datasource/source';
 
 export enum ApiFileType {
   UNKNOWN,
-  TSV,
   FOLDER,
   MARKDOWN,
   METADATA,
   PROCESSOR,
+  TEMPLATE,
+  TSV,
 }
 
 export type ApiFileSummary<S extends Source> = {

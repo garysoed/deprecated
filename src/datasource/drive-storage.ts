@@ -38,8 +38,13 @@ export function convertToType_(driveType: string, filename: string): ApiFileType
     return type;
   }
 
-  if (Paths.getFilenameParts(filename).extension === 'yml') {
+  const extension = Paths.getFilenameParts(filename).extension;
+  if (extension === 'yml') {
     return ApiFileType.METADATA;
+  }
+
+  if (extension === 'hbs') {
+    return ApiFileType.TEMPLATE;
   }
 
   return ApiFileType.UNKNOWN;
@@ -128,8 +133,9 @@ export class DriveStorageImpl extends GapiStorage<
     switch (fileType) {
       case ApiFileType.MARKDOWN:
       case ApiFileType.METADATA:
-      case ApiFileType.TSV:
       case ApiFileType.PROCESSOR:
+      case ApiFileType.TEMPLATE:
+      case ApiFileType.TSV:
         const getResponse = await Promises.withRetry(
             () => drive.files.get({alt: 'media', fileId: summary.source.getId()}),
             GET_RETRY_STRATEGY);
@@ -160,10 +166,11 @@ export class DriveStorageImpl extends GapiStorage<
           files: await this.readFolderContents_(summary.source.getId()),
           summary,
         };
-      case ApiFileType.TSV:
       case ApiFileType.MARKDOWN:
       case ApiFileType.METADATA:
       case ApiFileType.PROCESSOR:
+      case ApiFileType.TEMPLATE:
+      case ApiFileType.TSV:
         return {
           content: await this.readFileContent_(summary) || undefined,
           files: [],

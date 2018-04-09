@@ -9,6 +9,7 @@ import { ItemService } from '../data/item-service';
 import { ApiFile, ApiFileType, DriveSource, ThothSource } from '../datasource';
 import { MarkdownFile } from './markdown-file';
 import { ProcessorFile } from './processor-file';
+import { TemplateFile } from './template-file';
 
 function folderToJson(folder: Folder): {} {
   return {
@@ -140,6 +141,33 @@ describe('data.ItemService', () => {
       assert(item.getName()).to.equal(filename);
       assert(item.getParentId()).to.equal(containerId);
       assert((item as ProcessorFile).getFunction()(1)).to.equal('a1');
+      assert(item.getSource()).to.equal(source);
+    });
+
+    it(`should create the correct item for template files`, () => {
+      const filename = 'filename';
+      const content = 'content';
+      const itemId = 'itemId';
+      const containerId = 'containerId';
+      const driveId = 'driveId';
+      const source = DriveSource.newInstance(driveId);
+      const driveItem = {
+        content,
+        files: [],
+        summary: {
+          name: filename,
+          source,
+          type: ApiFileType.TEMPLATE,
+        },
+      };
+
+      const item = service['createItem_'](
+          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+      assert(item).to.beAnInstanceOf(TemplateFile);
+      assert(item.getId()).to.equal(itemId);
+      assert(item.getName()).to.equal(filename);
+      assert(item.getParentId()).to.equal(containerId);
+      assert((item as TemplateFile).getContent()).to.equal(content);
       assert(item.getSource()).to.equal(source);
     });
 

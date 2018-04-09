@@ -1,17 +1,17 @@
 import { assert, Fakes, Matchers, Mocks, TestBase } from '../test-base';
 TestBase.setup();
 
-import { ImmutableMap, ImmutableSet } from 'external/gs_tools/src/immutable';
+import { ImmutableMap } from 'external/gs_tools/src/immutable';
 import { Paths } from 'external/gs_tools/src/path';
 
 import {
   DataFile,
-  DriveFolder,
   MarkdownFile,
   PreviewFile } from '../data';
 import { ProcessorFile } from '../data/processor-file';
+import { TemplateFile } from '../data/template-file';
 import { DriveSource, ThothSource } from '../datasource';
-import { RenderService } from '../render/render-service';
+import { DEFAULT_TEMPLATE_KEY, RenderService } from '../render/render-service';
 import { ShowdownService } from '../render/showdown-service';
 
 describe('render.RenderServiceClass', () => {
@@ -31,6 +31,73 @@ describe('render.RenderServiceClass', () => {
         mockMetadataService,
         mockPreviewService,
         mockTemplates);
+  });
+
+  describe('getDefaultTemplate_', () => {
+    it(`should return the correct content`, () => {
+      const content = 'content';
+      mockTemplates.getTemplate.and.returnValue(content);
+
+      assert(service['getDefaultTemplate_']()).to.equal(content);
+      assert(mockTemplates.getTemplate).to.haveBeenCalledWith(DEFAULT_TEMPLATE_KEY);
+    });
+
+    it(`should throw error if default template does not exist`, () => {
+      mockTemplates.getTemplate.and.returnValue(null);
+
+      assert(() => {
+        service['getDefaultTemplate_']();
+      }).to.throwError(/default template/);
+      assert(mockTemplates.getTemplate).to.haveBeenCalledWith(DEFAULT_TEMPLATE_KEY);
+    });
+  });
+
+  describe('getTemplateContent_', () => {
+    it(`should return the correct content`, async () => {
+      const templatePath = Paths.absolutePath('/template');
+      const config = {
+        processor: null,
+        showdownConfig: ImmutableMap.of<string, string>([]),
+        template: templatePath,
+        variables: ImmutableMap.of<string, string>([]),
+      };
+      const content = 'content';
+      const mockItem = jasmine.createSpyObj('Item', ['getContent']);
+      mockItem.getContent.and.returnValue(content);
+      Object.setPrototypeOf(mockItem, TemplateFile.prototype);
+      mockItemService.getItemByPath.and.returnValue(Promise.resolve(mockItem));
+
+      assert(await service['getTemplateContent_'](config)).to.equal(content);
+      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(templatePath);
+    });
+
+    it(`should reject if item is not a template file`, async () => {
+      const templatePath = Paths.absolutePath('/template');
+      const config = {
+        processor: null,
+        showdownConfig: ImmutableMap.of<string, string>([]),
+        template: templatePath,
+        variables: ImmutableMap.of<string, string>([]),
+      };
+      const mockItem = jasmine.createSpyObj('Item', ['getContent']);
+      mockItemService.getItemByPath.and.returnValue(Promise.resolve(mockItem));
+
+      await assert(service['getTemplateContent_'](config)).to.rejectWithError(/TemplateFile/);
+      assert(mockItemService.getItemByPath).to.haveBeenCalledWith(templatePath);
+    });
+
+    it(`should return the default template if there are no template paths`, async () => {
+      const config = {
+        processor: null,
+        showdownConfig: ImmutableMap.of<string, string>([]),
+        template: null,
+        variables: ImmutableMap.of<string, string>([]),
+      };
+      const defaultTemplate = 'defaultTemplate';
+      spyOn(service, 'getDefaultTemplate_').and.returnValue(defaultTemplate);
+
+      assert(await service['getTemplateContent_'](config)).to.equal(defaultTemplate);
+    });
   });
 
   describe('compileItem_', () => {
@@ -197,22 +264,6 @@ describe('render.RenderServiceClass', () => {
       mockItemService.getPath.and.returnValue(Promise.resolve(Paths.absolutePath('/path')));
 
       await assert(service.render(id)).to.rejectWithError(/item for id/i);
-    });
-
-    it(`should do nothing the existing preview item if one exists`, async () => {
-      const parentId = '/parentId';
-      const id = `${parentId}/id`;
-
-      const childId = 'childId';
-
-      const previewItem = DriveFolder.newInstance(
-          id, 'name', null, ImmutableSet.of([childId]), DriveSource.newInstance('driveId'));
-      mockPreviewService.get.and.returnValue(Promise.resolve(previewItem));
-
-      mockItemService.getPath.and.returnValue(Promise.resolve('path'));
-
-      await service.render(id);
-      assert(mockPreviewService.save).toNot.haveBeenCalled();
     });
 
     it(`should reject if the item path does not exist`, async () => {

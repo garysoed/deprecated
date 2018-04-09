@@ -8,11 +8,12 @@ import { Templates } from 'external/gs_tools/src/webc';
 
 import { $itemService, $metadataService, $previewService, DataFile, Folder, ItemService, MarkdownFile, MetadataService, PreviewFile, PreviewService, RenderConfig } from '../data';
 import { ProcessorFile } from '../data/processor-file';
+import { TemplateFile } from '../data/template-file';
 import { HandlebarsService } from '../render/handlebars-service';
 import { ShowdownService } from '../render/showdown-service';
 
 type AssetItem = DataFile | MarkdownFile;
-const DEFAULT_TEMPLATE_KEY = 'src/render/render-default-template';
+export const DEFAULT_TEMPLATE_KEY = 'src/render/render-default-template';
 
 export class RenderService {
   constructor(
@@ -34,14 +35,27 @@ export class RenderService {
     throw assertUnreachable(item);
   }
 
-  private async getTemplateContent_(): Promise<string> {
-    // TODO: Use the specified template.
-
+  private getDefaultTemplate_(): string {
     const content = this.templates_.getTemplate(DEFAULT_TEMPLATE_KEY);
     if (!content) {
       throw Errors.assert('default template').shouldExist().butNot();
     }
     return content;
+  }
+
+  private async getTemplateContent_(renderConfig: RenderConfig): Promise<string> {
+    const templatePath = renderConfig.template;
+    if (!templatePath) {
+      return this.getDefaultTemplate_();
+    }
+
+    const item = await this.itemService_.getItemByPath(templatePath);
+    if (!(item instanceof TemplateFile)) {
+      throw Errors.assert(`Template at ${templatePath}`).should('be a TemplateFile')
+          .butWas(item);
+    }
+
+    return item.getContent();
   }
 
   private async processOutputMap_(
@@ -68,13 +82,6 @@ export class RenderService {
       throw Errors.assert(`Path for item [${id}]`).shouldExist().butWas(path);
     }
 
-    // Check if the preview already exists.
-    const existingPreviewItem = await this.previewService_.get(path);
-    if (existingPreviewItem) {
-      return;
-    }
-
-    // Preview doesn't exist, so create a new one.
     const [item, itemPath] = await Promise.all([
       this.itemService_.getItem(id),
       this.itemService_.getPath(id),
@@ -95,7 +102,7 @@ export class RenderService {
     }
 
     const renderConfig = await this.metadataService_.getConfigForItem(item.getId());
-    const template = await this.getTemplateContent_();
+    const template = await this.getTemplateContent_(renderConfig);
 
     const compiledItem = this.compileItem_(item, renderConfig);
     const outputFiles = ImmutableMap.of([[item.getName(), {$mainContent: compiledItem}]]);
