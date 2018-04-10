@@ -9,12 +9,10 @@ import { inject } from 'external/gs_tools/src/inject';
 import { BooleanParser, StringParser } from 'external/gs_tools/src/parse';
 import {
     attributeSelector,
-    classSelector,
     component,
     elementSelector,
     innerTextSelector,
     onDom,
-    Persona,
     render,
     resolveSelectors,
     shadowHostSelector } from 'external/gs_tools/src/persona';
@@ -25,6 +23,7 @@ import { ThemeService } from 'external/gs_ui/src/theming';
 
 import {
   $itemService,
+  DataFile,
   DriveFolder,
   File,
   FileType,
@@ -37,9 +36,6 @@ import { $renderService } from '../render';
 
 export const $ = resolveSelectors({
   content: {
-    class: {
-      editing: classSelector('editing', elementSelector('content.el')),
-    },
     el: elementSelector('#content', InstanceofType(HTMLDivElement)),
   },
   deleteButton: {
@@ -65,9 +61,9 @@ export const $ = resolveSelectors({
         BooleanParser,
         BooleanType,
         false),
-    viewable: attributeSelector(
+    renderable: attributeSelector(
         elementSelector('host.el'),
-        'viewable',
+        'renderable',
         BooleanParser,
         BooleanType,
         false),
@@ -100,16 +96,10 @@ export const $ = resolveSelectors({
   refreshButton: {
     el: elementSelector('#refreshButton', ElementWithTagType('gs-basic-button')),
   },
-  renameButton: {
-    el: elementSelector('#renameButton', ElementWithTagType('gs-basic-button')),
-  },
   renderButton: {
     el: elementSelector('#renderButton', ElementWithTagType('gs-basic-button')),
   },
 });
-
-export const $isEditing = instanceId('isEditing', BooleanType);
-const isEditingProvider = Graph.createProvider($isEditing, false);
 
 export const $item = instanceId('item', NullableType(InstanceofType(Item)));
 export const $parent = instanceId('parent', NullableType(InstanceofType(Item)));
@@ -163,7 +153,6 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @onDom.event($.deleteButton.el, 'click')
-  @onDom.event($.renameButton.el, 'click')
   @onDom.event($.renderButton.el, 'click')
   @onDom.event($.refreshButton.el, 'click')
   onActionButtonClick_(event: MouseEvent): void {
@@ -185,11 +174,7 @@ export class NavigatorItem extends BaseThemedElement2 {
   @onDom.event($.host.el, 'click')
   async onHostClick_(): Promise<void> {
     const time = Graph.getTimestamp();
-    const [item, path, isEditing]
-        = await Graph.getAll(time, this, $item, $location.path, $isEditing);
-    if (isEditing) {
-      return;
-    }
+    const [item, path] = await Graph.getAll(time, this, $item, $location.path);
 
     if (!item) {
       return;
@@ -227,36 +212,6 @@ export class NavigatorItem extends BaseThemedElement2 {
   //   const files = await driveService.recursiveGet(source, parentId);
   //   files.mapItem((file) => itemService.save(file));
   // }
-
-  @onDom.event($.renameButton.el, 'gs-action')
-  async onRenameButtonAction_(): Promise<void> {
-    const time = Graph.getTimestamp();
-    const [isEditing, item, itemService] = await Graph.getAll(
-        time,
-        this,
-        $isEditing,
-        $item,
-        $itemService);
-    const shadowRoot = Persona.getShadowRoot(this);
-    if (!shadowRoot) {
-      return;
-    }
-
-    if (!item) {
-      return;
-    }
-
-    if (isEditing) {
-      const newName = $.nameInput.value.getValue(shadowRoot);
-      if (newName) {
-        itemService.save(item.setName(newName));
-      }
-    } else {
-      $.nameInput.value.setValue(item.getName(), shadowRoot, time);
-    }
-
-    return isEditingProvider(!isEditing, this);
-  }
 
   @onDom.event($.renderButton.el, 'gs-action')
   async onRenderButtonAction_(event: MouseEvent): Promise<void> {
@@ -314,11 +269,6 @@ export class NavigatorItem extends BaseThemedElement2 {
     return itemService.getItem(parentId);
   }
 
-  @render.class($.content.class.editing)
-  renderContentClassEditing_(@nodeIn($isEditing) isEditing: boolean): boolean {
-    return isEditing;
-  }
-
   @render.attribute($.host.deleteable)
   renderDeleteable_(@nodeIn($parent) parent: Item | null): boolean {
     return parent instanceof ThothFolder;
@@ -366,11 +316,15 @@ export class NavigatorItem extends BaseThemedElement2 {
 
   @render.attribute($.host.refreshable)
   renderRefreshable_(@nodeIn($item) item: Item | null): boolean {
-    return item instanceof MarkdownFile || item instanceof DriveFolder;
+    if (!item) {
+      return false;
+    }
+
+    return this.renderDeleteable_(item) && item.getSource().isRemote();
   }
 
-  @render.attribute($.host.viewable)
-  renderViewable_(@nodeIn($item) item: Item | null): boolean {
-    return item instanceof File;
+  @render.attribute($.host.renderable)
+  renderRenderable_(@nodeIn($item) item: Item | null): boolean {
+    return item instanceof MarkdownFile || item instanceof DataFile;
   }
 }

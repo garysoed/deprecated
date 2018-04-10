@@ -4,4 +4,6 @@ export abstract class Source implements DataModel<string> {
   abstract getId(): string;
 
   abstract getSearchIndex(): string;
+
+  abstract isRemote(): boolean;
 }

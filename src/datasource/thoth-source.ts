@@ -7,6 +7,10 @@ import { Source } from '../datasource/source';
 
 @Serializable('datasource.ThothSource')
 export abstract class ThothSource extends Source {
+  isRemote(): boolean {
+    return false;
+  }
+
   toString(): string {
     return `ThothSource()`;
   }

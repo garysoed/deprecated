@@ -17,6 +17,10 @@ export abstract class DriveSource extends Source {
     return this.driveId_;
   }
 
+  isRemote(): boolean {
+    return true;
+  }
+
   toString(): string {
     return `DriveSource(${this.driveId_})`;
   }

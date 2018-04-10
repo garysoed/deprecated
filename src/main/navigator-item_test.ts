@@ -1,23 +1,20 @@
-import { assert, Fakes, Matchers, Mocks, TestBase, TestDispose, TestGraph } from '../test-base';
+import { assert, Fakes, Mocks, TestBase, TestDispose, TestGraph } from '../test-base';
 TestBase.setup();
 
-import { Graph } from 'external/gs_tools/src/graph';
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { $location } from 'external/gs_tools/src/ui';
 
-import { Persona } from 'external/gs_tools/src/persona';
 import {
   $itemService,
+  DataFile,
   DriveFolder,
   Folder,
-  Item,
   MarkdownFile,
   ThothFolder,
   UnknownFile } from '../data';
-import { DriveSource } from '../datasource';
+import { DriveSource, ThothSource } from '../datasource';
 import {
   $,
-  $isEditing,
   $item,
   NavigatorItem,
   PREVIEW_PATH_ROOT,
@@ -116,7 +113,6 @@ describe('main.NavigatorItem', () => {
 
       const path = 'path';
       TestGraph.set($location.path, path);
-      TestGraph.set($isEditing, false);
       TestGraph.set(
           $item,
           ThothFolder.newInstance('id', name, null, ImmutableSet.of([])));
@@ -129,15 +125,6 @@ describe('main.NavigatorItem', () => {
 
     it(`should do nothing if there are no items`, async () => {
       TestGraph.set($item, null);
-      TestGraph.set($isEditing, false);
-
-      await item.onHostClick_();
-      assert(window.location.hash).to.equal('');
-    });
-
-    it(`should do nothing if editing`, async () => {
-      TestGraph.set($item, null);
-      TestGraph.set($isEditing, true);
 
       await item.onHostClick_();
       assert(window.location.hash).to.equal('');
@@ -242,112 +229,6 @@ describe('main.NavigatorItem', () => {
   //     assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
   //   });
   // });
-
-  describe('onRenameButtonAction_', () => {
-    it(`should set the input to the name and set the edit flag if not editing`, async () => {
-      const itemName = 'itemName';
-      const shadowRoot = Mocks.object('shadowRoot');
-      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
-
-
-      const selectedItem = ThothFolder.newInstance('id', itemName, null, ImmutableSet.of([]));
-      TestGraph.set($isEditing, false);
-      TestGraph.set($item, selectedItem);
-
-      spyOn($.nameInput.value, 'setValue');
-
-      const time = Graph.getTimestamp();
-
-      await item.onRenameButtonAction_();
-      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beTrue();
-      assert($.nameInput.value.setValue).to.haveBeenCalledWith(itemName, shadowRoot, time);
-      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
-    });
-
-    it(`should save the input name change and unset the edit flag if editing`, async () => {
-      const shadowRoot = Mocks.object('shadowRoot');
-      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
-
-      const selectedItem = ThothFolder.newInstance('id', 'itemName', null, ImmutableSet.of([]));
-      TestGraph.set($isEditing, true);
-      TestGraph.set($item, selectedItem);
-
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
-
-      const newName = 'newName';
-      spyOn($.nameInput.value, 'getValue').and.returnValue(newName);
-
-      await item.onRenameButtonAction_();
-      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beFalse();
-
-      assert(mockItemService.save).to.haveBeenCalledWith(Matchers.anyThing());
-      const newItem: Item = mockItemService.save.calls.argsFor(0)[0];
-      assert(newItem.getName()).to.equal(newName);
-      assert($.nameInput.value.getValue).to.haveBeenCalledWith(shadowRoot);
-      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
-    });
-
-    it(`should not save the new name if the new name is empty`, async () => {
-      const shadowRoot = Mocks.object('shadowRoot');
-      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
-
-      const selectedItem = ThothFolder.newInstance('id', 'itemName', null, ImmutableSet.of([]));
-      TestGraph.set($isEditing, true);
-      TestGraph.set($item, selectedItem);
-
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
-
-      spyOn($.nameInput.value, 'getValue').and.returnValue('');
-
-      await item.onRenameButtonAction_();
-      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beFalse();
-
-      assert(mockItemService.save).toNot.haveBeenCalled();
-      assert($.nameInput.value.getValue).to.haveBeenCalledWith(shadowRoot);
-      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
-    });
-
-    it(`should do nothing if there are no items`, async () => {
-      const shadowRoot = Mocks.object('shadowRoot');
-      spyOn(Persona, 'getShadowRoot').and.returnValue(shadowRoot);
-
-      TestGraph.set($isEditing, true);
-      TestGraph.set($item, null);
-
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
-
-      spyOn($.nameInput.value, 'getValue').and.returnValue('');
-
-      await item.onRenameButtonAction_();
-      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beTrue();
-
-      assert(mockItemService.save).toNot.haveBeenCalled();
-      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
-    });
-
-    it(`should do nothing if shadow roots cannot be found`, async () => {
-      spyOn(Persona, 'getShadowRoot').and.returnValue(null);
-
-
-      TestGraph.set($isEditing, true);
-      TestGraph.set($item, null);
-
-
-      const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-      TestGraph.set($itemService, mockItemService);
-
-      spyOn($.nameInput.value, 'getValue').and.returnValue('');
-
-      await item.onRenameButtonAction_();
-      assert(await Graph.get($isEditing, Graph.getTimestamp(), item)).to.beTrue();
-
-      assert(mockItemService.save).toNot.haveBeenCalled();
-      assert(Persona.getShadowRoot).to.haveBeenCalledWith(item);
-    });
-  });
 
   describe('onRenderButtonAction_', () => {
     it(`should render the item correctly`, async () => {
@@ -545,40 +426,85 @@ describe('main.NavigatorItem', () => {
   });
 
   describe('renderRefreshable_', () => {
-    it(`should return true if item is a DriveFile`, () => {
-      const inItem = MarkdownFile.newInstance(
-          'id', 'name', 'parentId', 'content', DriveSource.newInstance('driveId'));
+    it(`should return true if deleteable and source is remote`, () => {
+      const file = MarkdownFile.newInstance(
+          'id',
+          'name',
+          'parentId',
+          'content',
+          DriveSource.newInstance('driveId'));
+      spyOn(item, 'renderDeleteable_').and.returnValue(true);
 
-      assert(item.renderRefreshable_(inItem)).to.beTrue();
+      assert(item.renderRefreshable_(file)).to.beTrue();
+      assert(item.renderDeleteable_).to.haveBeenCalledWith(file);
     });
 
-    it(`should return true if item is a DriveFolder`, () => {
-      const inItem = DriveFolder
-          .newInstance('id', 'name', null, ImmutableSet.of([]), DriveSource.newInstance('driveId'));
+    it(`should return false if source is not remote`, () => {
+      const file = MarkdownFile.newInstance(
+          'id',
+          'name',
+          'parentId',
+          'content',
+          ThothSource.newInstance());
+      spyOn(item, 'renderDeleteable_').and.returnValue(true);
 
-      assert(item.renderRefreshable_(inItem)).to.beTrue();
+      assert(item.renderRefreshable_(file)).to.beFalse();
+      assert(item.renderDeleteable_).to.haveBeenCalledWith(file);
     });
 
-    it(`should return false if item is not a DriveFile or DriveFolder`, () => {
-      const inItem = ThothFolder.newInstance('id', 'name', null, ImmutableSet.of([]));
+    it(`should return false if not deleteable`, () => {
+      const file = MarkdownFile.newInstance(
+          'id',
+          'name',
+          'parentId',
+          'content',
+          DriveSource.newInstance('driveId'));
+      spyOn(item, 'renderDeleteable_').and.returnValue(false);
 
-      assert(item.renderRefreshable_(inItem)).to.beFalse();
+      assert(item.renderRefreshable_(file)).to.beFalse();
+      assert(item.renderDeleteable_).to.haveBeenCalledWith(file);
+    });
+
+    it(`should return false if there are no items`, () => {
+      assert(item.renderRefreshable_(null)).to.beFalse();
     });
   });
 
-  describe('renderViewable_', () => {
-    it(`should return true if item is a File`, () => {
-      const inItem = MarkdownFile.newInstance(
-          'id', 'name', 'parentId', 'content', DriveSource.newInstance('driveId'));
+  describe('renderRenderable_', () => {
+    it(`should return true if item is DataFile`, () => {
+      const file = DataFile.newInstance(
+          'id',
+          'name',
+          'parentId',
+          {},
+          ThothSource.newInstance());
 
-      assert(item.renderViewable_(inItem)).to.beTrue();
+      assert(item.renderRenderable_(file)).to.beTrue();
     });
 
-    it(`should return false if item is a Folder`, () => {
-      const inItem = DriveFolder
-          .newInstance('id', 'name', null, ImmutableSet.of([]), DriveSource.newInstance('driveId'));
+    it(`should return true if item is MarkdownFile`, () => {
+      const file = MarkdownFile.newInstance(
+          'id',
+          'name',
+          'parentId',
+          'content',
+          ThothSource.newInstance());
 
-      assert(item.renderViewable_(inItem)).to.beFalse();
+      assert(item.renderRenderable_(file)).to.beTrue();
+    });
+
+    it(`should return false if item is Folder`, () => {
+      const file = ThothFolder.newInstance(
+          'id',
+          'name',
+          'parentId',
+          ImmutableSet.of([]));
+
+      assert(item.renderRenderable_(file)).to.beFalse();
+    });
+
+    it(`should return false if there are no items`, () => {
+      assert(item.renderRenderable_(null)).to.beFalse();
     });
   });
 });
