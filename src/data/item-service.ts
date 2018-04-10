@@ -85,6 +85,10 @@ export class ItemService {
     }
   }
 
+  /**
+   * @param id ID of the item to delete
+   * @return Promise that will be resolved when all the items have been deleted.
+   */
   async deleteItem(id: string): Promise<void> {
     // Now delete the item from the parent.
     const item = await this.getItem(id);
@@ -105,7 +109,13 @@ export class ItemService {
       return;
     }
 
-    return this.save(parent.setItems(parent.getItems().delete(id)));
+    const promises: Promise<void>[] = [];
+    if (item instanceof Folder) {
+      promises.push(...item.getItems().mapItem((itemId) => this.deleteItem(itemId)));
+    }
+
+    promises.push(this.save(parent.setItems(parent.getItems().delete(id))));
+    await Promise.all(promises);
   }
 
   async getItem(id: string): Promise<Item | null> {

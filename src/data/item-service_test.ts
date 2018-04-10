@@ -318,6 +318,47 @@ describe('data.ItemService', () => {
       assert(await itemsGraph.get(itemId)).to.beNull();
     });
 
+    it(`should delete the children if the deleted item is a folder`, async () => {
+      const childId = 'child1Id';
+      const parentId = 'parentId';
+      const itemId = 'itemId';
+
+      const item = DriveFolder.newInstance(
+          itemId,
+          'itemName',
+          parentId,
+          ImmutableSet.of([childId]),
+          DriveSource.newInstance('itemDriveId'));
+
+      const child = MetadataFile.newInstance(
+          childId,
+          'child',
+          itemId,
+          'content',
+          DriveSource.newInstance('childDriveId'));
+
+      const parent = ThothFolder.newInstance(
+          parentId,
+          'parent',
+          null,
+          ImmutableSet.of([itemId]));
+      await Promise.all([
+        itemsGraph.set(itemId, item),
+        itemsGraph.set(parentId, parent),
+        itemsGraph.set(childId, child),
+      ]);
+
+      spyOn(service, 'save');
+
+      await service.deleteItem(itemId);
+      assert(service.save).to.haveBeenCalledWith(
+          Matchers
+              .map(folderToJson)
+              .objectContaining({id: parentId, itemIds: []}));
+      assert(await itemsGraph.get(itemId)).to.beNull();
+      assert(await itemsGraph.get(childId)).to.beNull();
+    });
+
     it(`should not save if parent is not a ThothFolder`, async () => {
       const child1Id = 'child1Id';
       const parentId = 'parentId';
