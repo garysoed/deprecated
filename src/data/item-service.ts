@@ -7,24 +7,21 @@ import { Errors } from 'external/gs_tools/src/error';
 import { Graph, staticId } from 'external/gs_tools/src/graph';
 import { ImmutableMap, ImmutableSet, TreeMap } from 'external/gs_tools/src/immutable';
 import { AbsolutePath, Path } from 'external/gs_tools/src/path';
+import { assertUnreachable } from 'external/gs_tools/src/typescript';
 
-import { Folder } from '../data/folder';
-
-import { DriveFolder } from '.';
 import { DataFile } from '../data/data-file';
+import { EditableFolder } from '../data/editable-folder';
+import { Folder } from '../data/folder';
 import { Item } from '../data/item';
 import { $items } from '../data/item-graph';
 import { MarkdownFile } from '../data/markdown-file';
 import { MetadataFile } from '../data/metadata-file';
+import { ProcessorFile } from '../data/processor-file';
 import { $projectService, ProjectService } from '../data/project-service';
 import { ROOT_PATH } from '../data/selected-item-graph';
-import { ThothFolder } from '../data/thoth-folder';
+import { TemplateFile } from '../data/template-file';
 import { UnknownFile } from '../data/unknown-file';
-import { ApiFile, ApiFileType, DriveSource, Source } from '../datasource';
-
-import { assertUnreachable } from 'external/gs_tools/src/typescript';
-import { ProcessorFile } from './processor-file';
-import { TemplateFile } from './template-file';
+import { ApiFile, ApiFileType, DriveSource, Source, ThothSource } from '../datasource';
 
 export class ItemService {
   constructor(
@@ -61,7 +58,7 @@ export class ItemService {
         if (!(source instanceof DriveSource)) {
           throw Errors.assert('type of source').should('be supported').butWas(source);
         }
-        return DriveFolder.newInstance(
+        return Folder.newInstance(
             itemId,
             filename,
             containerId,
@@ -105,7 +102,7 @@ export class ItemService {
     }
 
     const parent = await this.getItem(parentId);
-    if (!(parent instanceof ThothFolder)) {
+    if (!(parent instanceof EditableFolder)) {
       return;
     }
 
@@ -175,19 +172,20 @@ export class ItemService {
         new AbsolutePath(newSuffixes);
   }
 
-  async getRootFolder(): Promise<ThothFolder> {
+  async getRootFolder(): Promise<EditableFolder> {
     const project = await this.projectService_.get();
     const rootFolderId = project.getRootFolderId();
     const rootFolder = await this.getItem(rootFolderId);
-    if (rootFolder instanceof ThothFolder) {
+    if (rootFolder instanceof EditableFolder) {
       return rootFolder;
     }
 
-    const newRootFolder = ThothFolder.newInstance(
+    const newRootFolder = EditableFolder.newInstance(
         rootFolderId,
         '(root)',
         null,
-        ImmutableSet.of([]));
+        ImmutableSet.of([]),
+        ThothSource.newInstance());
     await this.save(newRootFolder);
     return newRootFolder;
   }

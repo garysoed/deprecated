@@ -1,7 +1,7 @@
 export { $selectedItem } from './selected-item-graph';
 export { DataFile } from './data-file';
-export { DriveFolder } from './drive-folder';
 export { $driveService, DriveService } from './drive-service';
+export { EditableFolder } from './editable-folder';
 export { File } from './file';
 export { FileType } from './file-type';
 export { Folder } from './folder';
@@ -15,5 +15,4 @@ export { $previewService, PreviewService } from './preview-service';
 export { Project } from './project';
 export { $projectService, ProjectService } from './project-service';
 export { RenderConfig } from './render-config';
-export { ThothFolder } from './thoth-folder';
 export { UnknownFile } from './unknown-file';

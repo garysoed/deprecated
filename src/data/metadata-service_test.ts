@@ -4,7 +4,7 @@ TestBase.setup();
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Paths } from 'external/gs_tools/src/path';
 
-import { DriveFolder, MarkdownFile, MetadataFile, MetadataService } from '../data';
+import { Folder, MarkdownFile, MetadataFile, MetadataService } from '../data';
 import { DEFAULT_CONFIG, DEFAULT_METADATA_FILENAME } from '../data/metadata-service';
 import { DriveSource, ThothSource } from '../datasource';
 
@@ -137,7 +137,7 @@ describe('data.MetadataService', () => {
           'compiledItem',
           ThothSource.newInstance());
       mockItemService.getItem.and.returnValue(Promise.resolve(item));
-      const folder = DriveFolder.newInstance(
+      const folder = Folder.newInstance(
           'folderId',
           'folderName',
           'folderParentId',
@@ -248,7 +248,7 @@ describe('data.MetadataService', () => {
           .when(otherId).return(otherFile)
           .when(metadataId).return(metadataFile);
 
-      const folder = DriveFolder.newInstance(
+      const folder = Folder.newInstance(
           folderId,
           'folder',
           null,
@@ -274,7 +274,7 @@ describe('data.MetadataService', () => {
           DriveSource.newInstance('otherDriveId'));
       mockItemService.getItem.and.returnValue(otherFile);
 
-      const folder = DriveFolder.newInstance(
+      const folder = Folder.newInstance(
           folderId,
           'folder',
           null,
@@ -300,7 +300,7 @@ describe('data.MetadataService', () => {
           DriveSource.newInstance('otherDriveId'));
       mockItemService.getItem.and.returnValue(otherFile);
 
-      const folder = DriveFolder.newInstance(
+      const folder = Folder.newInstance(
           folderId,
           'folder',
           null,

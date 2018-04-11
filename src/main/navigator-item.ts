@@ -24,14 +24,13 @@ import { ThemeService } from 'external/gs_ui/src/theming';
 import {
   $itemService,
   DataFile,
-  DriveFolder,
+  EditableFolder,
   File,
   FileType,
   Folder,
   Item,
   ItemService,
-  MarkdownFile,
-  ThothFolder } from '../data';
+  MarkdownFile } from '../data';
 import { $renderService } from '../render';
 
 export const $ = resolveSelectors({
@@ -271,7 +270,7 @@ export class NavigatorItem extends BaseThemedElement2 {
 
   @render.attribute($.host.deleteable)
   renderDeleteable_(@nodeIn($parent) parent: Item | null): boolean {
-    return parent instanceof ThothFolder;
+    return parent instanceof EditableFolder;
   }
 
   @render.innerText($.icon.innerText)
@@ -295,13 +294,10 @@ export class NavigatorItem extends BaseThemedElement2 {
         default:
           return 'help';
       }
+    } else if (item instanceof Folder) {
+      return 'folder';
     } else {
-      if (item instanceof DriveFolder) {
-        // TODO: Use special icon.
-        return 'folder';
-      } else {
-        return 'folder';
-      }
+      return 'help';
     }
   }
 

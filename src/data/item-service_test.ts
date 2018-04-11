@@ -4,7 +4,7 @@ TestBase.setup();
 import { FakeDataGraph } from 'external/gs_tools/src/datamodel';
 import { ImmutableMap, ImmutableSet, TreeMap } from 'external/gs_tools/src/immutable';
 
-import { DataFile, DriveFolder, Folder, Item, MetadataFile, ThothFolder, UnknownFile } from '../data';
+import { DataFile, EditableFolder, Folder, Item, MetadataFile, UnknownFile } from '../data';
 import { ItemService } from '../data/item-service';
 import { ApiFile, ApiFileType, DriveSource, ThothSource } from '../datasource';
 import { MarkdownFile } from './markdown-file';
@@ -171,7 +171,7 @@ describe('data.ItemService', () => {
       assert(item.getSource()).to.equal(source);
     });
 
-    it(`should create the correct item for drive folders`, () => {
+    it(`should create the correct item for folders`, () => {
       const filename = 'filename';
       const content = 'content';
       const itemId = 'itemId';
@@ -201,11 +201,11 @@ describe('data.ItemService', () => {
         [childDriveId2, childId2],
       ]);
       const item = service['createItem_'](containerId, driveItem, driveIdMap);
-      assert(item).to.beAnInstanceOf(DriveFolder);
+      assert(item).to.beAnInstanceOf(Folder);
       assert(item.getId()).to.equal(itemId);
       assert(item.getName()).to.equal(filename);
       assert(item.getParentId()).to.equal(containerId);
-      assert((item as DriveFolder).getItems()).to.haveElements([childId1, childId2]);
+      assert((item as Folder).getItems()).to.haveElements([childId1, childId2]);
       assert(item.getSource()).to.equal(source);
     });
 
@@ -298,11 +298,12 @@ describe('data.ItemService', () => {
           'content',
           ThothSource.newInstance());
 
-      const parent = ThothFolder.newInstance(
+      const parent = EditableFolder.newInstance(
           parentId,
           'parent',
           null,
-          ImmutableSet.of([itemId, child1Id]));
+          ImmutableSet.of([itemId, child1Id]),
+          ThothSource.newInstance());
       await Promise.all([
         itemsGraph.set(itemId, item),
         itemsGraph.set(parentId, parent),
@@ -323,7 +324,7 @@ describe('data.ItemService', () => {
       const parentId = 'parentId';
       const itemId = 'itemId';
 
-      const item = DriveFolder.newInstance(
+      const item = EditableFolder.newInstance(
           itemId,
           'itemName',
           parentId,
@@ -337,11 +338,12 @@ describe('data.ItemService', () => {
           'content',
           DriveSource.newInstance('childDriveId'));
 
-      const parent = ThothFolder.newInstance(
+      const parent = EditableFolder.newInstance(
           parentId,
           'parent',
           null,
-          ImmutableSet.of([itemId]));
+          ImmutableSet.of([itemId]),
+          ThothSource.newInstance());
       await Promise.all([
         itemsGraph.set(itemId, item),
         itemsGraph.set(parentId, parent),
@@ -359,7 +361,7 @@ describe('data.ItemService', () => {
       assert(await itemsGraph.get(childId)).to.beNull();
     });
 
-    it(`should not save if parent is not a ThothFolder`, async () => {
+    it(`should not save if parent is not a EditableFolder`, async () => {
       const child1Id = 'child1Id';
       const parentId = 'parentId';
       const itemId = 'itemId';
@@ -371,7 +373,7 @@ describe('data.ItemService', () => {
           'content',
           ThothSource.newInstance());
 
-      const parent = DriveFolder.newInstance(
+      const parent = Folder.newInstance(
           parentId,
           'parent',
           null,
@@ -392,11 +394,12 @@ describe('data.ItemService', () => {
     it(`should not save if there are no parents`, async () => {
       const itemId = 'itemId';
 
-      const item = ThothFolder.newInstance(
+      const item = Folder.newInstance(
           itemId,
           'itemName',
           null,
-          ImmutableSet.of([]));
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
 
       await Promise.all([
         itemsGraph.set(itemId, item),
@@ -420,7 +423,12 @@ describe('data.ItemService', () => {
   describe('getItem', () => {
     it(`should return the correct item`, async () => {
       const id = 'id';
-      const item = ThothFolder.newInstance(id, 'test', null, ImmutableSet.of([]));
+      const item = Folder.newInstance(
+          id,
+          'test',
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
       itemsGraph.set(id, item);
 
       assert(await service.getItem(id)).to.equal(item);
@@ -433,14 +441,29 @@ describe('data.ItemService', () => {
       const id2 = 'id2';
       const idRoot = 'idRoot';
 
-      const rootFolder = ThothFolder.newInstance(idRoot, 'root', null, ImmutableSet.of([id1]));
+      const rootFolder = Folder.newInstance(
+          idRoot,
+          'root',
+          null,
+          ImmutableSet.of([id1]),
+          ThothSource.newInstance());
       spyOn(service, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
 
       const name1 = 'name1';
-      const item1 = ThothFolder.newInstance(id1, name1, idRoot, ImmutableSet.of([id2]));
+      const item1 = Folder.newInstance(
+          id1,
+          name1,
+          idRoot,
+          ImmutableSet.of([id2]),
+          ThothSource.newInstance());
 
       const name2 = 'name2';
-      const item2 = ThothFolder.newInstance(id2, name2, id1, ImmutableSet.of([]));
+      const item2 = Folder.newInstance(
+          id2,
+          name2,
+          id1,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
 
       itemsGraph.set(idRoot, rootFolder);
       itemsGraph.set(id1, item1);
@@ -455,14 +478,29 @@ describe('data.ItemService', () => {
       const id2 = 'id2';
       const idRoot = 'idRoot';
 
-      const rootFolder = ThothFolder.newInstance(idRoot, 'root', null, ImmutableSet.of([id1]));
+      const rootFolder = Folder.newInstance(
+          idRoot,
+          'root',
+          null,
+          ImmutableSet.of([id1]),
+          ThothSource.newInstance());
       spyOn(service, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
 
       const name1 = 'name1';
-      const item1 = ThothFolder.newInstance(id1, name1, idRoot, ImmutableSet.of([id2]));
+      const item1 = Folder.newInstance(
+          id1,
+          name1,
+          idRoot,
+          ImmutableSet.of([id2]),
+          ThothSource.newInstance());
 
       const name2 = 'name2';
-      const item2 = ThothFolder.newInstance(id2, name2, id1, ImmutableSet.of([]));
+      const item2 = Folder.newInstance(
+          id2,
+          name2,
+          id1,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
 
       itemsGraph.set(idRoot, rootFolder);
       itemsGraph.set(id1, item1);
@@ -476,7 +514,12 @@ describe('data.ItemService', () => {
       const id1 = 'id1';
       const idRoot = 'idRoot';
 
-      const rootFolder = ThothFolder.newInstance(idRoot, 'root', null, ImmutableSet.of([id1]));
+      const rootFolder = Folder.newInstance(
+          idRoot,
+          'root',
+          null,
+          ImmutableSet.of([id1]),
+          ThothSource.newInstance());
       spyOn(service, 'getRootFolder').and.returnValue(Promise.resolve(rootFolder));
 
       const name1 = 'name1';
@@ -507,10 +550,20 @@ describe('data.ItemService', () => {
       const id3 = 'id3';
 
       const name1 = 'name1';
-      const item1 = ThothFolder.newInstance(id1, name1, null, ImmutableSet.of([id2]));
+      const item1 = Folder.newInstance(
+          id1,
+          name1,
+          null,
+          ImmutableSet.of([id2]),
+          ThothSource.newInstance());
 
       const name2 = 'name2';
-      const item2 = ThothFolder.newInstance(id2, name2, id1, ImmutableSet.of([id3]));
+      const item2 = Folder.newInstance(
+          id2,
+          name2,
+          id1,
+          ImmutableSet.of([id3]),
+          ThothSource.newInstance());
 
       const name3 = 'name3';
       const item3 = MarkdownFile.newInstance(
@@ -527,7 +580,12 @@ describe('data.ItemService', () => {
       const id1 = 'id1';
       const id2 = 'id2';
 
-      const item1 = ThothFolder.newInstance(id1, 'name1', 'not exist', ImmutableSet.of([id2]));
+      const item1 = Folder.newInstance(
+          id1,
+          'name1',
+          'not exist',
+          ImmutableSet.of([id2]),
+          ThothSource.newInstance());
       const item2 = MarkdownFile.newInstance(
           id2, 'name2', id1, 'content', DriveSource.newInstance('driveId'));
       itemsGraph.set(id1, item1);
@@ -557,7 +615,12 @@ describe('data.ItemService', () => {
       const mockProject = jasmine.createSpyObj('Project', ['getRootFolderId']);
       mockProject.getRootFolderId.and.returnValue(rootFolderId);
 
-      const rootFolder = ThothFolder.newInstance(rootFolderId, 'name', null, ImmutableSet.of([]));
+      const rootFolder = EditableFolder.newInstance(
+          rootFolderId,
+          'name',
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
       itemsGraph.set(rootFolderId, rootFolder);
 
       spyOn(service, 'save');

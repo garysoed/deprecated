@@ -32,7 +32,7 @@ import {
   $driveService,
   $itemService,
   $selectedItem,
-  ThothFolder } from '../data';
+  EditableFolder } from '../data';
 import {
   ApiFile,
   ApiFileSummary,
@@ -165,7 +165,7 @@ export class DriveSearch extends BaseThemedElement2 {
         $driveService,
         $itemService);
 
-    if (!(selectedItem instanceof ThothFolder)) {
+    if (!(selectedItem instanceof EditableFolder)) {
       throw Errors.assert('selectedFolder').should('be editable').butWas(selectedItem);
     }
 

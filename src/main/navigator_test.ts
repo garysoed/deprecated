@@ -4,8 +4,8 @@ TestBase.setup();
 import { ImmutableSet } from 'external/gs_tools/src/immutable';
 import { Persona } from 'external/gs_tools/src/persona';
 
-import { MarkdownFile, ThothFolder } from '../data';
-import { DriveSource } from '../datasource';
+import { Folder, MarkdownFile } from '../data';
+import { DriveSource, ThothSource } from '../datasource';
 import { $, Navigator } from '../main/navigator';
 
 describe('main.Navigator', () => {
@@ -39,8 +39,12 @@ describe('main.Navigator', () => {
     it(`should return the correct items`, () => {
       const childId1 = 'childId1';
       const childId2 = 'childId2';
-      const selectedItem = ThothFolder
-          .newInstance('id', 'name', null, ImmutableSet.of([childId1, childId2]));
+      const selectedItem = Folder.newInstance(
+          'id',
+          'name',
+          null,
+          ImmutableSet.of([childId1, childId2]),
+          ThothSource.newInstance());
 
       assert(navigator.renderItems_(selectedItem)).to.haveElements([childId1, childId2]);
     });

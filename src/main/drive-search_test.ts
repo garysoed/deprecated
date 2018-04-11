@@ -9,10 +9,10 @@ import {
   $driveService,
   $itemService,
   $selectedItem,
-  DriveFolder,
-  Item,
-  ThothFolder } from '../data';
-import { ApiFileType, DriveSource, DriveStorage } from '../datasource';
+  EditableFolder,
+  Folder,
+  Item } from '../data';
+import { ApiFileType, DriveSource, DriveStorage, ThothSource } from '../datasource';
 import {
   $,
   $driveItems,
@@ -149,7 +149,12 @@ describe('main.DriveSearch', () => {
       const idSelected = 'idSelected';
       TestGraph.set(
           $selectedItem,
-          ThothFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
+          EditableFolder.newInstance(
+              idSelected,
+              'test',
+              null,
+              ImmutableSet.of([]),
+              ThothSource.newInstance()));
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['recursiveCreate', 'save']);
       TestGraph.set($itemService, mockItemService);
@@ -203,7 +208,7 @@ describe('main.DriveSearch', () => {
       assert(mockDispatcher).to.haveBeenCalledWith('th-item-added', {});
 
       const selectedFolder = mockItemService.save.calls.argsFor(4)[0];
-      assert((selectedFolder as ThothFolder).getItems()).to.haveElements([id1, id2]);
+      assert((selectedFolder as EditableFolder).getItems()).to.haveElements([id1, id2]);
 
       assert(mockItemService.save).to.haveBeenCalledWith(mockItem1);
       assert(mockItemService.save).to.haveBeenCalledWith(item11);
@@ -218,7 +223,12 @@ describe('main.DriveSearch', () => {
       const idSelected = 'idSelected';
       TestGraph.set(
           $selectedItem,
-          ThothFolder.newInstance(idSelected, 'test', null, ImmutableSet.of([])));
+          EditableFolder.newInstance(
+              idSelected,
+              'test',
+              null,
+              ImmutableSet.of([]),
+              ThothSource.newInstance()));
 
       Fakes.build(spyOn(Persona, 'getValue'))
           .when($.results.children, search).return(ImmutableList.of([]))
@@ -235,7 +245,7 @@ describe('main.DriveSearch', () => {
       const idSelected = 'idSelected';
       TestGraph.set(
           $selectedItem,
-          DriveFolder.newInstance(
+          Folder.newInstance(
               idSelected,
               'test',
               null,
@@ -267,7 +277,12 @@ describe('main.DriveSearch', () => {
     it(`should do nothing if there are no items selected`, async () => {
       TestGraph.set(
           $selectedItem,
-          ThothFolder.newInstance('idSelected', 'test', null, ImmutableSet.of([])));
+          EditableFolder.newInstance(
+              'idSelected',
+              'test',
+              null,
+              ImmutableSet.of([]),
+              ThothSource.newInstance()));
 
       const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
       mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableList.of([])));

@@ -7,11 +7,10 @@ import { $location } from 'external/gs_tools/src/ui';
 import {
   $itemService,
   DataFile,
-  DriveFolder,
+  EditableFolder,
   Folder,
   MarkdownFile,
-  ThothFolder,
-  UnknownFile } from '../data';
+  UnknownFile} from '../data';
 import { DriveSource, ThothSource } from '../datasource';
 import {
   $,
@@ -115,7 +114,12 @@ describe('main.NavigatorItem', () => {
       TestGraph.set($location.path, path);
       TestGraph.set(
           $item,
-          ThothFolder.newInstance('id', name, null, ImmutableSet.of([])));
+          Folder.newInstance(
+              'id',
+              name,
+              null,
+              ImmutableSet.of([]),
+              ThothSource.newInstance()));
 
       await item.onHostClick_();
       assert(window.location.hash).to.equal(`#/${path}/${name}`);
@@ -339,7 +343,12 @@ describe('main.NavigatorItem', () => {
       const driveItem = MarkdownFile.newInstance(
           'id', 'name', parentId, 'content', DriveSource.newInstance('driveId'));
 
-      const parent = ThothFolder.newInstance('parentId', 'parentName', null, ImmutableSet.of([]));
+      const parent = Folder.newInstance(
+          'parentId',
+          'parentName',
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
       const mockItemService = jasmine.createSpyObj('ItemService', ['getItem']);
       mockItemService.getItem.and.returnValue(Promise.resolve(parent));
 
@@ -348,7 +357,7 @@ describe('main.NavigatorItem', () => {
     });
 
     it(`should return null if there are no parent IDs`, async () => {
-      const driveItem = DriveFolder
+      const driveItem = Folder
           .newInstance('id', 'name', null, ImmutableSet.of([]), DriveSource.newInstance('driveId'));
 
       const mockItemService = jasmine.createSpyObj('ItemService', ['getItem']);
@@ -364,14 +373,19 @@ describe('main.NavigatorItem', () => {
   });
 
   describe('renderDeleteable_', () => {
-    it(`should return true if the parent is ThothFolder`, () => {
-      const parent = ThothFolder.newInstance('id', 'name', null, ImmutableSet.of([]));
+    it(`should return true if the parent is EditableFolder`, () => {
+      const parent = EditableFolder.newInstance(
+        'id',
+        'name',
+        null,
+        ImmutableSet.of([]),
+        ThothSource.newInstance());
 
       assert(item.renderDeleteable_(parent)).to.beTrue();
     });
 
-    it(`should return false if the parent is not ThothFolder`, () => {
-      const parent = DriveFolder.newInstance(
+    it(`should return false if the parent is not EditableFolder`, () => {
+      const parent = Folder.newInstance(
           'parentId', 'parentName', null, ImmutableSet.of([]), DriveSource.newInstance('driveId'));
 
       assert(item.renderDeleteable_(parent)).to.beFalse();
@@ -393,8 +407,8 @@ describe('main.NavigatorItem', () => {
       assert(item.renderIcon_(selectedItem)).to.equal('help');
     });
 
-    it(`should return "folder" if the type is ASSET folder`, () => {
-      const selectedItem = DriveFolder.newInstance(
+    it(`should return "folder" if the type is folder`, () => {
+      const selectedItem = Folder.newInstance(
           'id', 'name', 'parentId', ImmutableSet.of([]), DriveSource.newInstance('driveId'));
 
       assert(item.renderIcon_(selectedItem)).to.equal('folder');
@@ -415,7 +429,12 @@ describe('main.NavigatorItem', () => {
   describe('renderName_', () => {
     it(`should resolve with the correct name`, () => {
       const itemName = 'itemName';
-      const selectedItem = ThothFolder.newInstance('id', itemName, null, ImmutableSet.of([]));
+      const selectedItem = Folder.newInstance(
+          'id',
+          itemName,
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
 
       assert(item.renderName_(selectedItem)).to.equal(itemName);
     });
@@ -494,11 +513,12 @@ describe('main.NavigatorItem', () => {
     });
 
     it(`should return false if item is Folder`, () => {
-      const file = ThothFolder.newInstance(
+      const file = Folder.newInstance(
           'id',
           'name',
           'parentId',
-          ImmutableSet.of([]));
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
 
       assert(item.renderRenderable_(file)).to.beFalse();
     });
