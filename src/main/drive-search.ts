@@ -1,44 +1,16 @@
-import {
-  BooleanType,
-  ElementWithTagType,
-  EnumType,
-  HasPropertiesType,
-  InstanceofType,
-  IterableOfType,
-  NullableType,
-  StringType } from 'external/gs_tools/src/check';
+import { BooleanType, ElementWithTagType, EnumType, HasPropertiesType, InstanceofType, IterableOfType, NullableType, StringType } from 'external/gs_tools/src/check';
 import { Errors } from 'external/gs_tools/src/error';
 import { Graph, instanceId, nodeIn } from 'external/gs_tools/src/graph';
-import { ImmutableList, ImmutableSet, TreeMap } from 'external/gs_tools/src/immutable';
+import { ImmutableList } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
 import { BooleanParser, EnumParser, StringParser } from 'external/gs_tools/src/parse';
-import {
-  attributeSelector,
-  childrenSelector,
-  component,
-  dispatcherSelector,
-  elementSelector,
-  onDom,
-  Persona,
-  render,
-  resolveSelectors,
-  shadowHostSelector,
-  slotSelector } from 'external/gs_tools/src/persona';
+import { attributeSelector, childrenSelector, component, dispatcherSelector, elementSelector, onDom, Persona, render, resolveSelectors, shadowHostSelector, slotSelector } from 'external/gs_tools/src/persona';
 
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import {
-  $driveService,
-  $itemService,
-  $selectedItem,
-  EditableFolder } from '../data';
-import {
-  ApiFile,
-  ApiFileSummary,
-  ApiFileType,
-  DriveSource,
-  DriveStorage } from '../datasource';
+import { $itemService, $selectedItem } from '../data';
+import { ApiFileSummary, ApiFileType, DriveSource, DriveStorage } from '../datasource';
 import { SearchItem } from '../main/search-item';
 
 type ItemSummaryType = {id: string, name: string, type: ApiFileType};
@@ -158,44 +130,19 @@ export class DriveSearch extends BaseThemedElement2 {
     }
 
     const time = Graph.getTimestamp();
-    const [selectedItem, driveService, itemService] = await Graph.getAll(
+    const [selectedItem, itemService] = await Graph.getAll(
         time,
         this,
         $selectedItem,
-        $driveService,
         $itemService);
 
-    if (!(selectedItem instanceof EditableFolder)) {
-      throw Errors.assert('selectedFolder').should('be editable').butWas(selectedItem);
-    }
-
     const selectedId = selectedItem.getId();
-    const addedItems = items.filter((item) => !!item.selected);
-    const addedDriveItemPromises = addedItems
-        .map((item) => {
-          return driveService.recursiveGet(DriveSource.newInstance(item.summary.id));
-        });
-
-    const addedDriveItems = await Promise.all(addedDriveItemPromises);
-    const createdPromises = ImmutableList.of(addedDriveItems)
-        .filterByType(InstanceofType<TreeMap<string, ApiFile<DriveSource>>>(TreeMap))
-        .map((tree) => itemService.recursiveCreate(tree, selectedId));
-    const createdItems = await Promise.all(createdPromises);
-    const savedPromises = createdItems
-        .map(async (itemTree) => {
-          const savePromises = itemTree
-              .preOrder()
-              .map((node) => itemService.save(node.getValue()));
-          return Promise.all(savePromises);
-        });
-    await Promise.all(savedPromises);
-
-    // Now add the files to the selected folder.
-    itemService.save(
-        selectedItem.setItems(
-            selectedItem
-                .getItems()
-                .addAll(ImmutableSet.of(createdItems.map((tree) => tree.getValue().getId())))));
+    const addedItemSources = items
+        .filter((item) => !!item.selected)
+        .map((item) => DriveSource.newInstance(item.summary.id));
+    for (const addedItemSource of addedItemSources) {
+      await itemService.addItems(addedItemSource, selectedId);
+    }
 
     const dispatcher = Persona.getValue($.host.dispatcher, this);
     if (!dispatcher) {

@@ -10,7 +10,7 @@ import {
   EditableFolder,
   Folder,
   MarkdownFile,
-  UnknownFile} from '../data';
+  UnknownFile } from '../data';
 import { DriveSource, ThothSource } from '../datasource';
 import {
   $,

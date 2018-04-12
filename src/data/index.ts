@@ -15,4 +15,5 @@ export { $previewService, PreviewService } from './preview-service';
 export { Project } from './project';
 export { $projectService, ProjectService } from './project-service';
 export { RenderConfig } from './render-config';
+export { $sourceService, SourceService } from './source-service';
 export { UnknownFile } from './unknown-file';

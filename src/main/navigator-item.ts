@@ -187,12 +187,21 @@ export class NavigatorItem extends BaseThemedElement2 {
   //   event.stopPropagation();
 
   //   const time = Graph.getTimestamp();
-  //   const [item, driveService, itemService] = await Graph.getAll(
+  //   const [item, itemService, driveService] = await Graph.getAll(
   //       time,
   //       this,
   //       $item,
-  //       $driveService,
-  //       $itemService);
+  //       $itemService,
+  //       $driveService);
+  //   if (!item) {
+  //     return;
+  //   }
+
+  //   await itemService.deleteItem(item.getId());
+  //   const source = item.getSource();
+  //   if (source instanceof DriveSource) {
+  //     const driveTree = driveService.recursiveGet(source)
+  //   }
   //   if (!(item instanceof MarkdownFile) && !(item instanceof DriveFolder)) {
   //     return;
   //   }

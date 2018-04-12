@@ -19,6 +19,7 @@ import { MetadataFile } from '../data/metadata-file';
 import { ProcessorFile } from '../data/processor-file';
 import { $projectService, ProjectService } from '../data/project-service';
 import { ROOT_PATH } from '../data/selected-item-graph';
+import { $sourceService, SourceService } from '../data/source-service';
 import { TemplateFile } from '../data/template-file';
 import { UnknownFile } from '../data/unknown-file';
 import { ApiFile, ApiFileType, DriveSource, Source, ThothSource } from '../datasource';
@@ -26,7 +27,33 @@ import { ApiFile, ApiFileType, DriveSource, Source, ThothSource } from '../datas
 export class ItemService {
   constructor(
       private readonly itemsGraph_: DataGraph<Item>,
-      private readonly projectService_: ProjectService) { }
+      private readonly projectService_: ProjectService,
+      private readonly sourceService_: SourceService) { }
+
+  async addItems(source: DriveSource, containerId: string): Promise<TreeMap<string, Item> | null> {
+    const apiFileTree = await this.sourceService_.recursiveGet(source);
+    if (!apiFileTree) {
+      return null;
+    }
+
+    const [itemTree, containerItem] = await Promise.all([
+      this.recursiveCreate(apiFileTree, containerId),
+      this.getItem(containerId),
+    ]);
+
+    if (!(containerItem instanceof EditableFolder)) {
+      throw Errors.assert(`Item for ${containerId}`).shouldBeA(InstanceofType(EditableFolder))
+          .butNot();
+    }
+
+    const newContainerItem = containerItem
+        .setItems(containerItem.getItems().add(itemTree.getValue().getId()));
+    await Promise.all([
+      itemTree.preOrder().map((node) => this.save(node.getValue())),
+      this.save(newContainerItem),
+    ]);
+    return itemTree;
+  }
 
   private createItem_(
       containerId: string,
@@ -225,8 +252,9 @@ export class ItemService {
 export const $itemService = staticId('itemService', InstanceofType(ItemService));
 Graph.registerProvider(
     $itemService,
-    (itemsGraph, projectService) => {
-      return new ItemService(itemsGraph, projectService);
+    (itemsGraph, projectService, sourceService) => {
+      return new ItemService(itemsGraph, projectService, sourceService);
     },
     $items,
-    $projectService);
+    $projectService,
+    $sourceService);

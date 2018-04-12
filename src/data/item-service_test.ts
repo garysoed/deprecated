@@ -21,12 +21,95 @@ function folderToJson(folder: Folder): {} {
 describe('data.ItemService', () => {
   let itemsGraph: FakeDataGraph<Item>;
   let mockProjectService: any;
+  let mockSourceService: any;
   let service: ItemService;
 
   beforeEach(() => {
     itemsGraph = new FakeDataGraph<Item>();
     mockProjectService = jasmine.createSpyObj('ProjectService', ['get']);
-    service = new ItemService(itemsGraph, mockProjectService);
+    mockSourceService = jasmine.createSpyObj('SourceService', ['recursiveGet']);
+    service = new ItemService(itemsGraph, mockProjectService, mockSourceService);
+  });
+
+  describe('addItems', () => {
+    it(`should return the correct tree`, async () => {
+      const containerId = 'containerId';
+
+      const id = 'id';
+      const mockItem = jasmine.createSpyObj('Item', ['getId']);
+      mockItem.getId.and.returnValue(id);
+      const item1 = Mocks.object('item1');
+      const item2 = Mocks.object('item2');
+
+      const driveTree = Mocks.object('driveTree', TreeMap);
+
+      mockSourceService.recursiveGet.and.returnValue(Promise.resolve(driveTree));
+
+      const itemTree = TreeMap.of<string, Item>(mockItem)
+          .set('item1Id', TreeMap.of(item1))
+          .set('item2Id', TreeMap.of(item2));
+      spyOn(service, 'recursiveCreate').and.returnValue(Promise.resolve(itemTree));
+
+      const saveSpy = spyOn(service, 'save');
+
+      const containerItem = EditableFolder.newInstance(
+          containerId,
+          'container',
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
+      spyOn(service, 'getItem').and.returnValue(Promise.resolve(containerItem));
+
+      const source = DriveSource.newInstance('driveId');
+
+      assert(await service.addItems(source, containerId)).to.equal(itemTree);
+
+      assert(service.save).to.haveBeenCalledWith(mockItem);
+      assert(service.save).to.haveBeenCalledWith(item1);
+      assert(service.save).to.haveBeenCalledWith(item2);
+
+      const selectedFolder = saveSpy.calls.argsFor(3)[0];
+      assert(selectedFolder.getId()).to.equal(containerId);
+      assert((selectedFolder as EditableFolder).getItems()).to.haveElements([id]);
+
+      assert(service.getItem).to.haveBeenCalledWith(containerId);
+      assert(service.recursiveCreate).to.haveBeenCalledWith(driveTree, containerId);
+      assert(mockSourceService.recursiveGet).to.haveBeenCalledWith(source);
+    });
+
+    it(`should reject if container item is not editable`, async () => {
+      const containerId = 'containerId';
+
+      const id = 'id';
+      const mockItem = jasmine.createSpyObj('Item', ['getId']);
+      mockItem.getId.and.returnValue(id);
+
+      const driveTree = Mocks.object('driveTree', TreeMap);
+      mockSourceService.recursiveGet.and.returnValue(Promise.resolve(driveTree));
+
+      const itemTree = TreeMap.of<string, Item>(mockItem);
+      spyOn(service, 'recursiveCreate').and.returnValue(Promise.resolve(itemTree));
+
+      const containerItem = Folder.newInstance(
+          containerId,
+          'container',
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
+      spyOn(service, 'getItem').and.returnValue(Promise.resolve(containerItem));
+
+      const source = DriveSource.newInstance('driveId');
+
+      await assert(service.addItems(source, containerId)).to.rejectWithError(/EditableFolder/);
+    });
+
+    it(`should return null if the source does not correspond to the correct item`, async () => {
+      mockSourceService.recursiveGet.and.returnValue(Promise.resolve(null));
+
+      const source = DriveSource.newInstance('driveId');
+
+      await assert(await service.addItems(source, 'containerId')).to.beNull();
+    });
   });
 
   describe('createItem_', () => {
