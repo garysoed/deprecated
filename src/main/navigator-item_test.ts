@@ -135,104 +135,60 @@ describe('main.NavigatorItem', () => {
     });
   });
 
-  // describe('onRefreshButtonAction_', () => {
-  //   it(`should get and save the items again for files`, async () => {
-  //     const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+  describe('onRefreshButtonAction_', () => {
+    it(`should delete the item and add the item again`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      const mockItemService = jasmine.createSpyObj('ItemService', ['addItems', 'deleteItem']);
+      TestGraph.set($itemService, mockItemService);
 
-  //     const item1 = Mocks.object('item1');
-  //     const item2 = Mocks.object('item2');
-  //     const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
-  //     mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableSet.of([
-  //       item1,
-  //       item2,
-  //     ])));
-  //     TestGraph.set($driveService, mockDriveService);
+      const itemId = 'itemId';
+      const parentId = 'parentId';
+      const source = ThothSource.newInstance();
+      const file = MarkdownFile.newInstance(
+          itemId,
+          'name',
+          parentId,
+          'content',
+          source);
+      TestGraph.set($item, file);
 
-  //     const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-  //     TestGraph.set($itemService, mockItemService);
+      await item.onRefreshButtonAction_(mockEvent);
+      assert(mockItemService.addItems).to.haveBeenCalledWith(source, parentId);
+      assert(mockItemService.deleteItem).to.haveBeenCalledWith(itemId);
+      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+    });
 
-  //     const parentId = 'parentId';
-  //     const driveId = 'driveId';
-  //     const driveItem = MarkdownFile.newInstance(
-  //         'id', 'name', parentId, 'content', DriveSource.newInstance(driveId));
-  //     TestGraph.set($item, driveItem);
+    it(`should do nothing if the item has no parent IDs`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      const mockItemService = jasmine.createSpyObj('ItemService', ['addItems', 'deleteItem']);
+      TestGraph.set($itemService, mockItemService);
 
-  //     await item.onRefreshButtonAction_(mockEvent);
-  //     assert(mockItemService.save).to.haveBeenCalledWith(item1);
-  //     assert(mockItemService.save).to.haveBeenCalledWith(item2);
-  //     assert(mockDriveService.recursiveGet).to
-  //         .haveBeenCalledWith(DriveSourceMatcher.with(driveId), parentId);
-  //     assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
-  //   });
+      const folder = Folder.newInstance(
+          'itemId',
+          'name',
+          null,
+          'content',
+          ThothSource.newInstance());
+      TestGraph.set($item, folder);
 
-  //   it(`should get and save the items again for folders`, async () => {
-  //     const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      await item.onRefreshButtonAction_(mockEvent);
+      assert(mockItemService.addItems).toNot.haveBeenCalled();
+      assert(mockItemService.deleteItem).toNot.haveBeenCalled();
+      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+    });
 
-  //     const item1 = Mocks.object('item1');
-  //     const item2 = Mocks.object('item2');
-  //     const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
-  //     mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableSet.of([
-  //       item1,
-  //       item2,
-  //     ])));
-  //     TestGraph.set($driveService, mockDriveService);
+    it(`should do nothing if the item does not exist`, async () => {
+      const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
+      const mockItemService = jasmine.createSpyObj('ItemService', ['addItems', 'deleteItem']);
+      TestGraph.set($itemService, mockItemService);
+      TestGraph.set($item, null);
 
-  //     const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-  //     TestGraph.set($itemService, mockItemService);
-
-  //     const parentId = 'parentId';
-  //     const driveId = 'driveId';
-  //     const driveItem = DriveFolder.newInstance(
-  //         'id', 'name', parentId, ImmutableSet.of([]), DriveSource.newInstance(driveId));
-  //     TestGraph.set($item, driveItem);
-
-  //     await item.onRefreshButtonAction_(mockEvent);
-  //     assert(mockItemService.save).to.haveBeenCalledWith(item1);
-  //     assert(mockItemService.save).to.haveBeenCalledWith(item2);
-  //     assert(mockDriveService.recursiveGet).to
-  //         .haveBeenCalledWith(DriveSourceMatcher.with(driveId), parentId);
-  //     assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
-  //   });
-
-  //   it(`should not reject if the item has no parent IDs`, async () => {
-  //     const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
-
-  //     const item1 = Mocks.object('item1');
-  //     const item2 = Mocks.object('item2');
-  //     const mockDriveService = jasmine.createSpyObj('DriveService', ['recursiveGet']);
-  //     mockDriveService.recursiveGet.and.returnValue(Promise.resolve(ImmutableSet.of([
-  //       item1,
-  //       item2,
-  //     ])));
-
-  //     const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-  //     TestGraph.set($itemService, mockItemService);
-
-  //     const driveId = 'driveId';
-  //     const driveItem = DriveFolder
-  //       .newInstance('id', 'name', null, ImmutableSet.of([]), DriveSource.newInstance(driveId));
-  //     TestGraph.set($item, driveItem);
-
-  //     await assert(item.onRefreshButtonAction_(mockEvent)).to.rejectWithError(/should exist/);
-  //     assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
-  //   });
-
-  //   it(`should not reject if the item is not a DriveFile or DriveFolder`, async () => {
-  //     const mockEvent = jasmine.createSpyObj('Event', ['stopPropagation']);
-
-
-  //     const mockItemService = jasmine.createSpyObj('ItemService', ['save']);
-  //     TestGraph.set($itemService, mockItemService);
-
-  //     const parentId = 'parentId';
-  //     const driveItem = ThothFolder.newInstance('id', 'name', parentId, ImmutableSet.of([]));
-  //     TestGraph.set($item, driveItem);
-
-  //     await item.onRefreshButtonAction_(mockEvent);
-  //     assert(mockItemService.save).toNot.haveBeenCalled();
-  //     assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
-  //   });
-  // });
+      await item.onRefreshButtonAction_(mockEvent);
+      assert(mockItemService.addItems).toNot.haveBeenCalled();
+      assert(mockItemService.deleteItem).toNot.haveBeenCalled();
+      assert(mockEvent.stopPropagation).to.haveBeenCalledWith();
+    });
+  });
 
   describe('onRenderButtonAction_', () => {
     it(`should render the item correctly`, async () => {
@@ -452,10 +408,16 @@ describe('main.NavigatorItem', () => {
           'parentId',
           'content',
           DriveSource.newInstance('driveId'));
+      const parent = Folder.newInstance(
+          'folderId',
+          'folderName',
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
       spyOn(item, 'renderDeleteable_').and.returnValue(true);
 
-      assert(item.renderRefreshable_(file)).to.beTrue();
-      assert(item.renderDeleteable_).to.haveBeenCalledWith(file);
+      assert(item.renderRefreshable_(file, parent)).to.beTrue();
+      assert(item.renderDeleteable_).to.haveBeenCalledWith(parent);
     });
 
     it(`should return false if source is not remote`, () => {
@@ -465,10 +427,16 @@ describe('main.NavigatorItem', () => {
           'parentId',
           'content',
           ThothSource.newInstance());
+      const parent = Folder.newInstance(
+          'folderId',
+          'folderName',
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
       spyOn(item, 'renderDeleteable_').and.returnValue(true);
 
-      assert(item.renderRefreshable_(file)).to.beFalse();
-      assert(item.renderDeleteable_).to.haveBeenCalledWith(file);
+      assert(item.renderRefreshable_(file, parent)).to.beFalse();
+      assert(item.renderDeleteable_).to.haveBeenCalledWith(parent);
     });
 
     it(`should return false if not deleteable`, () => {
@@ -477,15 +445,28 @@ describe('main.NavigatorItem', () => {
           'name',
           'parentId',
           'content',
-          DriveSource.newInstance('driveId'));
+          ThothSource.newInstance());
+      const parent = Folder.newInstance(
+          'folderId',
+          'folderName',
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
       spyOn(item, 'renderDeleteable_').and.returnValue(false);
 
-      assert(item.renderRefreshable_(file)).to.beFalse();
-      assert(item.renderDeleteable_).to.haveBeenCalledWith(file);
+      assert(item.renderRefreshable_(file, parent)).to.beFalse();
+      assert(item.renderDeleteable_).to.haveBeenCalledWith(parent);
     });
 
     it(`should return false if there are no items`, () => {
-      assert(item.renderRefreshable_(null)).to.beFalse();
+      const parent = Folder.newInstance(
+          'folderId',
+          'folderName',
+          null,
+          ImmutableSet.of([]),
+          ThothSource.newInstance());
+
+      assert(item.renderRefreshable_(null, parent)).to.beFalse();
     });
   });
 

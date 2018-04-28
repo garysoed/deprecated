@@ -10,6 +10,7 @@ export class HandlebarsServiceClass {
       globalContexts[key] = value;
     }
 
+    Handlebars.registerHelper('debug', (input: any) => JSON.stringify(input, undefined, 2));
     return Handlebars.compile(template)({...globalContexts, ...context});
   }
 }

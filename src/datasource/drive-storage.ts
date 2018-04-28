@@ -195,4 +195,3 @@ export class DriveStorageImpl extends GapiStorage<
 }
 
 export const DriveStorage = new DriveStorageImpl(drive);
-window['$drive'] = DriveStorage;

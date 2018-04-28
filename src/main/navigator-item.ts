@@ -182,44 +182,29 @@ export class NavigatorItem extends BaseThemedElement2 {
     navigateToHash(`${path}/${item.getName()}`);
   }
 
-  // @onDom.event($.refreshButton.el, 'gs-action')
-  // async onRefreshButtonAction_(event: MouseEvent): Promise<void> {
-  //   event.stopPropagation();
+  @onDom.event($.refreshButton.el, 'gs-action')
+  async onRefreshButtonAction_(event: MouseEvent): Promise<void> {
+    event.stopPropagation();
 
-  //   const time = Graph.getTimestamp();
-  //   const [item, itemService, driveService] = await Graph.getAll(
-  //       time,
-  //       this,
-  //       $item,
-  //       $itemService,
-  //       $driveService);
-  //   if (!item) {
-  //     return;
-  //   }
+    const time = Graph.getTimestamp();
+    const [item, itemService] = await Graph.getAll(
+        time,
+        this,
+        $item,
+        $itemService);
+    if (!item) {
+      return;
+    }
 
-  //   await itemService.deleteItem(item.getId());
-  //   const source = item.getSource();
-  //   if (source instanceof DriveSource) {
-  //     const driveTree = driveService.recursiveGet(source)
-  //   }
-  //   if (!(item instanceof MarkdownFile) && !(item instanceof DriveFolder)) {
-  //     return;
-  //   }
+    const parentId = item.getParentId();
+    if (!parentId) {
+      return;
+    }
 
-  //   const parentId = item.getParentId();
-  //   if (!parentId) {
-  //     throw Errors.assert('parentId').shouldExist().butWas(parentId);
-  //   }
-
-  //   // TODO: Handle different sources.
-  //   const source = item.getSource();
-  //   if (!(source instanceof DriveSource)) {
-  //     throw Errors.assert('source').should('be an instance of DriveSource');
-  //   }
-
-  //   const files = await driveService.recursiveGet(source, parentId);
-  //   files.mapItem((file) => itemService.save(file));
-  // }
+    await itemService.deleteItem(item.getId());
+    const source = item.getSource();
+    itemService.addItems(source, parentId);
+  }
 
   @onDom.event($.renderButton.el, 'gs-action')
   async onRenderButtonAction_(event: MouseEvent): Promise<void> {
@@ -320,12 +305,14 @@ export class NavigatorItem extends BaseThemedElement2 {
   }
 
   @render.attribute($.host.refreshable)
-  renderRefreshable_(@nodeIn($item) item: Item | null): boolean {
+  renderRefreshable_(
+      @nodeIn($item) item: Item | null,
+      @nodeIn($parent) parent: Item | null): boolean {
     if (!item) {
       return false;
     }
 
-    return this.renderDeleteable_(item) && item.getSource().isRemote();
+    return this.renderDeleteable_(parent) && item.getSource().isRemote();
   }
 
   @render.attribute($.host.renderable)

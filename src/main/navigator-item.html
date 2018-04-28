@@ -37,7 +37,7 @@
   :host(:hover), :host(:focus) {
     --contentFG: var(--gsColorActionFocusFG);
     --contentRight: calc(
-        (var(--refreshableFlag) + var(--deleteableFlag) + var(--renderableFlag) + 1) *
+        (var(--refreshableFlag) + var(--deleteableFlag) + var(--renderableFlag)) *
         (2 * var(--gsSizePadding) + var(--gsLineHeight)));
     cursor: pointer;
   }
@@ -102,9 +102,6 @@
     </gs-basic-button>
     <gs-basic-button id="renderButton">
       <gs-icon>palette</gs-icon>
-    </gs-basic-button>
-    <gs-basic-button id="downloadButton">
-      <gs-icon>file_download</gs-icon>
     </gs-basic-button>
     <gs-basic-button id="deleteButton">
       <gs-icon>delete</gs-icon>

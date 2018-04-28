@@ -30,7 +30,7 @@ export class ItemService {
       private readonly projectService_: ProjectService,
       private readonly sourceService_: SourceService) { }
 
-  async addItems(source: DriveSource, containerId: string): Promise<TreeMap<string, Item> | null> {
+  async addItems(source: Source, containerId: string): Promise<TreeMap<string, Item> | null> {
     const apiFileTree = await this.sourceService_.recursiveGet(source);
     if (!apiFileTree) {
       return null;

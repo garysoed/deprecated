@@ -11,7 +11,7 @@ describe('render.HandlebarsServiceClass', () => {
   let service: HandlebarsServiceClass;
 
   beforeEach(() => {
-    mockHandlebars = jasmine.createSpyObj('Handlebars', ['compile']);
+    mockHandlebars = jasmine.createSpyObj('Handlebars', ['compile', 'registerHelper']);
     window['Handlebars'] = mockHandlebars;
     service = new HandlebarsServiceClass();
   });

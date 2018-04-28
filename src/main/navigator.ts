@@ -1,6 +1,6 @@
-import { ElementWithTagType, StringType } from 'external/gs_tools/src/check';
+import { ElementWithTagType, NonNullType, StringType } from 'external/gs_tools/src/check';
 import { nodeIn } from 'external/gs_tools/src/graph';
-import { ImmutableList } from 'external/gs_tools/src/immutable';
+import { ImmutableList, Orderings } from 'external/gs_tools/src/immutable';
 import { inject } from 'external/gs_tools/src/inject';
 import {
   childrenSelector,
@@ -17,7 +17,7 @@ import {
 import { BaseThemedElement2 } from 'external/gs_ui/src/common';
 import { ThemeService } from 'external/gs_ui/src/theming';
 
-import { $selectedItem, Folder, Item } from '../data';
+import { $itemService, $selectedItem, DataFile, Folder, Item, ItemService, MarkdownFile, MetadataFile, UnknownFile } from '../data';
 import { NavigatorItem } from '../main/navigator-item';
 
 export function itemsFactory(document: Document): HTMLElement {
@@ -78,10 +78,29 @@ export class Navigator extends BaseThemedElement2 {
   }
 
   @render.children($.items.children)
-  renderItems_(@nodeIn($selectedItem) selectedItem: Item | null): ImmutableList<string> {
+  async renderItems_(
+      @nodeIn($itemService) itemService: ItemService,
+      @nodeIn($selectedItem) selectedItem: Item | null): Promise<ImmutableList<string>> {
     if (!(selectedItem instanceof Folder)) {
       return ImmutableList.of([]);
     }
-    return ImmutableList.of(selectedItem.getItems());
+
+    const itemsPromise = selectedItem
+        .getItems()
+        .mapItem(itemId => itemService.getItem(itemId))
+        .filterByType(NonNullType<Item>());
+    const items = ImmutableList.of(await Promise.all(itemsPromise));
+    return items
+        .sort(Orderings.compound([
+          Orderings.matches(item => item instanceof Folder),
+          Orderings.matches((item) => {
+            return item instanceof MarkdownFile ||
+                item instanceof DataFile ||
+                item instanceof MetadataFile;
+          }),
+          Orderings.matches(item => !(item instanceof UnknownFile)),
+          Orderings.map(item => item.getName(), Orderings.natural()),
+        ]))
+        .mapItem(item => item.getId());
   }
 }

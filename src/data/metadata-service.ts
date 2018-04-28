@@ -1,4 +1,5 @@
 import {
+  AnyType,
   HasPropertiesType,
   InstanceofType,
   ObjectType,
@@ -45,7 +46,7 @@ const METADATA_JSON_TYPE = HasPropertiesType<MetadataJsonType>({
       .build(),
   'variables': UnionType.builder<undefined | {[key: string]: string}>()
       .addType(UndefinedType)
-      .addType(ObjectType.stringKeyed<string>(StringType))
+      .addType(ObjectType.stringKeyed<string>(AnyType()))
       .build(),
 });
 
