@@ -1,49 +1,31 @@
 {
-    "compilerOptions": {
-        "baseUrl": ".",
-        "target": "es2016",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "isolatedModules": false,
-        "jsx": "react",
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "declaration": false,
-        "noImplicitAny": false,
-        "removeComments": true,
-        "noLib": false,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "outDir": "out/",
-        "rootDir": "./",
-        "skipLibCheck": true,
-        "strict": true
-    },
-    "exclude": [
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "baseUrl": ".",
+    "experimentalDecorators": true,
+    "lib": [
+      "dom",
+      "es2015"
     ],
-    "include": [
-        "declarations/**/*.ts",
-        "types/**/*.d.ts",
-        "src/**/*.ts",
-        "external/gs_tools/declarations/**/*.d.ts",
-        "external/gs_tools/src/**/*.ts",
-        "external/gs_ui/declarations/**/*.d.ts",
-        "external/gs_ui/src/**/*.ts",
-        "node_modules/typescript/lib/lib.dom.d.ts",
-        "node_modules/typescript/lib/lib.es2015.d.ts"
-    ],
-    "filesGlob": [
-        "**/*.ts",
-        "**/*.tsx",
-        "!bazel-*/**",
-        "!node_modules/**",
-        "node_modules/typescript/lib/lib.es6.d.ts"
-    ],
-    "compileOnSave": false,
-    "buildOnSave": false,
-    "atom": {
-        "rewriteTsconfig": true
-    }
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "outDir": "out",
+    "pretty": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictFunctionTypes": true,
+    "target": "es6"
+  },
+  "include": [
+    "demo/*",
+    "src/**/*.ts",
+    "typings/*.d.ts",
+    "node_modules/grapevine/export/*",
+    "node_modules/gs-testing/export/*",
+    "node_modules/gs-tools/export/*",
+    "node_modules/gs-types/export/*"
+  ]
 }

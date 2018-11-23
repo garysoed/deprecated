@@ -6,16 +6,32 @@
   "dependencies": {
     "@types/handlebars": "^4.0.36",
     "@types/showdown": "^1.7.1",
+    "awesome-typescript-loader": "^5.0.0",
+    "css-loader": "^0.28.11",
+    "duplicate-package-checker-webpack-plugin": "^3.0.0",
     "express": "^4.16.2",
+    "extract-loader": "^2.0.1",
+    "glob": "^7.1.2",
     "gs-tools": "github:garysoed/gs-tools",
     "gs-ui": "github:garysoed/gs-ui",
+    "html-loader": "^0.5.5",
+    "jasmine-core": "^3.1.0",
     "karma": "^1.7.1",
+    "karma-jasmine": "^1.1.2",
+    "karma-sourcemap-loader": "^0.3.7",
+    "raw-loader": "^0.5.1",
+    "rxjs": "^6.3.3",
     "tslint": "^5.7.0",
-    "typescript": "^2.5.2",
+    "typescript": "^3.1.6",
+    "uglifyjs-webpack-plugin": "^1.2.5",
+    "webpack": "^4.12.0",
     "x-tag": "^1.5.11"
   },
   "devDependencies": {
-    "@types/js-yaml": "^3.10.1"
+    "@types/jasmine": "^3.3.0",
+    "@types/js-yaml": "^3.10.1",
+    "path": "^0.12.7",
+    "source-map-loader": "^0.2.4"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
