@@ -6,10 +6,11 @@ const smp = new SpeedMeasurePlugin();
 module.exports = smp.wrap({
   entry: {
     "test": glob.sync("./src/**/*_test.ts"),
+    "main": "./src/main/main.ts"
   },
   // entry: "./src/async/atomic_test.ts",
   output: {
-    filename: "bundle.js",
+    filename: "bundle-[name].js",
     path: __dirname + "/out"
   },
 
@@ -19,10 +20,13 @@ module.exports = smp.wrap({
   resolve: {// Used to resolve duplicate packages. Make sure that we always use the ones in the root.
     alias: {
       'grapevine': path.resolve('./node_modules/grapevine'),
+      'gs-testing': path.resolve('./node_modules/gs-testing'),
       'gs-tools': path.resolve('./node_modules/gs-tools'),
+      'gs-types': path.resolve('./node_modules/gs-types'),
+      'mask': path.resolve('./node_modules/mask'),
+      'persona': path.resolve('./node_modules/persona'),
       'rxjs': path.resolve('./node_modules/rxjs'),
       'tslib': path.resolve('./node_modules/tslib'),
-      'mask': path.resolve('./node_modules/mask'),
     },
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: [".ts", ".tsx", ".js", ".json"]

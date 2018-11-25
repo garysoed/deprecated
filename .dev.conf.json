@@ -2,11 +2,11 @@
   "commands": [
     {
       "command": "link",
-      "actions": ["npm link gs-testing gs-tools gs-types dev"]
+      "actions": ["npm link gs-testing gs-tools gs-types dev persona mask"]
     },
     {
       "command": "server",
-      "actions": ["simpleserver src/main.conf.json"]
+      "actions": ["simpleserver src/main/main.conf.json"]
     }
   ]
 }
