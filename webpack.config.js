@@ -1,8 +1,9 @@
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const glob = require('glob');
 const path = require('path');
+const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
+const smp = new SpeedMeasurePlugin();
 
-module.exports = {
+module.exports = smp.wrap({
   entry: {
     "test": glob.sync("./src/**/*_test.ts"),
   },
@@ -48,15 +49,4 @@ module.exports = {
   },
 
   watch: true,
-
-  plugins: [
-    new UglifyJsPlugin({
-      uglifyOptions: {
-        keep_classnames: true,
-        keep_fnames: true,
-        mangle: false,
-      },
-      sourceMap: true,
-    }),
-  ]
-};
+});

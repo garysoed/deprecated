@@ -3,6 +3,10 @@
     {
       "command": "link",
       "actions": ["npm link gs-testing gs-tools gs-types dev"]
+    },
+    {
+      "command": "server",
+      "actions": ["simpleserver src/main.conf.json"]
     }
   ]
 }
