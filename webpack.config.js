@@ -5,7 +5,7 @@ const smp = new SpeedMeasurePlugin();
 
 module.exports = smp.wrap({
   entry: {
-    "test": glob.sync("./src/**/*_test.ts"),
+    "test": glob.sync("./src/**/*.test.ts"),
     "main": "./src/main/main.ts"
   },
   // entry: "./src/async/atomic_test.ts",
@@ -24,19 +24,25 @@ module.exports = smp.wrap({
       'gs-tools': path.resolve('./node_modules/gs-tools'),
       'gs-types': path.resolve('./node_modules/gs-types'),
       'mask': path.resolve('./node_modules/mask'),
+      'nabu': path.resolve('./node_modules/nabu'),
       'persona': path.resolve('./node_modules/persona'),
       'rxjs': path.resolve('./node_modules/rxjs'),
       'tslib': path.resolve('./node_modules/tslib'),
     },
-    // Add '.ts' and '.tsx' as resolvable extensions.
-    extensions: [".ts", ".tsx", ".js", ".json"]
+    extensions: [".ts", ".tsx", ".js", ".json", ".html", ".css"],
+    symlinks: false,
   },
 
   module: {
     rules: [
-      // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-      { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
-
+      {
+        test: /\.html$/,
+        use: {loader: 'html-loader?exportAsEs6Default'}
+      },
+      {
+        test: /\.css$/,
+        use: {loader: 'raw-loader'}
+      },
       // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
       { test: /\.tsx?$/, loader: "awesome-typescript-loader" }
     ]
