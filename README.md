@@ -16,36 +16,70 @@ Thoth is a file based wiki page generator.
 Goes like:
 
 ```
-          Data > JSON >
-Markdown > Handlebars > HTML
+          raw > JSON >
+             Template > Render output
 ```
 
-### Data
+1.  The pipeline starts with some **raw** files.
+2.  These files are converted to JSON through **converter** files.
+3.  You can also specify **template** files.
+4.  Thoth will take a template, a set of data files, and handlebar **helpers** to generate one or
+    more output files. An **output** file is used to determine the number of output files.
+5.  This relationship is defined by a **render** file.
 
--   First step is to convert the data to JSON object.
--   Data can come from various sources:
+### Raw
+
+-   Raw can come from various sources:
 
     -   TSV
     -   CSV
     -   Google spreadsheet
     -   XML
+    -   YAML
     -   JSON
 
--   Data are initially converted to JSON. The converted format depends on
-    the original data type.
--   Users can specify the function to transform the JSON.
+### Converter
 
-### JSON
+Converter files are JavaScript files. These files must define a function that takes in the source
+file and outputs JSON.
 
--   JSON data can be converted to Markdown in two ways:
+### Template and helpers
 
-    1.  Embed using variables.
-    1.  If the JSON is an array, it can be used to generate markdown files
+Template files are written in Handlebars.
 
-### Handlebars
+### Output
 
--   Conversion is straightforward.
+Output files are JavaScript files. These files must define a function that takes in the JSON of the
+converted source.
 
-### HTML
+### Render
 
--   This is where data from JSON and handlebar templates are applied.
+Render files are YAML files with the following fields:
+
+```
+type DATA_TYPE = TSV|CSV|GoogleSpreadsheet|XML|YAML|JSON;
+
+type OUTPUT_TYPE = OUTPUT;
+
+type ROOT = Render[]
+
+/**
+ * Path to a file of type T.
+ */
+type Path<T> = string;
+
+interface Data {
+  src: Path<DATA_TYPE>;
+  transform: Path<CONVERTER_TYPE>;
+}
+
+interface Render {
+  deps?: Array<Data|Path<HELPER_TYPE>>;
+  src: Data;
+  template: Path<TEMPLATE_TYPE>;
+  outputFn?: Path<OUTPUT_TYPE>;
+}
+
+```
+
+### Output
