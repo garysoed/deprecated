@@ -1,7 +1,7 @@
 import { Palette, start, Theme } from 'mask/export';
-import { folderViewConfig } from '../view/folder/folder-view';
+import { rootViewConfig } from '../view/root/root-view';
 
 window.addEventListener('load', () => {
   const theme = new Theme(Palette.PURPLE, Palette.YELLOW);
-  start([folderViewConfig()], theme, document.getElementById('globalStyle') as HTMLStyleElement);
+  start([rootViewConfig()], theme, document.getElementById('globalStyle') as HTMLStyleElement);
 });
