@@ -9,7 +9,7 @@ class RootView extends ThemedCustomElementCtrl {
 
 }
 
-export function rootViewConfig(): Config {
+export function rootView(): Config {
   return {
     dependencies: [drawer()],
     tag: 'th-root-view',
