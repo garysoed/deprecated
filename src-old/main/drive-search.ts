@@ -158,7 +158,7 @@ export class DriveSearch extends BaseThemedElement2 {
   @render.children($.results.children)
   renderDriveItems_(@nodeIn($driveItems) items: Iterable<ItemSummaryType>):
       ImmutableList<DriveFileItemData> {
-    return ImmutableList.of([...items])
+    return createImmutableList([...items])
         .map((item) => {
           return {
             selected: null,

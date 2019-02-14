@@ -4,7 +4,7 @@ export class HandlebarsServiceClass {
   render(
       context: {},
       template: string,
-      globals: Iterable<[string, string]> = ImmutableMap.of({})): string {
+      globals: Iterable<[string, string]> = createImmutableMap({})): string {
     const globalContexts = {};
     for (const [key, value] of globals) {
       globalContexts[key] = value;

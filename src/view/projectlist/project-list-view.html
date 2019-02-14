@@ -1,11 +1,33 @@
 <style id="theme"></style>
-<header>
-  <mk-text-icon-button
-      icon="add"
-      id="addButton"
-      label="Create project"
-  ></mk-text-icon-button>
-</header>
-<section id="projectList">
-  <!-- #projectList -->
-</section>
+<style>
+  #addProject:hover #addProjectInput {
+    display: flex;
+  }
+
+  #addProject:hover #addProjectLabel {
+    display: none;
+  }
+
+  #addProjectInput {
+    display: none;
+  }
+
+  #addProjectName {
+    padding-left: 1rem;
+  }
+</style>
+
+<div fill-parent>
+  <header id="addProject">
+    <div id="addProjectLabel">
+      <mk-icon-with-text label="Create project"></mk-icon-with-text>
+    </div>
+    <div flex-align="center" id="addProjectInput" layout="row">
+      <mk-text-input flex id="addProjectName"></mk-text-input>
+      <mk-text-icon-button icon="add" id="addButton"></mk-text-icon-button>
+    </div>
+  </header>
+  <section id="projectList">
+    <!-- #projectList -->
+  </section>
+</div>

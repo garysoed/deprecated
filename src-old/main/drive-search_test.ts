@@ -109,7 +109,7 @@ describe('main.DriveSearch', () => {
       const name1 = 'name1';
       const name2 = 'name2';
 
-      spyOn(DriveStorage, 'search').and.returnValue(Promise.resolve(ImmutableList.of([
+      spyOn(DriveStorage, 'search').and.returnValue(Promise.resolve(createImmutableList([
         {
           name: name1,
           source: DriveSource.newInstance(id1),
@@ -154,7 +154,7 @@ describe('main.DriveSearch', () => {
       const mockDispatcher = jasmine.createSpy('Dispatcher');
 
       Fakes.build(spyOn(Persona, 'getValue'))
-          .when($.results.children, search).return(ImmutableList.of([
+          .when($.results.children, search).return(createImmutableList([
             {selected: true, summary: {id: id1, name: 'name1'}},
             {selected: true, summary: {id: id2, name: 'name2'}},
             {selected: false, summary: {id: idUnadded}},
@@ -182,7 +182,7 @@ describe('main.DriveSearch', () => {
               ThothSource.newInstance()));
 
       Fakes.build(spyOn(Persona, 'getValue'))
-          .when($.results.children, search).return(ImmutableList.of([]))
+          .when($.results.children, search).return(createImmutableList([]))
           .when($.host.dispatcher, search).return(null);
 
       await assert(search.onOkButtonAction_()).to.rejectWithError(/exist/);

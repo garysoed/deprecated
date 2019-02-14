@@ -190,7 +190,7 @@ export class DriveStorageImpl extends GapiStorage<
       filename,
       mimeTypes: [DRIVE_FOLDER_MIMETYPE],
     }));
-    return ImmutableList.of(response.result.files.map((file) => convertToFileSummary_(file)));
+    return createImmutableList(response.result.files.map((file) => convertToFileSummary_(file)));
   }
 }
 

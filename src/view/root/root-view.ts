@@ -1,17 +1,11 @@
-import { _p, Config, drawer, ThemedCustomElementCtrl } from 'mask/export';
+import { _p, Drawer, ThemedCustomElementCtrl } from 'mask/export';
 import template from './root-view.html';
 
 @_p.customElement({
+  dependencies: [Drawer],
   tag: 'th-root-view',
   template,
 })
-class RootView extends ThemedCustomElementCtrl {
+export class RootView extends ThemedCustomElementCtrl {
 
-}
-
-export function rootView(): Config {
-  return {
-    dependencies: [drawer()],
-    tag: 'th-root-view',
-  };
 }

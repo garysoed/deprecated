@@ -6,7 +6,7 @@ import { Source } from '../datasource/source';
 
 export function getInitMap_(id: string, name: string, parentId: string | null, source: Source):
     ImmutableMap<string | symbol, any> {
-  return ImmutableMap.of<string | symbol, any>([
+  return createImmutableMap<string | symbol, any>([
     ['id_', id],
     ['name_', name],
     ['parentId_', parentId],

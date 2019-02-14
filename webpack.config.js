@@ -19,17 +19,17 @@ module.exports = smp.wrap({
 
   resolve: {// Used to resolve duplicate packages. Make sure that we always use the ones in the root.
     alias: {
-      'grapevine': path.resolve('./node_modules/grapevine'),
-      'gs-testing': path.resolve('./node_modules/gs-testing'),
-      'gs-tools': path.resolve('./node_modules/gs-tools'),
-      'gs-types': path.resolve('./node_modules/gs-types'),
-      'mask': path.resolve('./node_modules/mask'),
-      'nabu': path.resolve('./node_modules/nabu'),
-      'persona': path.resolve('./node_modules/persona'),
-      'rxjs': path.resolve('./node_modules/rxjs'),
-      'tslib': path.resolve('./node_modules/tslib'),
+      'grapevine': path.resolve(__dirname, './node_modules/grapevine'),
+      'gs-testing': path.resolve(__dirname, './node_modules/gs-testing'),
+      'gs-tools': path.resolve(__dirname, './node_modules/gs-tools'),
+      'gs-types': path.resolve(__dirname, './node_modules/gs-types'),
+      'mask': path.resolve(__dirname, './node_modules/mask'),
+      'nabu': path.resolve(__dirname, './node_modules/nabu'),
+      'persona': path.resolve(__dirname, './node_modules/persona'),
+      'rxjs': path.resolve(__dirname, './node_modules/rxjs'),
+      'tslib': path.resolve(__dirname, './node_modules/tslib'),
     },
-    extensions: [".ts", ".tsx", ".js", ".json", ".html", ".css"],
+    extensions: [".ts", ".tsx", ".js", ".json", ".html", ".css", ".svg"],
     symlinks: false,
   },
 
@@ -38,6 +38,10 @@ module.exports = smp.wrap({
       {
         test: /\.html$/,
         use: {loader: 'html-loader?exportAsEs6Default'}
+      },
+      {
+        test: /\.svg$/,
+        use: {loader: 'raw-loader'},
       },
       {
         test: /\.css$/,

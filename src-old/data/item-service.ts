@@ -229,7 +229,7 @@ export class ItemService {
           const sourceId = node.getValue().summary.source.getId();
           return [sourceId, itemId] as [string, string];
         });
-    const sourceIdToItemIdMap = ImmutableMap.of(await Promise.all([...idPromises]));
+    const sourceIdToItemIdMap = createImmutableMap(await Promise.all([...idPromises]));
 
     return driveTree.map((node, _, parent) => {
       const value = node.getValue();

@@ -28,7 +28,7 @@ export abstract class DriveSource extends Source {
   static newInstance(driveId: string): DriveSource {
     return DataModels.newInstance(
         DriveSource,
-        ImmutableMap.of([
+        createImmutableMap([
           ['driveId_', driveId],
         ]));
   }

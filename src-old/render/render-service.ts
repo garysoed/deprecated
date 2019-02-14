@@ -73,7 +73,7 @@ export class RenderService {
           .butWas(processorItem);
     }
 
-    return ImmutableMap.of(processorItem.getFunction()([...outputFileMap]));
+    return createImmutableMap(processorItem.getFunction()([...outputFileMap]));
   }
 
   async render(id: string): Promise<any> {
@@ -105,7 +105,7 @@ export class RenderService {
     const template = await this.getTemplateContent_(renderConfig);
 
     const compiledItem = this.compileItem_(item, renderConfig);
-    const outputFiles = ImmutableMap.of([[item.getName(), {$mainContent: compiledItem}]]);
+    const outputFiles = createImmutableMap([[item.getName(), {$mainContent: compiledItem}]]);
     const compiledPromises = (await this.processOutputMap_(outputFiles, renderConfig))
         .mapItem(([filename, context]) => {
           const renderedContent = this.renderItem_(context, template, renderConfig);

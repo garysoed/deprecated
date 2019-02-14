@@ -19,9 +19,9 @@ import { RenderConfig } from '../data/render-config';
 export const DEFAULT_METADATA_FILENAME = '$default.yml';
 export const DEFAULT_CONFIG: RenderConfig = {
   processor: null,
-  showdownConfig: ImmutableMap.of({}),
+  showdownConfig: createImmutableMap({}),
   template: null,
-  variables: ImmutableMap.of({}),
+  variables: createImmutableMap({}),
 };
 
 type ShowdownConfig =  {[key: string]: string};
@@ -68,11 +68,11 @@ export class MetadataService {
       processor: processorString ?
           Paths.join(directoryPath, Paths.relativePath(processorString)) :
           null,
-      showdownConfig: ImmutableMap.of(parsedContent.showdown || {}),
+      showdownConfig: createImmutableMap(parsedContent.showdown || {}),
       template: templateString ?
           Paths.join(directoryPath, Paths.relativePath(templateString)) :
           null,
-      variables: ImmutableMap.of(parsedContent.variables || {}),
+      variables: createImmutableMap(parsedContent.variables || {}),
     };
   }
 

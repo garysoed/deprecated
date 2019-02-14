@@ -1,4 +1,10 @@
 <style id="theme"></style>
+<style>
+  #main {
+    position: relative;
+  }
+</style>
+
 <div fill-parent layout="row">
   <mk-drawer
       flex-justify="flex-end"
@@ -10,7 +16,7 @@
       mode="vertical"
   >
   </mk-drawer>
-  <main>
+  <main flex id="main" mk-theme="light">
     <th-project-list-view></th-project-list-view>
   </main>
 </div>

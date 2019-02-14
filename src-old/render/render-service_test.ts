@@ -57,9 +57,9 @@ describe('render.RenderServiceClass', () => {
       const templatePath = Paths.absolutePath('/template');
       const config = {
         processor: null,
-        showdownConfig: ImmutableMap.of<string, string>([]),
+        showdownConfig: createImmutableMap<string, string>([]),
         template: templatePath,
-        variables: ImmutableMap.of<string, string>([]),
+        variables: createImmutableMap<string, string>([]),
       };
       const content = 'content';
       const mockItem = jasmine.createSpyObj('Item', ['getContent']);
@@ -75,9 +75,9 @@ describe('render.RenderServiceClass', () => {
       const templatePath = Paths.absolutePath('/template');
       const config = {
         processor: null,
-        showdownConfig: ImmutableMap.of<string, string>([]),
+        showdownConfig: createImmutableMap<string, string>([]),
         template: templatePath,
-        variables: ImmutableMap.of<string, string>([]),
+        variables: createImmutableMap<string, string>([]),
       };
       const mockItem = jasmine.createSpyObj('Item', ['getContent']);
       mockItemService.getItemByPath.and.returnValue(Promise.resolve(mockItem));
@@ -89,9 +89,9 @@ describe('render.RenderServiceClass', () => {
     it(`should return the default template if there are no template paths`, async () => {
       const config = {
         processor: null,
-        showdownConfig: ImmutableMap.of<string, string>([]),
+        showdownConfig: createImmutableMap<string, string>([]),
         template: null,
-        variables: ImmutableMap.of<string, string>([]),
+        variables: createImmutableMap<string, string>([]),
       };
       const defaultTemplate = 'defaultTemplate';
       spyOn(service, 'getDefaultTemplate_').and.returnValue(defaultTemplate);
@@ -110,12 +110,12 @@ describe('render.RenderServiceClass', () => {
           content,
           ThothSource.newInstance());
 
-      const showdownConfig = ImmutableMap.of([['key', 'value']]);
+      const showdownConfig = createImmutableMap([['key', 'value']]);
       const config = {
         processor: null,
         showdownConfig,
         template: null,
-        variables: ImmutableMap.of<string, string>([]),
+        variables: createImmutableMap<string, string>([]),
       };
 
       const renderedMarkdown = 'renderedMarkdown';
@@ -139,7 +139,7 @@ describe('render.RenderServiceClass', () => {
         processor: null,
         showdownConfig,
         template: null,
-        variables: ImmutableMap.of<string, string>([]),
+        variables: createImmutableMap<string, string>([]),
       };
       assert(service['compileItem_'](item, config)).to.equal(content);
     });
@@ -147,8 +147,8 @@ describe('render.RenderServiceClass', () => {
 
   describe('processOutputMap_', () => {
     it(`should return the correct map`, async () => {
-      const originalMap = ImmutableMap.of([['a', 1]]);
-      const newOutputMap = ImmutableMap.of([['b', 2]]);
+      const originalMap = createImmutableMap([['a', 1]]);
+      const newOutputMap = createImmutableMap([['b', 2]]);
       const mockProcessorFn = jasmine.createSpy('ProcessorFn');
       mockProcessorFn.and.returnValue(newOutputMap);
       const mockProcessor = jasmine.createSpyObj('Processor', ['getFunction']);
@@ -159,9 +159,9 @@ describe('render.RenderServiceClass', () => {
       const processorPath = Paths.absolutePath('/processor');
       const config = {
         processor: processorPath,
-        showdownConfig: ImmutableMap.of<string, string>([]),
+        showdownConfig: createImmutableMap<string, string>([]),
         template: null,
-        variables: ImmutableMap.of<string, string>([]),
+        variables: createImmutableMap<string, string>([]),
       };
       assert(await service['processOutputMap_'](originalMap, config)).to
           .haveElements([...newOutputMap]);
@@ -175,22 +175,22 @@ describe('render.RenderServiceClass', () => {
 
       const config = {
         processor: Paths.absolutePath('/processor'),
-        showdownConfig: ImmutableMap.of<string, string>([]),
+        showdownConfig: createImmutableMap<string, string>([]),
         template: null,
-        variables: ImmutableMap.of<string, string>([]),
+        variables: createImmutableMap<string, string>([]),
       };
-      await assert(service['processOutputMap_'](ImmutableMap.of([['a', 1]]), config)).to
+      await assert(service['processOutputMap_'](createImmutableMap([['a', 1]]), config)).to
           .rejectWithError(/a ProcessorFile/);
     });
 
     it(`should return the original map if there are no processors`, async () => {
-      const originalMap = ImmutableMap.of([['a', 1]]);
+      const originalMap = createImmutableMap([['a', 1]]);
 
       const config = {
         processor: null,
-        showdownConfig: ImmutableMap.of<string, string>([]),
+        showdownConfig: createImmutableMap<string, string>([]),
         template: null,
-        variables: ImmutableMap.of<string, string>([]),
+        variables: createImmutableMap<string, string>([]),
       };
       assert(await service['processOutputMap_'](originalMap, config)).to
           .haveElements([...originalMap]);
@@ -220,9 +220,9 @@ describe('render.RenderServiceClass', () => {
 
       const renderConfig = {
         processor: Paths.absolutePath('/processor'),
-        showdownConfig: ImmutableMap.of<string, string>([]),
+        showdownConfig: createImmutableMap<string, string>([]),
         template: Paths.absolutePath('/template'),
-        variables: ImmutableMap.of<string, string>([]),
+        variables: createImmutableMap<string, string>([]),
       };
       mockMetadataService.getConfigForItem.and.returnValue(renderConfig);
 
@@ -234,7 +234,7 @@ describe('render.RenderServiceClass', () => {
       const processedContent = Mocks.object('processedContent');
       const processedName = 'processedName';
       const processOutputMapSpy = spyOn(service, 'processOutputMap_').and
-          .returnValue(Promise.resolve(ImmutableMap.of([
+          .returnValue(Promise.resolve(createImmutableMap([
             [processedName, processedContent],
           ])));
 

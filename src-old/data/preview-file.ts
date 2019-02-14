@@ -25,7 +25,7 @@ export abstract class PreviewFile implements DataModel<string> {
   static newInstance(path: string, content: string): PreviewFile {
     return DataModels.newInstance(
         PreviewFile,
-        ImmutableMap.of([
+        createImmutableMap([
           ['content_', content],
           ['path_', path],
         ]));

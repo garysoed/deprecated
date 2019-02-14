@@ -21,7 +21,7 @@ describe('render.HandlebarsServiceClass', () => {
       const context = {a: 'a', c: 'c'};
       const template = 'template';
       const globalsJson = {a: '1', b: '2'};
-      const globals = ImmutableMap.of(globalsJson);
+      const globals = createImmutableMap(globalsJson);
 
       const compiled = 'compiled';
       const mockCompiledTemplate = jasmine.createSpy('CompiledTemplate');

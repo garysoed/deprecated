@@ -18,6 +18,6 @@ export abstract class ThothSource extends Source {
   static newInstance(): ThothSource {
     return DataModels.newInstance(
         ThothSource,
-        ImmutableMap.of([]));
+        createImmutableMap([]));
   }
 }

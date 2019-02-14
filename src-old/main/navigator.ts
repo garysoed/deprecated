@@ -82,14 +82,14 @@ export class Navigator extends BaseThemedElement2 {
       @nodeIn($itemService) itemService: ItemService,
       @nodeIn($selectedItem) selectedItem: Item | null): Promise<ImmutableList<string>> {
     if (!(selectedItem instanceof Folder)) {
-      return ImmutableList.of([]);
+      return createImmutableList([]);
     }
 
     const itemsPromise = selectedItem
         .getItems()
         .mapItem(itemId => itemService.getItem(itemId))
         .filterByType(NonNullType<Item>());
-    const items = ImmutableList.of(await Promise.all(itemsPromise));
+    const items = createImmutableList(await Promise.all(itemsPromise));
     return items
         .sort(Orderings.compound([
           Orderings.matches(item => item instanceof Folder),

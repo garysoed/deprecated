@@ -131,7 +131,7 @@ describe('data.ItemService', () => {
       };
 
       const item = service['createItem_'](
-          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+          containerId, driveItem, createImmutableMap([[driveId, itemId]]));
       assert(item).to.beAnInstanceOf(MarkdownFile);
       assert(item.getId()).to.equal(itemId);
       assert(item.getName()).to.equal(filename);
@@ -158,7 +158,7 @@ describe('data.ItemService', () => {
       };
 
       const item = service['createItem_'](
-          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+          containerId, driveItem, createImmutableMap([[driveId, itemId]]));
       assert(item).to.beAnInstanceOf(MetadataFile);
       assert(item.getId()).to.equal(itemId);
       assert(item.getName()).to.equal(filename);
@@ -188,7 +188,7 @@ describe('data.ItemService', () => {
       };
 
       const item = service['createItem_'](
-          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+          containerId, driveItem, createImmutableMap([[driveId, itemId]]));
       assert(item).to.beAnInstanceOf(DataFile);
       assert(item.getId()).to.equal(itemId);
       assert(item.getName()).to.equal(filename);
@@ -218,7 +218,7 @@ describe('data.ItemService', () => {
       };
 
       const item = service['createItem_'](
-          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+          containerId, driveItem, createImmutableMap([[driveId, itemId]]));
       assert(item).to.beAnInstanceOf(ProcessorFile);
       assert(item.getId()).to.equal(itemId);
       assert(item.getName()).to.equal(filename);
@@ -245,7 +245,7 @@ describe('data.ItemService', () => {
       };
 
       const item = service['createItem_'](
-          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+          containerId, driveItem, createImmutableMap([[driveId, itemId]]));
       assert(item).to.beAnInstanceOf(TemplateFile);
       assert(item.getId()).to.equal(itemId);
       assert(item.getName()).to.equal(filename);
@@ -278,7 +278,7 @@ describe('data.ItemService', () => {
 
       const childId1 = 'childId1';
       const childId2 = 'childId2';
-      const driveIdMap = ImmutableMap.of([
+      const driveIdMap = createImmutableMap([
         [driveId, itemId],
         [childDriveId1, childId1],
         [childDriveId2, childId2],
@@ -315,7 +315,7 @@ describe('data.ItemService', () => {
       };
 
       const childId = 'childId';
-      const driveIdMap = ImmutableMap.of([
+      const driveIdMap = createImmutableMap([
         [driveId, itemId],
         [childDriveId1, childId],
       ]);
@@ -338,7 +338,7 @@ describe('data.ItemService', () => {
       };
 
       assert(() => {
-        service['createItem_']('containerId', driveItem, ImmutableMap.of([]));
+        service['createItem_']('containerId', driveItem, createImmutableMap([]));
       }).to.throwError(/should exist/);
     });
 
@@ -359,7 +359,7 @@ describe('data.ItemService', () => {
       };
 
       const item = service['createItem_'](
-          containerId, driveItem, ImmutableMap.of([[driveId, itemId]]));
+          containerId, driveItem, createImmutableMap([[driveId, itemId]]));
       assert(item).to.beAnInstanceOf(UnknownFile);
       assert(item.getId()).to.equal(itemId);
       assert(item.getName()).to.equal(filename);

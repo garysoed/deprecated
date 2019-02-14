@@ -42,7 +42,7 @@ export class PreviewView extends BaseDisposable {
       return;
     }
     const dom = this.parser_.parseFromString(previewItem.getContent(), 'text/html');
-    const scripts = ImmutableList.of(dom.querySelectorAll('script'));
+    const scripts = createImmutableList(dom.querySelectorAll('script'));
     for (const script of scripts) {
       this.processScript_(script);
     }

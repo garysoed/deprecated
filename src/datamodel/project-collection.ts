@@ -1,8 +1,12 @@
+import { staticSourceId } from 'grapevine/export/component';
 import { ImmutableSet } from 'gs-tools/export/collect';
-import { EditableStorage } from 'gs-tools/export/store';
+import { EditableStorage, LocalStorage } from 'gs-tools/export/store';
+import { InstanceofType } from 'gs-types/export';
+import { _v } from 'mask/export';
+import { Result, Serializable } from 'nabu/export/main';
 import { Observable } from 'rxjs';
 import { map, shareReplay, take } from 'rxjs/operators';
-import { SerializableProject } from '../serializable/serializable-project';
+import { SerializableProject, SerializableProjectType } from '../serializable/serializable-project';
 import { Project } from './project';
 
 export class ProjectCollection {
@@ -42,6 +46,31 @@ export class ProjectCollection {
   }
 
   setProject(project: Project): void {
-    this.store_.update(project.getId(), project.serializable_);
+    this.store_.update(project.id, project.serializable);
   }
 }
+
+export const $projectCollection =
+    staticSourceId('projectCollection', InstanceofType(ProjectCollection));
+_v.builder.source(
+    $projectCollection,
+    new ProjectCollection(
+        new LocalStorage(
+            window,
+            'th2',
+            {
+              convertBackward(serializable: Serializable): Result<SerializableProject> {
+                if (!SerializableProjectType.check(serializable)) {
+                  return {success: false};
+                }
+
+                return {success: true, result: serializable};
+              },
+
+              convertForward(value: SerializableProject): Result<Serializable> {
+                return {success: true, result: {...value}};
+              },
+            },
+        ),
+    ),
+);

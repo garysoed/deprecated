@@ -13,7 +13,7 @@ describe('render.ShowdownService', () => {
       const key2 = 'key2';
       const value1 = 'value1';
       const value2 = 'value2';
-      const options = ImmutableMap.of([
+      const options = createImmutableMap([
         [key1, value1],
         [key2, value2],
       ]);

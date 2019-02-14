@@ -50,7 +50,7 @@ export const $ = resolveSelectors({
         ListParser(ObjectParser({name: StringParser, url: StringParser})),
         IterableOfType<CrumbData, ImmutableList<CrumbData>>(
             HasPropertiesType({name: StringType, url: StringType})),
-        ImmutableList.of([]),
+        createImmutableList([]),
     ),
     el: elementSelector('#breadcrumb', ElementWithTagType('gs-breadcrumb')),
   },
@@ -107,10 +107,10 @@ export class RootView extends BaseThemedElement2 {
     }
     const crumbs: CrumbData[] = [];
     let path = '';
-    for (const item of ImmutableList.of(itemArray).reverse()) {
+    for (const item of createImmutableList(itemArray).reverse()) {
       path += `/${item.getName()}`;
       crumbs.push({name: item.getName(), url: path});
     }
-    return ImmutableList.of(crumbs);
+    return createImmutableList(crumbs);
   }
 }

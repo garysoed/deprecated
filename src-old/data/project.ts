@@ -16,7 +16,7 @@ export abstract class Project implements DataModel<string> {
   static newInstance(rootFolderId: string): Project {
     return DataModels.newInstance(
         Project,
-        ImmutableMap.of([
+        createImmutableMap([
           ['rootFolderId_', rootFolderId],
         ]));
   }
