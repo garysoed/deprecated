@@ -5,18 +5,10 @@
   }
 </style>
 
-<div fill-parent layout="row">
-  <mk-drawer
-      flex-justify="flex-end"
-      id="drawer"
-      layout="column"
-      max-size="10rem"
-      min-size="4rem"
-      mk-theme="dark"
-      mode="vertical"
-  >
-  </mk-drawer>
-  <main flex id="main" mk-theme="light">
-    <th-project-list-view></th-project-list-view>
-  </main>
+<div fill-parent layout="row" mk-theme="light">
+  <mk-root-layout>
+    <main flex id="main" slot="main">
+      <th-project-list-view></th-project-list-view>
+    </main>
+  </mk-root-layout>
 </div>

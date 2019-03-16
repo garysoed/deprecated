@@ -34,7 +34,9 @@ test('view.ProjectListView', () => {
               switchMap(collection => {
                 return collection.getProjectIds()
                     .pipe(
-                        switchMap(projectIds => collection.getProject($pipe(projectIds, $head())!)),
+                        map(projectIds => $pipe(projectIds, $head()) || null),
+                        filterNonNull(),
+                        switchMap(projectId => collection.getProject(projectId)),
                     );
               }),
               filterNonNull(),
