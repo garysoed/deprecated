@@ -1,4 +1,4 @@
-import { _p, Drawer, RootLayout, ThemedCustomElementCtrl } from 'mask/export';
+import { _p, Drawer, RootLayout, ThemedCustomElementCtrl } from '@mask';
 import template from './root-view.html';
 
 @_p.customElement({

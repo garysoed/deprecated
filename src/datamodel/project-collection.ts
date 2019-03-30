@@ -1,9 +1,9 @@
-import { staticSourceId } from 'grapevine/export/component';
-import { ImmutableSet } from 'gs-tools/export/collect';
-import { EditableStorage, LocalStorage } from 'gs-tools/export/store';
-import { InstanceofType } from 'gs-types/export';
-import { _v } from 'mask/export';
-import { Result, Serializable } from 'nabu/export/main';
+import { staticSourceId } from '@grapevine/component';
+import { ImmutableSet } from '@gs-tools/collect';
+import { EditableStorage, LocalStorage } from '@gs-tools/store';
+import { InstanceofType } from '@gs-types';
+import { _v } from '@mask';
+import { Result, Serializable } from '@nabu/main';
 import { Observable } from 'rxjs';
 import { map, shareReplay, take } from 'rxjs/operators';
 import { SerializableProject, SerializableProjectType } from '../serializable/serializable-project';

@@ -1,4 +1,4 @@
-import { HasPropertiesType, IterableOfType, StringType } from 'gs-types/export';
+import { HasPropertiesType, IterableOfType, StringType } from '@gs-types';
 
 export interface SerializableProject {
   readonly id: string;

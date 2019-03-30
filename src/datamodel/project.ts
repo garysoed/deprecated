@@ -1,4 +1,4 @@
-import { createImmutableSet, ImmutableSet } from 'gs-tools/export/collect';
+import { createImmutableSet, ImmutableSet } from '@gs-tools/collect';
 import { SerializableProject } from '../serializable/serializable-project';
 
 export class Project {

@@ -1,8 +1,8 @@
-import { instanceSourceId } from 'grapevine/export/component';
-import { ElementWithTagType, StringType } from 'gs-types/export';
-import { $textIconButton, $textInput, _p, _v, IconWithText, TextIconButton, TextInput, ThemedCustomElementCtrl } from 'mask/export';
-import { element } from 'persona/export/input';
-import { api } from 'persona/export/main';
+import { instanceSourceId } from '@grapevine/component';
+import { ElementWithTagType, StringType } from '@gs-types';
+import { $textIconButton, $textInput, _p, _v, IconWithText, TextIconButton, TextInput, ThemedCustomElementCtrl } from '@mask';
+import { element } from '@persona/input';
+import { api } from '@persona/main';
 import { Observable } from 'rxjs';
 import { switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { $projectCollection, ProjectCollection } from '../../datamodel/project-collection';

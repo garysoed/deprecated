@@ -1,8 +1,8 @@
 import { assert, should, test } from 'gs-testing/export/main';
-import { $head, $pipe } from 'gs-tools/export/collect';
-import { filterNonNull } from 'gs-tools/export/rxjs';
-import { _p, _v } from 'mask/export';
-import { PersonaTester, PersonaTesterFactory } from 'persona/export/testing';
+import { $head, $pipe } from '@gs-tools/collect';
+import { filterNonNull } from '@gs-tools/rxjs';
+import { _p, _v } from '@mask';
+import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap, take } from 'rxjs/operators';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, DEFAULT_PROJECT_NAME, ProjectListView } from './project-list-view';

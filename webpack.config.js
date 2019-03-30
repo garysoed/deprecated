@@ -2,6 +2,7 @@ const glob = require('glob');
 const path = require('path');
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 const smp = new SpeedMeasurePlugin();
+const { TsConfigPathsPlugin } = require('awesome-typescript-loader');
 
 module.exports = smp.wrap({
   entry: {
@@ -19,18 +20,14 @@ module.exports = smp.wrap({
 
   resolve: {// Used to resolve duplicate packages. Make sure that we always use the ones in the root.
     alias: {
-      'grapevine': path.resolve(__dirname, './node_modules/grapevine'),
-      'gs-testing': path.resolve(__dirname, './node_modules/gs-testing'),
-      'gs-tools': path.resolve(__dirname, './node_modules/gs-tools'),
-      'gs-types': path.resolve(__dirname, './node_modules/gs-types'),
-      'mask': path.resolve(__dirname, './node_modules/mask'),
-      'nabu': path.resolve(__dirname, './node_modules/nabu'),
-      'persona': path.resolve(__dirname, './node_modules/persona'),
       'rxjs': path.resolve(__dirname, './node_modules/rxjs'),
       'tslib': path.resolve(__dirname, './node_modules/tslib'),
     },
     extensions: [".ts", ".tsx", ".js", ".json", ".html", ".css", ".svg"],
     symlinks: false,
+    plugins: [
+      new TsConfigPathsPlugin()
+    ]
   },
 
   module: {
