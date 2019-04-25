@@ -1,8 +1,8 @@
+import { SimpleIdGenerator } from '@gs-tools/random';
+import { scanSet } from '@gs-tools/rxjs';
+import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { assert, match, setup, should, test } from 'gs-testing/export/main';
 import { createSpyInstance } from 'gs-testing/export/spy';
-import { createImmutableSet } from '@gs-tools/collect';
-import { SimpleIdGenerator } from '@gs-tools/random';
-import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { BehaviorSubject } from 'rxjs';
 import { SerializableProject } from '../serializable/serializable-project';
 import { Project } from './project';
@@ -29,7 +29,7 @@ test('datamodel.ProjectCollection', () => {
         rootFolderIds: ['rootFolder1', 'rootFolder2'],
       };
 
-      storage.update(projectId, projectSerializable);
+      storage.update(projectId, projectSerializable).subscribe();
 
       const projectSubject = new BehaviorSubject<Project|null>(null);
       collection.getProject(projectId).subscribe(projectSubject);
@@ -57,12 +57,12 @@ test('datamodel.ProjectCollection', () => {
       const projectId2 = 'projectId2';
       const projectId3 = 'projectId3';
 
-      storage.update(projectId1, {id: projectId1, name: 'name', rootFolderIds: []});
-      storage.update(projectId2, {id: projectId2, name: 'name', rootFolderIds: []});
-      storage.update(projectId3, {id: projectId3, name: 'name', rootFolderIds: []});
+      storage.update(projectId1, {id: projectId1, name: 'name', rootFolderIds: []}).subscribe();
+      storage.update(projectId2, {id: projectId2, name: 'name', rootFolderIds: []}).subscribe();
+      storage.update(projectId3, {id: projectId3, name: 'name', rootFolderIds: []}).subscribe();
 
-      const projectIdsSubject = new BehaviorSubject(createImmutableSet());
-      collection.getProjectIds().subscribe(projectIdsSubject);
+      const projectIdsSubject = new BehaviorSubject<Set<string>>(new Set());
+      collection.getProjectIds().pipe(scanSet()).subscribe(projectIdsSubject);
 
       assert(projectIdsSubject.getValue()).to.haveElements([projectId1, projectId2, projectId3]);
     });
@@ -74,12 +74,12 @@ test('datamodel.ProjectCollection', () => {
       const projectId2 = 'projectId2';
       const projectId3 = 'projectId3';
 
-      storage.update(projectId1, {id: projectId1, name: 'name', rootFolderIds: []});
-      storage.update(projectId2, {id: projectId2, name: 'name', rootFolderIds: []});
-      storage.update(projectId3, {id: projectId3, name: 'name', rootFolderIds: []});
+      storage.update(projectId1, {id: projectId1, name: 'name', rootFolderIds: []}).subscribe();
+      storage.update(projectId2, {id: projectId2, name: 'name', rootFolderIds: []}).subscribe();
+      storage.update(projectId3, {id: projectId3, name: 'name', rootFolderIds: []}).subscribe();
 
-      const projectIdsSubject = new BehaviorSubject(createImmutableSet());
-      collection.getProjectIds().subscribe(projectIdsSubject);
+      const projectIdsSubject = new BehaviorSubject(new Set());
+      collection.getProjectIds().pipe(scanSet()).subscribe(projectIdsSubject);
 
       const newProject = await collection.newProject().toPromise();
 
@@ -91,14 +91,16 @@ test('datamodel.ProjectCollection', () => {
     should(`update the project`, () => {
       const projectId = 'projectId';
 
-      const projectIdsSubject = new BehaviorSubject(createImmutableSet());
-      collection.getProjectIds().subscribe(projectIdsSubject);
+      const projectIdsSubject = new BehaviorSubject(new Set());
+      collection.getProjectIds().pipe(scanSet()).subscribe(projectIdsSubject);
 
-      collection.setProject(new Project({
-        id: projectId,
-        name: 'project',
-        rootFolderIds: [],
-      }));
+      collection
+          .setProject(new Project({
+            id: projectId,
+            name: 'project',
+            rootFolderIds: [],
+          }))
+          .subscribe();
 
       assert(projectIdsSubject.getValue()).to.haveElements([projectId]);
     });

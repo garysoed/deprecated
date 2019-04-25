@@ -1,7 +1,7 @@
 import { $pipe, $push, asImmutableMap } from '@gs-tools/collect';
 import { $svgConfig, Palette, start, SvgConfig, Theme } from '@mask';
-import { take } from 'rxjs/operators';
 import { ConsoleDestination, logDestination } from '@santa';
+import { take } from 'rxjs/operators';
 import { ProjectListView } from '../view/projectlist/project-list-view';
 import { RootView } from '../view/root/root-view';
 
@@ -13,6 +13,7 @@ logDestination.set(new ConsoleDestination());
 window.addEventListener('load', () => {
   const theme = new Theme(Palette.PURPLE, Palette.GREEN);
   const {vine} = start(
+      'thoth',
       [
         RootView,
         ProjectListView,
@@ -20,11 +21,11 @@ window.addEventListener('load', () => {
       theme,
       document.getElementById('globalStyle') as HTMLStyleElement);
 
-  vine.getObservable($svgConfig)
+  const svgConfigSubject = $svgConfig.get(vine);
+  svgConfigSubject
       .pipe(take(1))
       .subscribe(svgConfig => {
-        vine.setValue(
-            $svgConfig,
+        svgConfigSubject.next(
             $pipe(
                 svgConfig,
                 $push(...iconConfigs),

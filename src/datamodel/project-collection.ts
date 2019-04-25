@@ -1,19 +1,18 @@
-import { staticSourceId } from '@grapevine/component';
-import { ImmutableSet } from '@gs-tools/collect';
+import { SetDiff } from '@gs-tools/rxjs';
 import { EditableStorage, LocalStorage } from '@gs-tools/store';
-import { InstanceofType } from '@gs-types';
 import { _v } from '@mask';
 import { Result, Serializable } from '@nabu/main';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { map, shareReplay, take } from 'rxjs/operators';
 import { SerializableProject, SerializableProjectType } from '../serializable/serializable-project';
 import { Project } from './project';
 
 export class ProjectCollection {
-  constructor(private readonly store_: EditableStorage<SerializableProject>) { }
+  constructor(private readonly storage: EditableStorage<SerializableProject>) { }
 
   getProject(projectId: string): Observable<Project|null> {
-    return this.store_.read(projectId)
+    return this.storage
+        .read(projectId)
         .pipe(
             map(projectSerializable => {
               if (!projectSerializable) {
@@ -26,12 +25,12 @@ export class ProjectCollection {
         );
   }
 
-  getProjectIds(): Observable<ImmutableSet<string>> {
-    return this.store_.listIds();
+  getProjectIds(): Observable<SetDiff<string>> {
+    return this.storage.listIds();
   }
 
   newProject(): Observable<Project> {
-    return this.store_
+    return this.storage
         .generateId()
         .pipe(
             take(1),
@@ -45,32 +44,32 @@ export class ProjectCollection {
         );
   }
 
-  setProject(project: Project): void {
-    this.store_.update(project.id, project.serializable);
+  setProject(project: Project): Observable<unknown> {
+    return this.storage.update(project.id, project.serializable);
   }
 }
 
-export const $projectCollection =
-    staticSourceId('projectCollection', InstanceofType(ProjectCollection));
-_v.builder.source(
-    $projectCollection,
-    new ProjectCollection(
-        new LocalStorage(
-            window,
-            'th2',
-            {
-              convertBackward(serializable: Serializable): Result<SerializableProject> {
-                if (!SerializableProjectType.check(serializable)) {
-                  return {success: false};
-                }
+export const $projectCollection = _v.source(
+    () => new BehaviorSubject(
+        new ProjectCollection(
+            new LocalStorage(
+                window,
+                'th2',
+                {
+                  convertBackward(serializable: Serializable): Result<SerializableProject> {
+                    if (!SerializableProjectType.check(serializable)) {
+                      return {success: false};
+                    }
 
-                return {success: true, result: serializable};
-              },
+                    return {success: true, result: serializable};
+                  },
 
-              convertForward(value: SerializableProject): Result<Serializable> {
-                return {success: true, result: {...value}};
-              },
-            },
+                  convertForward(value: SerializableProject): Result<Serializable> {
+                    return {success: true, result: {...value}};
+                  },
+                },
+            ),
         ),
     ),
+    globalThis,
 );

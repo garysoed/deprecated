@@ -1,11 +1,12 @@
-import { instanceSourceId } from '@grapevine/component';
-import { ElementWithTagType, StringType } from '@gs-types';
+import { ElementWithTagType } from '@gs-types';
 import { $textIconButton, $textInput, _p, _v, IconWithText, TextIconButton, TextInput, ThemedCustomElementCtrl } from '@mask';
+import { InitFn } from '@persona';
 import { element } from '@persona/input';
 import { api } from '@persona/main';
-import { Observable } from 'rxjs';
-import { switchMap, tap, withLatestFrom } from 'rxjs/operators';
-import { $projectCollection, ProjectCollection } from '../../datamodel/project-collection';
+import { Vine } from 'mask/node_modules/grapevine/export';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { mapTo, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
+import { $projectCollection } from '../../datamodel/project-collection';
 import { logger } from './logger';
 import projectListViewTemplate from './project-list-view.html';
 
@@ -16,8 +17,7 @@ export const $ = {
   addProjectName: element('addProjectName', ElementWithTagType('mk-text-input'), api($textInput)),
 };
 
-const $initProjectName = instanceSourceId('initProjectName', StringType);
-_v.builder.source($initProjectName, DEFAULT_PROJECT_NAME);
+const $initProjectName = _v.source(() => new BehaviorSubject(DEFAULT_PROJECT_NAME), globalThis);
 
 @_p.customElement({
   dependencies: [
@@ -28,26 +28,36 @@ _v.builder.source($initProjectName, DEFAULT_PROJECT_NAME);
   tag: 'th-project-list-view',
   template: projectListViewTemplate,
 })
-@_p.render($.addProjectName._.initValue).withForwarding($initProjectName)
 export class ProjectListView extends ThemedCustomElementCtrl {
-  @_p.render($.addProjectName._.clearFn)
-  onAddButtonClick_(
-      @_p.input($.addButton._.actionEvent) actionEventObs: Observable<Event>,
-      @_p.input($.addProjectName._.value) projectNameInputValueObs: Observable<string>,
-      @_v.vineIn($projectCollection) projectCollectionObs: Observable<ProjectCollection>,
-  ): Observable<unknown> {
-    return actionEventObs
+  private readonly actionEventObs = _p.input($.addButton._.actionEvent, this);
+  private readonly projectNameInputValueObs = _p.input($.addProjectName._.value, this);
+
+  getInitFunctions(): InitFn[] {
+    return [
+      ...super.getInitFunctions(),
+      _p.render($.addProjectName._.initValue).withVine($initProjectName),
+      _p.render($.addProjectName._.clearFn).withVine(_v.stream(this.onAddButtonClick, this)),
+    ];
+  }
+
+  onAddButtonClick(vine: Vine): Observable<[]> {
+    return this.actionEventObs
         .pipe(
-            withLatestFrom(projectCollectionObs),
-            switchMap(([, projectCollection]) => projectCollection.newProject()),
-            withLatestFrom(
-                projectCollectionObs,
-                projectNameInputValueObs,
-            ),
-            tap(([newProject, projectCollection, projectNameInputValue]) => {
-              logger.info('NEW_PROJECT', projectNameInputValue);
-              projectCollection.setProject(newProject.setName(projectNameInputValue));
+            withLatestFrom($projectCollection.get(vine)),
+            switchMap(([, projectCollection]) => {
+              return projectCollection.newProject()
+                  .pipe(
+                      take(1),
+                      withLatestFrom(this.projectNameInputValueObs),
+                      switchMap(([newProject, projectNameInputValue]) => {
+                        logger.info('NEW_PROJECT', projectNameInputValue);
+
+                        return projectCollection
+                            .setProject(newProject.setName(projectNameInputValue));
+                      }),
+                  );
             }),
+            mapTo([]),
         );
   }
 }

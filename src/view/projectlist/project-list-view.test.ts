@@ -1,13 +1,12 @@
-import { assert, should, test } from 'gs-testing/export/main';
-import { $head, $pipe } from '@gs-tools/collect';
-import { filterNonNull } from '@gs-tools/rxjs';
+import { filterNonNull, scanSet } from '@gs-tools/rxjs';
 import { _p, _v } from '@mask';
 import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
+import { assert, should, test } from 'gs-testing/export/main';
 import { map, switchMap, take } from 'rxjs/operators';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, DEFAULT_PROJECT_NAME, ProjectListView } from './project-list-view';
 
-const testerFactory = new PersonaTesterFactory(_v.builder, _p.builder);
+const testerFactory = new PersonaTesterFactory(_p);
 
 test('view.ProjectListView', () => {
   let el: HTMLElement;
@@ -29,12 +28,13 @@ test('view.ProjectListView', () => {
 
       await assert(tester.getAttribute(el, $.addProjectName._.value))
           .to.emitWith(DEFAULT_PROJECT_NAME);
-      const projectNameObs = tester.vine.getObservable($projectCollection)
+      const projectNameObs = $projectCollection.get(tester.vine)
           .pipe(
               switchMap(collection => {
                 return collection.getProjectIds()
                     .pipe(
-                        map(projectIds => $pipe(projectIds, $head()) || null),
+                        scanSet(),
+                        map(projectIds => [...projectIds][0] || null),
                         filterNonNull(),
                         switchMap(projectId => collection.getProject(projectId)),
                     );
