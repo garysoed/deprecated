@@ -1,11 +1,9 @@
+import { Vine } from '@grapevine';
 import { ElementWithTagType } from '@gs-types';
 import { $textIconButton, $textInput, _p, _v, IconWithText, TextIconButton, TextInput, ThemedCustomElementCtrl } from '@mask';
-import { InitFn } from '@persona';
-import { element } from '@persona/input';
-import { api } from '@persona/main';
-import { Vine } from 'mask/node_modules/grapevine/export';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { mapTo, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
+import { api, element, InitFn } from '@persona';
+import { BehaviorSubject, Observable } from '@rxjs';
+import { mapTo, switchMap, take, withLatestFrom } from '@rxjs/operators';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { logger } from './logger';
 import projectListViewTemplate from './project-list-view.html';

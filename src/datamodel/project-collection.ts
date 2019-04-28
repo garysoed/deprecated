@@ -2,8 +2,8 @@ import { SetDiff } from '@gs-tools/rxjs';
 import { EditableStorage, LocalStorage } from '@gs-tools/store';
 import { _v } from '@mask';
 import { Result, Serializable } from '@nabu/main';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map, shareReplay, take } from 'rxjs/operators';
+import { BehaviorSubject, Observable } from '@rxjs';
+import { map, shareReplay, take } from '@rxjs/operators';
 import { SerializableProject, SerializableProjectType } from '../serializable/serializable-project';
 import { Project } from './project';
 

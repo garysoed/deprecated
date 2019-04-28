@@ -1,7 +1,7 @@
 import { $pipe, $push, asImmutableMap } from '@gs-tools/collect';
 import { $svgConfig, Palette, start, SvgConfig, Theme } from '@mask';
 import { ConsoleDestination, logDestination } from '@santa';
-import { take } from 'rxjs/operators';
+import { take } from '@rxjs/operators';
 import { ProjectListView } from '../view/projectlist/project-list-view';
 import { RootView } from '../view/root/root-view';
 

@@ -17,6 +17,7 @@
     "paths": {
       "@grapevine/*": ["node_modules/grapevine/export/*"],
       "@grapevine": ["node_modules/grapevine/export/index.ts"],
+      "@gs-testing": ["node_modules/gs-testing/export/index.ts"],
       "@gs-testing/*": ["node_modules/gs-testing/export/*"],
       "@gs-tools/*": ["node_modules/gs-tools/export/*"],
       "@gs-types": ["node_modules/gs-types/export/index.ts"],
@@ -26,6 +27,8 @@
       "@persona/*": ["node_modules/persona/export/*"],
       "@persona": ["node_modules/persona/export/index.ts"],
       "@santa": ["node_modules/santa/export/index.ts"],
+      "@rxjs": ["node_modules/rxjs"],
+      "@rxjs/operators": ["node_modules/rxjs/operators"],
     },
     "pretty": true,
     "sourceMap": true,
