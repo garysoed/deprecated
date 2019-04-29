@@ -1,8 +1,7 @@
+import { assert, createSpyInstance, match, setup, should, test } from '@gs-testing';
 import { SimpleIdGenerator } from '@gs-tools/random';
 import { scanSet } from '@gs-tools/rxjs';
 import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
-import { assert, match, setup, should, test } from 'gs-testing/export/main';
-import { createSpyInstance } from 'gs-testing/export/spy';
 import { BehaviorSubject } from '@rxjs';
 import { SerializableProject } from '../serializable/serializable-project';
 import { Project } from './project';

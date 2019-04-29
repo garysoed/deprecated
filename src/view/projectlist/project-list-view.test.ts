@@ -1,7 +1,7 @@
+import { assert, should, test } from '@gs-testing';
 import { filterNonNull, scanSet } from '@gs-tools/rxjs';
 import { _p, _v } from '@mask';
 import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
-import { assert, should, test } from 'gs-testing/export/main';
 import { map, switchMap, take } from '@rxjs/operators';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, DEFAULT_PROJECT_NAME, ProjectListView } from './project-list-view';

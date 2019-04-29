@@ -18,7 +18,6 @@
       "@grapevine/*": ["node_modules/grapevine/export/*"],
       "@grapevine": ["node_modules/grapevine/export/index.ts"],
       "@gs-testing": ["node_modules/gs-testing/export/index.ts"],
-      "@gs-testing/*": ["node_modules/gs-testing/export/*"],
       "@gs-tools/*": ["node_modules/gs-tools/export/*"],
       "@gs-types": ["node_modules/gs-types/export/index.ts"],
       "@mask": ["node_modules/mask/export/index.ts"],
