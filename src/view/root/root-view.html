@@ -6,9 +6,14 @@
 </style>
 
 <div fill-parent layout="row" mk-theme="light">
-  <mk-root-layout theme="light">
+  <mk-root-layout icon="thoth" label="Thoth" theme="light">
     <main flex id="main" slot="main">
       <th-project-list-view></th-project-list-view>
+      <mk-dialog></mk-dialog>
     </main>
+    <div layout="column" slot="drawer">
+      <div flex></div>
+      <mk-text-icon-button id="addProject" icon="add" label="Add project"></mk-text-icon-button>
+    </div>
   </mk-root-layout>
 </div>
