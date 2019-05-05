@@ -3,6 +3,7 @@ const path = require('path');
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 const smp = new SpeedMeasurePlugin();
 const { TsConfigPathsPlugin } = require('awesome-typescript-loader');
+const WebpackNotifierPlugin = require('webpack-notifier');
 
 module.exports = smp.wrap({
   entry: {
@@ -20,7 +21,6 @@ module.exports = smp.wrap({
 
   resolve: {// Used to resolve duplicate packages. Make sure that we always use the ones in the root.
     alias: {
-      'rxjs': path.resolve(__dirname, './node_modules/rxjs'),
       'tslib': path.resolve(__dirname, './node_modules/tslib'),
     },
     extensions: [".ts", ".tsx", ".js", ".json", ".html", ".css", ".svg"],
@@ -60,4 +60,12 @@ module.exports = smp.wrap({
   },
 
   watch: true,
+
+  plugins: [
+    new WebpackNotifierPlugin({
+      alwaysNotify: true,
+      contentImage: '',
+      title: 'Thoth',
+    }),
+  ]
 });

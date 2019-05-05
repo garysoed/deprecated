@@ -21,6 +21,7 @@
       "@gs-tools/*": ["node_modules/gs-tools/export/*"],
       "@gs-types": ["node_modules/gs-types/export/index.ts"],
       "@mask": ["node_modules/mask/export/index.ts"],
+      "@mask/*": ["node_modules/mask/export/*"],
       "@moirai": ["node_modules/moirai/export/index.ts"],
       "@nabu/*": ["node_modules/nabu/export/*"],
       "@persona/*": ["node_modules/persona/export/*"],

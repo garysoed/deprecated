@@ -1,6 +1,7 @@
 import { assert, setup, should, test } from '@gs-testing';
 import { $dialogService, _p, ActionEvent } from '@mask';
 import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
+import { EMPTY } from '@rxjs';
 import { map, switchMap, tap } from '@rxjs/operators';
 import { $, RootView } from './root-view';
 
@@ -19,10 +20,10 @@ test('@thoth/view/root/root-view', () => {
     should(`disable if the dialog is open`, async () => {
       $dialogService.get(tester.vine)
           .pipe(
-              tap(service => service.open({
+              switchMap(service => service.open({
                 cancelable: false,
                 content: {tag: 'div'},
-                onClose: () => undefined,
+                onClose: () => EMPTY,
                 title: 'test',
               })),
           )

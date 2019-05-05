@@ -4,6 +4,7 @@ import { $dialogService, $textIconButton, _p, _v, Dialog, Drawer, RootLayout, Th
 import { api, element, InitFn } from '@persona';
 import { Observable } from '@rxjs';
 import { map, shareReplay, switchMap, tap, withLatestFrom } from '@rxjs/operators';
+import { AddProjectDialog, openDialog as openAddProjectDialog } from '../projectlist/add-project-dialog';
 import template from './root-view.html';
 
 export const $ = {
@@ -15,7 +16,12 @@ export const $ = {
 };
 
 @_p.customElement({
-  dependencies: [Dialog, Drawer, RootLayout],
+  dependencies: [
+    AddProjectDialog,
+    Dialog,
+    Drawer,
+    RootLayout,
+  ],
   tag: 'th-root-view',
   template,
 })
@@ -40,17 +46,8 @@ export class RootView extends ThemedCustomElementCtrl {
   }
 
   private setupOnAddProjectAction(vine: Vine): Observable<unknown> {
-    return this.onAddProjectAction
-        .pipe(
-            withLatestFrom($dialogService.get(vine)),
-            tap(([, dialogService]) => {
-              dialogService.open({
-                cancelable: true,
-                content: {tag: 'th-add-project'},
-                onClose: () => undefined,
-                title: 'Create new project',
-              });
-            }),
-        );
+    return this.onAddProjectAction.pipe(
+        switchMap(() => openAddProjectDialog(vine)),
+    );
   }
 }
