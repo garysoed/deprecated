@@ -1,7 +1,6 @@
 import { Vine } from '@grapevine';
-import { debug } from '@gs-tools/rxjs';
 import { ElementWithTagType } from '@gs-types';
-import { $dialogService, $textInput, _p, _v, TextIconButton, ThemedCustomElementCtrl } from '@mask';
+import { $dialogService, $textInput, _p, _v, TextInput, ThemedCustomElementCtrl } from '@mask';
 import { api, element, InitFn } from '@persona';
 import { BehaviorSubject, EMPTY, Observable } from '@rxjs';
 import { map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
@@ -20,7 +19,7 @@ export const $ = {
 };
 
 @_p.customElement({
-  dependencies: [TextIconButton],
+  dependencies: [TextInput],
   tag: 'th-add-project-dialog',
   template,
 })
@@ -69,7 +68,7 @@ function onClose(canceled: boolean, value: NewProjectSpec|null, vine: Vine): Obs
     return EMPTY;
   }
 
-  if (!value) {
+  if (!value || !value.projectName) {
     // TODO: Error and cancel closing the dialog.
     return EMPTY;
   }
