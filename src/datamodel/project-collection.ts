@@ -1,4 +1,4 @@
-import { SetDiff } from '@gs-tools/rxjs';
+import { ArrayDiff, SetDiff } from '@gs-tools/rxjs';
 import { EditableStorage, LocalStorage } from '@gs-tools/store';
 import { _v } from '@mask';
 import { Result, Serializable } from '@nabu/main';
@@ -25,7 +25,7 @@ export class ProjectCollection {
         );
   }
 
-  getProjectIds(): Observable<SetDiff<string>> {
+  getProjectIds(): Observable<ArrayDiff<string>> {
     return this.storage.listIds();
   }
 

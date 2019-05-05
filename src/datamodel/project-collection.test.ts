@@ -1,6 +1,6 @@
 import { assert, createSpyInstance, match, setup, should, test } from '@gs-testing';
 import { SimpleIdGenerator } from '@gs-tools/random';
-import { scanSet } from '@gs-tools/rxjs';
+import { scanArray } from '@gs-tools/rxjs';
 import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { BehaviorSubject } from '@rxjs';
 import { SerializableProject } from '../serializable/serializable-project';
@@ -60,8 +60,8 @@ test('datamodel.ProjectCollection', () => {
       storage.update(projectId2, {id: projectId2, name: 'name', rootFolderIds: []}).subscribe();
       storage.update(projectId3, {id: projectId3, name: 'name', rootFolderIds: []}).subscribe();
 
-      const projectIdsSubject = new BehaviorSubject<Set<string>>(new Set());
-      collection.getProjectIds().pipe(scanSet()).subscribe(projectIdsSubject);
+      const projectIdsSubject = new BehaviorSubject<string[]>([]);
+      collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
 
       assert(projectIdsSubject.getValue()).to.haveElements([projectId1, projectId2, projectId3]);
     });
@@ -77,8 +77,8 @@ test('datamodel.ProjectCollection', () => {
       storage.update(projectId2, {id: projectId2, name: 'name', rootFolderIds: []}).subscribe();
       storage.update(projectId3, {id: projectId3, name: 'name', rootFolderIds: []}).subscribe();
 
-      const projectIdsSubject = new BehaviorSubject(new Set());
-      collection.getProjectIds().pipe(scanSet()).subscribe(projectIdsSubject);
+      const projectIdsSubject = new BehaviorSubject<string[]>([]);
+      collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
 
       const newProject = await collection.newProject().toPromise();
 
@@ -90,8 +90,8 @@ test('datamodel.ProjectCollection', () => {
     should(`update the project`, () => {
       const projectId = 'projectId';
 
-      const projectIdsSubject = new BehaviorSubject(new Set());
-      collection.getProjectIds().pipe(scanSet()).subscribe(projectIdsSubject);
+      const projectIdsSubject = new BehaviorSubject<string[]>([]);
+      collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
 
       collection
           .setProject(new Project({

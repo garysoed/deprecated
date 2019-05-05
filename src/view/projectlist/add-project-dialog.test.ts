@@ -1,5 +1,5 @@
 import { assert, runEnvironment, setup, should, test } from '@gs-testing';
-import { filterNonNull, scanSet } from '@gs-tools/rxjs';
+import { filterNonNull, scanArray } from '@gs-tools/rxjs';
 import { _p, Dialog } from '@mask';
 import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
@@ -8,9 +8,10 @@ import { $projectCollection } from '../../datamodel/project-collection';
 import { $, AddProjectDialog, openDialog } from './add-project-dialog';
 
 const factory = new PersonaTesterFactory(_p);
-runEnvironment(new PersonaTesterEnvironment());
 
 test('@thoth/view/projectlist/add-project-dialog', () => {
+  runEnvironment(new PersonaTesterEnvironment());
+
   let dialogTester: DialogTester;
   let tester: PersonaTester;
 
@@ -42,7 +43,7 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
               switchMap(collection => {
                 return collection.getProjectIds()
                     .pipe(
-                        scanSet(),
+                        scanArray(),
                         map(projectIds => [...projectIds][0] || null),
                         filterNonNull(),
                         switchMap(projectId => collection.getProject(projectId)),
@@ -60,8 +61,8 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
       const projectCount = $projectCollection.get(tester.vine)
           .pipe(
               switchMap(collection => collection.getProjectIds()),
-              scanSet(),
-              map(ids => ids.size),
+              scanArray(),
+              map(ids => ids.length),
           );
       await assert(projectCount).to.emitWith(0);
     });
@@ -82,8 +83,8 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
       const projectCount = $projectCollection.get(tester.vine)
           .pipe(
               switchMap(collection => collection.getProjectIds()),
-              scanSet(),
-              map(ids => ids.size),
+              scanArray(),
+              map(ids => ids.length),
           );
       await assert(projectCount).to.emitWith(0);
     });
