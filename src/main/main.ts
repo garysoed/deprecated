@@ -3,7 +3,6 @@ import { $svgConfig, Palette, start, SvgConfig, Theme } from '@mask';
 import { take } from '@rxjs/operators';
 import { ConsoleDestination, logDestination } from '@santa';
 import * as thothIcon from '../asset/thoth.svg';
-import { ProjectListView } from '../view/projectlist/project-list-view';
 import { RootView } from '../view/root/root-view';
 
 const iconConfigs: Map<string, SvgConfig> = new Map([
@@ -18,7 +17,6 @@ window.addEventListener('load', () => {
       'thoth',
       [
         RootView,
-        ProjectListView,
       ],
       theme,
       document.getElementById('globalStyle') as HTMLStyleElement,

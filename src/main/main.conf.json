@@ -1,5 +1,6 @@
 {
   "/bin/*": "../../out/$0",
   "/": "main.html",
+  "/p/:projectId": "main.html",
   "/asset/:name": "../asset/$name"
 }

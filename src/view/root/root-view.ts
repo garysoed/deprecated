@@ -1,10 +1,13 @@
 import { Vine } from '@grapevine';
+import { debug } from '@gs-tools/rxjs';
 import { ElementWithTagType } from '@gs-types';
 import { $dialogService, $textIconButton, _p, _v, Dialog, Drawer, RootLayout, ThemedCustomElementCtrl } from '@mask';
-import { api, element, InitFn } from '@persona';
+import { api, element, InitFn, single, SingleRenderSpec } from '@persona';
 import { Observable } from '@rxjs';
-import { map, shareReplay, switchMap, tap, withLatestFrom } from '@rxjs/operators';
+import { map, shareReplay, switchMap } from '@rxjs/operators';
+import { $locationService } from '../../main/route';
 import { AddProjectDialog, openDialog as openAddProjectDialog } from '../projectlist/add-project-dialog';
+import { ProjectListView } from '../projectlist/project-list-view';
 import template from './root-view.html';
 
 export const $ = {
@@ -13,6 +16,9 @@ export const $ = {
       ElementWithTagType('mk-text-icon-button'),
       api($textIconButton),
   ),
+  main: element('main', ElementWithTagType('main'), {
+    view: single('#view'),
+  }),
 };
 
 @_p.customElement({
@@ -20,6 +26,7 @@ export const $ = {
     AddProjectDialog,
     Dialog,
     Drawer,
+    ProjectListView,
     RootLayout,
   ],
   tag: 'th-root-view',
@@ -32,6 +39,7 @@ export class RootView extends ThemedCustomElementCtrl {
     return [
       ...super.getInitFunctions(),
       _p.render($.addProject._.disabled).withVine(_v.stream(this.renderAddProjectDisabled, this)),
+      _p.render($.main._.view).withVine(_v.stream(this.renderView, this)),
       this.setupOnAddProjectAction,
     ];
   }
@@ -42,6 +50,23 @@ export class RootView extends ThemedCustomElementCtrl {
             switchMap(service => service.getStateObs()),
             map(({isOpen}) => isOpen),
             shareReplay(1),
+        );
+  }
+
+  private renderView(vine: Vine): Observable<SingleRenderSpec|null> {
+    return $locationService.get(vine)
+        .pipe(
+            debug('locationService'),
+            switchMap(service => service.getLocation()),
+            debug('location'),
+            map(location => {
+              switch (location.type) {
+                case 'MAIN':
+                  return {attr: new Map(), tag: 'th-project-list-view'};
+                default:
+                  return null;
+              }
+            }),
         );
   }
 
