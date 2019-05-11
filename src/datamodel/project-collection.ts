@@ -1,14 +1,18 @@
-import { ArrayDiff, SetDiff } from '@gs-tools/rxjs';
+import { ArrayDiff, debug } from '@gs-tools/rxjs';
 import { EditableStorage, LocalStorage } from '@gs-tools/store';
 import { _v } from '@mask';
 import { Result, Serializable } from '@nabu/main';
 import { BehaviorSubject, Observable } from '@rxjs';
-import { map, shareReplay, take } from '@rxjs/operators';
+import { map, mapTo, shareReplay, take } from '@rxjs/operators';
 import { SerializableProject, SerializableProjectType } from '../serializable/serializable-project';
 import { Project } from './project';
 
 export class ProjectCollection {
   constructor(private readonly storage: EditableStorage<SerializableProject>) { }
+
+  deleteProject(projectId: string): Observable<unknown> {
+    return this.storage.delete(projectId);
+  }
 
   getProject(projectId: string): Observable<Project|null> {
     return this.storage
@@ -44,8 +48,9 @@ export class ProjectCollection {
         );
   }
 
-  setProject(project: Project): Observable<unknown> {
-    return this.storage.update(project.id, project.serializable);
+  setProject(project: Project): Observable<Project> {
+    return this.storage.update(project.id, project.serializable)
+        .pipe(mapTo(project));
   }
 }
 
