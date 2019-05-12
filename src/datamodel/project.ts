@@ -2,7 +2,7 @@ import { createImmutableSet, ImmutableSet } from '@gs-tools/collect';
 import { SerializableProject } from '../serializable/serializable-project';
 
 export class Project {
-  private readonly rootFolderIds: ImmutableSet<string>;
+  readonly rootFolderIds: ImmutableSet<string>;
 
   constructor(readonly serializable: SerializableProject) {
     this.rootFolderIds = createImmutableSet(serializable.rootFolderIds);
@@ -23,7 +23,7 @@ export class Project {
     });
   }
 
-  setRootFolderIds(newRootFolderIds: ImmutableSet<string>): Project {
+  setRootFolderIds(newRootFolderIds: Iterable<string>): Project {
     return new Project({
       ...this.serializable,
       rootFolderIds: [...newRootFolderIds],
