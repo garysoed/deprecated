@@ -1,10 +1,9 @@
-import { _p, Drawer, TextIconButton, ThemedCustomElementCtrl } from '@mask';
+import { _p, Breadcrumb, ThemedCustomElementCtrl } from '@mask';
 import template from './folder-view.html';
 
 @_p.customElement({
   dependencies: [
-    Drawer,
-    TextIconButton,
+    Breadcrumb,
   ],
   tag: 'th-folder-view',
   template,

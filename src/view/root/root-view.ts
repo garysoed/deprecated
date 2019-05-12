@@ -1,5 +1,4 @@
 import { Vine } from '@grapevine';
-import { debug } from '@gs-tools/rxjs';
 import { ElementWithTagType } from '@gs-types';
 import { $dialogService, $textIconButton, _p, _v, Dialog, Drawer, RootLayout, ThemedCustomElementCtrl } from '@mask';
 import { api, element, InitFn, single, SingleRenderSpec } from '@persona';
@@ -56,13 +55,16 @@ export class RootView extends ThemedCustomElementCtrl {
   private renderView(vine: Vine): Observable<SingleRenderSpec|null> {
     return $locationService.get(vine)
         .pipe(
-            debug('locationService'),
             switchMap(service => service.getLocation()),
-            debug('location'),
             map(location => {
               switch (location.type) {
                 case 'MAIN':
                   return {attr: new Map(), tag: 'th-project-list-view'};
+                case 'PROJECT':
+                  return {
+                    attr: new Map([['projectId', location.payload.projectId]]),
+                    tag: 'th-project-view',
+                  };
                 default:
                   return null;
               }

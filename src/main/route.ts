@@ -4,17 +4,17 @@ import { BehaviorSubject } from '@rxjs';
 
 export interface Routes {
   'MAIN': {};
-  'PROJECT_MAIN': {projectId: string};
+  'PROJECT': {folderId: string; projectId: string};
 }
 
 const ROUTE_SPEC: Array<RouteSpec<keyof Routes>> = [
-  {path: '/p/:projectId', type: 'PROJECT_MAIN'},
+  {path: '/p/:projectId/f/:folderId?', type: 'PROJECT'},
   {path: '/', type: 'MAIN'},
 ];
 
 export const $locationService = _v.source(
     () => new BehaviorSubject(
-        new LocationService(ROUTE_SPEC, {payload: {}, type: 'MAIN'}),
+        new LocationService<Routes>(ROUTE_SPEC, {payload: {}, type: 'MAIN'}),
     ),
     globalThis,
 );
