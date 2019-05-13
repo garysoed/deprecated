@@ -24,8 +24,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
       $projectCollection.get(tester.vine)
           .pipe(
               take(1),
-              switchMap(collection => collection
-                  .newProject()
+              switchMap(collection => collection.newProject('rootFolderId')
                   .pipe(
                       switchMap(newProject =>
                           collection.setProject(newProject.setName(projectName)),
@@ -53,8 +52,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
       const projectIdObs = projectCollectionObs
           .pipe(
               take(1),
-              switchMap(collection => collection
-                  .newProject()
+              switchMap(collection => collection.newProject('rootFolderId')
                   .pipe(switchMap(newProject => collection.setProject(newProject))),
               ),
               shareReplay(1),

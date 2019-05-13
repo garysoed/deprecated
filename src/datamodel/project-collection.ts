@@ -1,7 +1,7 @@
 import { ArrayDiff } from '@gs-tools/rxjs';
 import { EditableStorage, LocalStorage } from '@gs-tools/store';
 import { _v } from '@mask';
-import { BehaviorSubject, Observable } from '@rxjs';
+import { Observable, of as observableOf } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
 import { SERIALIZABLE_PROJECT_CONVERTER, SerializableProject } from '../serializable/serializable-project';
 import { Project } from './project';
@@ -32,7 +32,7 @@ export class ProjectCollection {
     return this.storage.listIds();
   }
 
-  newProject(): Observable<Project> {
+  newProject(rootFolderId: string): Observable<Project> {
     return this.storage
         .generateId()
         .pipe(
@@ -41,6 +41,7 @@ export class ProjectCollection {
               return new Project({
                 id: newProjectId,
                 name: `Project ${newProjectId}`,
+                rootFolderId,
               });
             }),
             shareReplay(1),
@@ -53,12 +54,12 @@ export class ProjectCollection {
   }
 }
 
-export const $projectCollection = _v.source(
-    () => new BehaviorSubject(
+export const $projectCollection = _v.stream(
+    () => observableOf(
         new ProjectCollection(
             new LocalStorage(
                 window,
-                'th2',
+                'th2.pr',
                 SERIALIZABLE_PROJECT_CONVERTER,
             ),
         ),

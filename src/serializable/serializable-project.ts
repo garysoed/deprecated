@@ -4,11 +4,13 @@ import { Result, Serializable } from '@nabu';
 export interface SerializableProject {
   readonly id: string;
   readonly name: string;
+  readonly rootFolderId: string;
 }
 
 export const SerializableProjectType = HasPropertiesType<SerializableProject>({
   id: StringType,
   name: StringType,
+  rootFolderId: StringType,
 });
 
 export const SERIALIZABLE_PROJECT_CONVERTER = {

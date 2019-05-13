@@ -1,6 +1,6 @@
 import { EditableStorage, LocalStorage } from '@gs-tools/store';
 import { _v } from '@mask';
-import { BehaviorSubject, Observable } from '@rxjs';
+import { Observable, of as observableOf } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
 import { SERIALIZABLE_ITEM_METADATA_CONVERTER, SerializableItemMetadata } from '../serializable/serializable-item-metadata';
 import { ItemMetadata } from './item-metadata';
@@ -47,12 +47,12 @@ export class ItemMetadataCollection {
   }
 }
 
-export const $itemMetadataCollection = _v.source(
-    () => new BehaviorSubject(
+export const $itemMetadataCollection = _v.stream(
+    () => observableOf(
         new ItemMetadataCollection(
             new LocalStorage(
                 window,
-                'th2',
+                'th2.im',
                 SERIALIZABLE_ITEM_METADATA_CONVERTER,
             ),
         ),

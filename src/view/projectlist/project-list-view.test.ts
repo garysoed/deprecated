@@ -28,7 +28,7 @@ test('@thoth/view/projectlist/project-list-view', () => {
           .pipe(
               withLatestFrom($projectCollection.get(tester.vine)),
               switchMap(([id, collection]) => {
-                return collection.newProject()
+                return collection.newProject('rootFolderId')
                     .pipe(
                         map(newProject => newProject.setName(`Project ${id}`)),
                         switchMap(newProject => collection.setProject(newProject)),

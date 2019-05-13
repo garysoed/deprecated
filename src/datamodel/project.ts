@@ -1,4 +1,3 @@
-import { createImmutableSet, ImmutableSet } from '@gs-tools/collect';
 import { SerializableProject } from '../serializable/serializable-project';
 
 export class Project {
@@ -10,6 +9,10 @@ export class Project {
 
   get name(): string {
     return this.serializable.name;
+  }
+
+  get rootFolderId(): string {
+    return this.serializable.rootFolderId;
   }
 
   setName(newName: string): Project {

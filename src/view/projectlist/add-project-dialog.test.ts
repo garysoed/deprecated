@@ -1,9 +1,11 @@
-import { assert, runEnvironment, setup, should, test } from '@gs-testing';
+import { assert, match, runEnvironment, setup, should, test } from '@gs-testing';
 import { filterNonNull, scanArray } from '@gs-tools/rxjs';
 import { _p, Dialog } from '@mask';
 import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
-import { map, switchMap } from '@rxjs/operators';
+import { map, switchMap, withLatestFrom } from '@rxjs/operators';
+import { ItemMetadata } from 'src/datamodel/item-metadata';
+import { $itemMetadataCollection } from 'src/datamodel/item-metadata-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, AddProjectDialog, openDialog } from './add-project-dialog';
 
@@ -38,7 +40,7 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
           .subscribe();
       dialogTester.clickOk().subscribe();
 
-      const projectNameObs = $projectCollection.get(tester.vine)
+      const projectObs = $projectCollection.get(tester.vine)
           .pipe(
               switchMap(collection => {
                 return collection.getProjectIds()
@@ -50,9 +52,17 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
                     );
               }),
               filterNonNull(),
-              map(project => project.name),
           );
-      await assert(projectNameObs).to.emitWith(newProjectName);
+
+      await assert(projectObs.pipe(map(project => project.name))).to.emitWith(newProjectName);
+
+      const itemMetadataObs = projectObs
+          .pipe(
+              withLatestFrom($itemMetadataCollection.get(tester.vine)),
+              switchMap(([project, collection]) => collection.getMetadata(project.rootFolderId)),
+          );
+      await assert(itemMetadataObs).to
+          .emitWith(match.anyObjectThat<ItemMetadata>().beAnInstanceOf(ItemMetadata));
     });
 
     should(`do nothing if there are no project names`, async () => {

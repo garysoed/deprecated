@@ -22,7 +22,7 @@ export const $ = {
 })
 export class ProjectListItem extends ThemedCustomElementCtrl {
   private readonly onDeleteAction = _p.input($.delete._.actionEvent, this);
-  private readonly projectCollection = $projectCollection.asSubject();
+  private readonly projectCollection = $projectCollection.asObservable();
   private readonly projectIdObs = _p.input($.host._.projectId, this);
 
   getInitFunctions(): InitFn[] {

@@ -2,8 +2,11 @@ import { Vine } from '@grapevine';
 import { ElementWithTagType } from '@gs-types';
 import { $dialogService, $textInput, _p, _v, TextInput, ThemedCustomElementCtrl } from '@mask';
 import { api, element, InitFn } from '@persona';
-import { BehaviorSubject, EMPTY, Observable } from '@rxjs';
+import { BehaviorSubject, combineLatest, EMPTY, Observable } from '@rxjs';
 import { map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
+import { LocalSource } from 'src/datamodel/local-source';
+import { SourceType } from 'src/datamodel/source-type';
+import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
 import template from './add-project-dialog.html';
 import { logger } from './logger';
@@ -73,19 +76,24 @@ function onClose(canceled: boolean, value: NewProjectSpec|null, vine: Vine): Obs
     return EMPTY;
   }
 
-  return $projectCollection.get(vine)
-      .pipe(
-          switchMap(projectCollection => {
-            return projectCollection.newProject()
-                .pipe(
-                    take(1),
-                    switchMap(newProject => {
-                      logger.info('NEW_PROJECT', value.projectName);
+  return combineLatest(
+      $projectCollection.get(vine),
+      $itemMetadataCollection.get(vine),
+  )
+  .pipe(
+      take(1),
+      switchMap(([projectCollection, itemMetadataCollection]) => {
+        return itemMetadataCollection.newMetadata(true, new LocalSource({type: SourceType.LOCAL}))
+            .pipe(
+                switchMap(newMetadata => itemMetadataCollection.setMetadata(newMetadata)),
+                switchMap(newMetadata => projectCollection.newProject(newMetadata.id)),
+                switchMap(newProject => {
+                  logger.info('NEW_PROJECT', value.projectName);
 
-                      return projectCollection
-                          .setProject(newProject.setName(value.projectName || ''));
-                    }),
-                );
-          }),
-      );
+                  return projectCollection.setProject(newProject.setName(value.projectName || ''));
+                }),
+                take(1),
+            );
+      }),
+  );
 }
