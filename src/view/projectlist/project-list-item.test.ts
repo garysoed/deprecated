@@ -47,7 +47,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
   });
 
   test('setupHandleDelete', () => {
-    should.only(`delete the project correctly`, async () => {
+    should(`delete the project correctly`, async () => {
       const projectCollectionObs = $projectCollection.get(tester.vine);
       // Create the new project and sets its ID as the project-id attribute.
       const projectIdObs = projectCollectionObs

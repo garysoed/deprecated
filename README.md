@@ -17,7 +17,7 @@ Goes like:
 
 ```
           raw > JSON >
-             Template > Render output
+            Template > Render output
 ```
 
 1.  The pipeline starts with some **raw** files.
@@ -83,3 +83,25 @@ interface Render {
 ```
 
 ### Output
+
+### Data models
+Item
+|-  Folder
+    |-  LocalFolder
+    |-  RemoteFolder
+|-  File
+    |-  Data
+    |-  Template
+    |-  Converter
+    |-  Render
+
+ItemMetadata
+-   isEditable
+-   name
+-   source: Source
+-   id
+
+Source
+>   LocalSource
+>   DriveSource
+

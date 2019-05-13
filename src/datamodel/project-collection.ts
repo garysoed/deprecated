@@ -1,10 +1,9 @@
-import { ArrayDiff, debug } from '@gs-tools/rxjs';
+import { ArrayDiff } from '@gs-tools/rxjs';
 import { EditableStorage, LocalStorage } from '@gs-tools/store';
 import { _v } from '@mask';
-import { Result, Serializable } from '@nabu/main';
 import { BehaviorSubject, Observable } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
-import { SerializableProject, SerializableProjectType } from '../serializable/serializable-project';
+import { SERIALIZABLE_PROJECT_CONVERTER, SerializableProject } from '../serializable/serializable-project';
 import { Project } from './project';
 
 export class ProjectCollection {
@@ -42,9 +41,9 @@ export class ProjectCollection {
               return new Project({
                 id: newProjectId,
                 name: `Project ${newProjectId}`,
-                rootFolderIds: [],
               });
             }),
+            shareReplay(1),
         );
   }
 
@@ -60,19 +59,7 @@ export const $projectCollection = _v.source(
             new LocalStorage(
                 window,
                 'th2',
-                {
-                  convertBackward(serializable: Serializable): Result<SerializableProject> {
-                    if (!SerializableProjectType.check(serializable)) {
-                      return {success: false};
-                    }
-
-                    return {success: true, result: serializable};
-                  },
-
-                  convertForward(value: SerializableProject): Result<Serializable> {
-                    return {success: true, result: {...value}};
-                  },
-                },
+                SERIALIZABLE_PROJECT_CONVERTER,
             ),
         ),
     ),

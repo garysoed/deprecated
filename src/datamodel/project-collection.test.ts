@@ -7,7 +7,7 @@ import { SerializableProject } from '../serializable/serializable-project';
 import { Project } from './project';
 import { ProjectCollection } from './project-collection';
 
-test('datamodel.ProjectCollection', () => {
+test('@thoth/datamodel/project-collection', () => {
   let storage: EditableStorage<SerializableProject>;
   let collection: ProjectCollection;
 
@@ -20,12 +20,9 @@ test('datamodel.ProjectCollection', () => {
     should(`emit the correct project`, () => {
       const projectId = 'projectId';
       const projectName = `Test Project`;
-      const rootFolder1 = 'rootFolder1';
-      const rootFolder2 = 'rootFolder2';
       const projectSerializable = {
         id: projectId,
         name: projectName,
-        rootFolderIds: ['rootFolder1', 'rootFolder2'],
       };
 
       storage.update(projectId, projectSerializable).subscribe();
@@ -38,7 +35,6 @@ test('datamodel.ProjectCollection', () => {
       assert(project.serializable).to.equal(match.anyObjectThat().haveProperties({
         id: projectId,
         name: projectName,
-        rootFolderIds: match.anyArrayThat().haveExactElements([rootFolder1, rootFolder2]),
       }));
     });
 
@@ -56,9 +52,9 @@ test('datamodel.ProjectCollection', () => {
       const projectId2 = 'projectId2';
       const projectId3 = 'projectId3';
 
-      storage.update(projectId1, {id: projectId1, name: 'name', rootFolderIds: []}).subscribe();
-      storage.update(projectId2, {id: projectId2, name: 'name', rootFolderIds: []}).subscribe();
-      storage.update(projectId3, {id: projectId3, name: 'name', rootFolderIds: []}).subscribe();
+      storage.update(projectId1, {id: projectId1, name: 'name'}).subscribe();
+      storage.update(projectId2, {id: projectId2, name: 'name'}).subscribe();
+      storage.update(projectId3, {id: projectId3, name: 'name'}).subscribe();
 
       const projectIdsSubject = new BehaviorSubject<string[]>([]);
       collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
@@ -73,9 +69,9 @@ test('datamodel.ProjectCollection', () => {
       const projectId2 = 'projectId2';
       const projectId3 = 'projectId3';
 
-      storage.update(projectId1, {id: projectId1, name: 'name', rootFolderIds: []}).subscribe();
-      storage.update(projectId2, {id: projectId2, name: 'name', rootFolderIds: []}).subscribe();
-      storage.update(projectId3, {id: projectId3, name: 'name', rootFolderIds: []}).subscribe();
+      storage.update(projectId1, {id: projectId1, name: 'name'}).subscribe();
+      storage.update(projectId2, {id: projectId2, name: 'name'}).subscribe();
+      storage.update(projectId3, {id: projectId3, name: 'name'}).subscribe();
 
       const projectIdsSubject = new BehaviorSubject<string[]>([]);
       collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
@@ -94,11 +90,7 @@ test('datamodel.ProjectCollection', () => {
       collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
 
       collection
-          .setProject(new Project({
-            id: projectId,
-            name: 'project',
-            rootFolderIds: [],
-          }))
+          .setProject(new Project({id: projectId, name: 'project'}))
           .subscribe();
 
       assert(projectIdsSubject.getValue()).to.haveElements([projectId]);

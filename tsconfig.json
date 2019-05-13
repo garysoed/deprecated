@@ -23,7 +23,7 @@
       "@mask": ["node_modules/mask/export/index.ts"],
       "@mask/*": ["node_modules/mask/export/*"],
       "@moirai": ["node_modules/moirai/export/index.ts"],
-      "@nabu/*": ["node_modules/nabu/export/*"],
+      "@nabu": ["node_modules/nabu/export/index.ts"],
       "@persona/*": ["node_modules/persona/export/*"],
       "@persona": ["node_modules/persona/export/index.ts"],
       "@santa": ["node_modules/santa/export/index.ts"],
