@@ -20,4 +20,11 @@ export class ItemMetadata {
   get name(): string {
     return this.serializable.name;
   }
+
+  setName(newName: string): ItemMetadata {
+    return new ItemMetadata({
+      ...this.serializable,
+      name: newName,
+    });
+  }
 }

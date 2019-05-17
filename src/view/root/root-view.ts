@@ -5,6 +5,7 @@ import { api, element, InitFn, single, SingleRenderSpec } from '@persona';
 import { Observable } from '@rxjs';
 import { map, shareReplay, switchMap } from '@rxjs/operators';
 import { $locationService } from '../../main/route';
+import { FolderView } from '../folder/folder-view';
 import { AddProjectDialog, openDialog as openAddProjectDialog } from '../projectlist/add-project-dialog';
 import { ProjectListView } from '../projectlist/project-list-view';
 import template from './root-view.html';
@@ -25,6 +26,7 @@ export const $ = {
     AddProjectDialog,
     Dialog,
     Drawer,
+    FolderView,
     ProjectListView,
     RootLayout,
   ],
@@ -61,10 +63,7 @@ export class RootView extends ThemedCustomElementCtrl {
                 case 'MAIN':
                   return {attr: new Map(), tag: 'th-project-list-view'};
                 case 'PROJECT':
-                  return {
-                    attr: new Map([['projectId', location.payload.projectId]]),
-                    tag: 'th-project-view',
-                  };
+                  return {attr: new Map(), tag: 'th-folder-view'};
                 default:
                   return null;
               }
