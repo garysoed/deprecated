@@ -4,6 +4,8 @@
   "description": "Thoth is a file based wiki page generator.",
   "main": "index.js",
   "dependencies": {
+    "@types/gapi.auth2": "0.0.50",
+    "@types/gapi.client.drive": "^3.0.3",
     "@types/handlebars": "^4.0.36",
     "@types/showdown": "^1.7.1",
     "awesome-typescript-loader": "^5.0.0",

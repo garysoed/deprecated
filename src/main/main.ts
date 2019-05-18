@@ -2,6 +2,7 @@ import { $pipe, $push, asImmutableMap } from '@gs-tools/collect';
 import { $svgConfig, Palette, start, SvgConfig, Theme } from '@mask';
 import { take } from '@rxjs/operators';
 import { ConsoleDestination, logDestination } from '@santa';
+import { $driveClient } from '../api/drive-client';
 import * as addIcon from '../asset/add.svg';
 import * as deleteIcon from '../asset/delete.svg';
 import * as thothIcon from '../asset/thoth.svg';
