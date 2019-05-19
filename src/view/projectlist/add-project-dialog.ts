@@ -1,13 +1,13 @@
 import { Vine } from '@grapevine';
 import { ElementWithTagType } from '@gs-types';
-import { $dialogService, $textInput, _p, _v, TextInput, ThemedCustomElementCtrl } from '@mask';
+import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElementCtrl } from '@mask';
 import { api, element, InitFn } from '@persona';
 import { BehaviorSubject, combineLatest, EMPTY, Observable } from '@rxjs';
 import { map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
-import { LocalSource } from 'src/datamodel/local-source';
-import { SourceType } from 'src/datamodel/source-type';
 import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
+import { LocalSource } from '../../datamodel/local-source';
 import { $projectCollection } from '../../datamodel/project-collection';
+import { SourceType } from '../../datamodel/source-type';
 import template from './add-project-dialog.html';
 import { logger } from './logger';
 
@@ -22,7 +22,7 @@ export const $ = {
 };
 
 @_p.customElement({
-  dependencies: [TextInput],
+  dependencies: [Dialog, TextInput],
   tag: 'th-add-project-dialog',
   template,
 })

@@ -2,18 +2,18 @@ import { assert, setup, should, test } from '@gs-testing';
 import { $dialogService, _p, ActionEvent } from '@mask';
 import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { EMPTY } from '@rxjs';
-import { map, switchMap, tap } from '@rxjs/operators';
-import { $, RootView } from './root-view';
+import { map, switchMap } from '@rxjs/operators';
+import { $, ProjectListSidebar } from './project-list-sidebar';
 
 const testerFactory = new PersonaTesterFactory(_p);
 
-test('@thoth/view/root/root-view', () => {
+test('@thoth/view/projectlist/project-list-sidebar', () => {
   let el: HTMLElement;
   let tester: PersonaTester;
 
   setup(() => {
-    tester = testerFactory.build([RootView]);
-    el = tester.createElement('th-root-view', document.body);
+    tester = testerFactory.build([ProjectListSidebar]);
+    el = tester.createElement('th-project-list-sidebar', document.body);
   });
 
   test('renderAddProjectDisabled', () => {

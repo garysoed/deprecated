@@ -1,32 +1,28 @@
 import { Vine } from '@grapevine';
-import { ElementWithTagType } from '@gs-types';
-import { $dialogService, $textIconButton, _p, _v, Dialog, Drawer, RootLayout, ThemedCustomElementCtrl } from '@mask';
-import { api, element, InitFn, single, SingleRenderSpec } from '@persona';
+import { ElementWithTagType, InstanceofType } from '@gs-types';
+import { _p, _v, RootLayout, ThemedCustomElementCtrl } from '@mask';
+import { element, InitFn, single, SingleRenderSpec } from '@persona';
 import { Observable } from '@rxjs';
-import { map, shareReplay, switchMap } from '@rxjs/operators';
+import { map, switchMap } from '@rxjs/operators';
 import { $locationService } from '../../main/route';
 import { FolderView } from '../folder/folder-view';
-import { AddProjectDialog, openDialog as openAddProjectDialog } from '../projectlist/add-project-dialog';
+import { ProjectListSidebar } from '../projectlist/project-list-sidebar';
 import { ProjectListView } from '../projectlist/project-list-view';
 import template from './root-view.html';
 
 export const $ = {
-  addProject: element(
-      'addProject',
-      ElementWithTagType('mk-text-icon-button'),
-      api($textIconButton),
-  ),
   main: element('main', ElementWithTagType('main'), {
     view: single('#view'),
+  }),
+  sidebar: element('sidebar', InstanceofType(HTMLDivElement), {
+    content: single('#sidebar'),
   }),
 };
 
 @_p.customElement({
   dependencies: [
-    AddProjectDialog,
-    Dialog,
-    Drawer,
     FolderView,
+    ProjectListSidebar,
     ProjectListView,
     RootLayout,
   ],
@@ -34,23 +30,28 @@ export const $ = {
   template,
 })
 export class RootView extends ThemedCustomElementCtrl {
-  private readonly onAddProjectAction = _p.input($.addProject._.actionEvent, this);
-
   getInitFunctions(): InitFn[] {
     return [
       ...super.getInitFunctions(),
-      _p.render($.addProject._.disabled).withVine(_v.stream(this.renderAddProjectDisabled, this)),
       _p.render($.main._.view).withVine(_v.stream(this.renderView, this)),
-      this.setupOnAddProjectAction,
+      _p.render($.sidebar._.content).withVine(_v.stream(this.renderSidebar, this)),
     ];
   }
 
-  private renderAddProjectDisabled(vine: Vine): Observable<boolean> {
-    return $dialogService.get(vine)
+  private renderSidebar(vine: Vine): Observable<SingleRenderSpec|null> {
+    return $locationService.get(vine)
         .pipe(
-            switchMap(service => service.getStateObs()),
-            map(({isOpen}) => isOpen),
-            shareReplay(1),
+            switchMap(service => service.getLocation()),
+            map(location => {
+              switch (location.type) {
+                case 'MAIN':
+                  return {attr: new Map(), tag: 'th-project-list-sidebar'};
+                case 'PROJECT':
+                  return {attr: new Map(), tag: 'th-folder-sidebar'};
+                default:
+                  return null;
+              }
+            }),
         );
   }
 
@@ -69,11 +70,5 @@ export class RootView extends ThemedCustomElementCtrl {
               }
             }),
         );
-  }
-
-  private setupOnAddProjectAction(vine: Vine): Observable<unknown> {
-    return this.onAddProjectAction.pipe(
-        switchMap(() => openAddProjectDialog(vine)),
-    );
   }
 }

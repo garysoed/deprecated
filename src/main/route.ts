@@ -1,6 +1,6 @@
 import { $window, _v } from '@mask';
 import { LocationService, Route, RouteSpec } from '@persona';
-import { map } from '@rxjs/operators';
+import { map, shareReplay } from '@rxjs/operators';
 
 export interface Routes {
   'MAIN': {};
@@ -16,6 +16,9 @@ const DEFAULT_ROUTE: Route<Routes, 'MAIN'> = {payload: {}, type: 'MAIN'};
 
 export const $locationService = _v.stream(
     vine => $window.get(vine)
-        .pipe(map(windowObj => new LocationService<Routes>(ROUTE_SPEC, DEFAULT_ROUTE, windowObj))),
+        .pipe(
+            map(windowObj => new LocationService<Routes>(ROUTE_SPEC, DEFAULT_ROUTE, windowObj)),
+            shareReplay(1),
+        ),
     globalThis,
 );
