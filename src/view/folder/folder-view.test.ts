@@ -1,6 +1,5 @@
 import { assert, match, runEnvironment, setup, should, test } from '@gs-testing';
-import { debug } from '@gs-tools/rxjs';
-import { $window, _p, CrumbData } from '@mask';
+import { $window, CrumbData, _p } from '@mask';
 import { createFakeWindow, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { BehaviorSubject, of as observableOf } from '@rxjs';
 import { map, scan, switchMap, withLatestFrom } from '@rxjs/operators';

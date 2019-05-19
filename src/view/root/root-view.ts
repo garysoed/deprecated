@@ -5,6 +5,7 @@ import { element, InitFn, single, SingleRenderSpec } from '@persona';
 import { Observable } from '@rxjs';
 import { map, switchMap } from '@rxjs/operators';
 import { $locationService } from '../../main/route';
+import { FolderSidebar } from '../folder/folder-sidebar';
 import { FolderView } from '../folder/folder-view';
 import { ProjectListSidebar } from '../projectlist/project-list-sidebar';
 import { ProjectListView } from '../projectlist/project-list-view';
@@ -21,6 +22,7 @@ export const $ = {
 
 @_p.customElement({
   dependencies: [
+    FolderSidebar,
     FolderView,
     ProjectListSidebar,
     ProjectListView,
