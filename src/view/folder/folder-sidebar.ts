@@ -2,8 +2,9 @@ import { Vine } from '@grapevine';
 import { ElementWithTagType } from '@gs-types';
 import { $textIconButton, _p, _v, TextIconButton, ThemedCustomElementCtrl } from '@mask';
 import { api, element, InitFn } from '@persona';
-import { EMPTY, Observable } from '@rxjs';
-import { map } from '@rxjs/operators';
+import { Observable } from '@rxjs';
+import { map, switchMap } from '@rxjs/operators';
+import { AddItemDialog, openDialog as openAddItemDialog } from './add-item-dialog';
 import template from './folder-sidebar.html';
 import { $selectedFolderMetadata } from './selected-folder';
 
@@ -13,17 +14,20 @@ export const $ = {
 
 @_p.customElement({
   dependencies: [
+    AddItemDialog,
     TextIconButton,
   ],
   tag: 'th-folder-sidebar',
   template,
 })
 export class FolderSidebar extends ThemedCustomElementCtrl {
+  private readonly onAddItemClick = _p.input($.addItem._.actionEvent, this);
+
   getInitFunctions(): InitFn[] {
     return [
       ...super.getInitFunctions(),
       _p.render($.addItem._.disabled).withVine(_v.stream(this.renderAddItemDisabled, this)),
-      () => this.setupAddItemClick(),
+      vine => this.setupAddItemClick(vine),
     ];
   }
 
@@ -32,7 +36,7 @@ export class FolderSidebar extends ThemedCustomElementCtrl {
         .pipe(map(metadata => !metadata || !metadata.isEditable));
   }
 
-  private setupAddItemClick(): Observable<unknown> {
-    return EMPTY;
+  private setupAddItemClick(vine: Vine): Observable<unknown> {
+    return this.onAddItemClick.pipe(switchMap(() => openAddItemDialog(vine)));
   }
 }

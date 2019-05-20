@@ -17,9 +17,8 @@ test('@thoth/api/drive-client', () => {
   test('find', () => {
     should(`return the correct data`, async () => {
       const query = 'query';
-      const result = {} as any;
-
-      fakeGapi.drive.files.listSubject.next(result);
+      const result: Array<{}> = [];
+      fakeGapi.drive.files.listSubject.next({result: {files: result}});
 
       await assert($driveClient.get(vine).pipe(switchMap(client => client.find(query))))
           .to.emitWith(result);

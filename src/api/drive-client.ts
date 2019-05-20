@@ -7,9 +7,12 @@ import { $gapiClient as $gapiClient } from './gapi-client';
 class DriveClient {
   constructor(private readonly handler: GapiHandler) {}
 
-  find(q: string): Observable<{}> {
+  find(q: string): Observable<gapi.client.drive.File[]> {
     return this.handler.ensureSignedIn()
-        .pipe(switchMap(() => from(gapi.client.drive.files.list({q}))));
+        .pipe(
+            switchMap(() => from(gapi.client.drive.files.list({q}))),
+            map(result => result.result.files || []),
+        );
   }
 }
 

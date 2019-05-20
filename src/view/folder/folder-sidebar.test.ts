@@ -2,7 +2,6 @@ import { assert, setup, should, test } from '@gs-testing';
 import { $window, _p } from '@mask';
 import { createFakeWindow, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { switchMap, tap } from '@rxjs/operators';
-import { createPath } from '../../datamodel/folder-path';
 import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
 import { LocalSource } from '../../datamodel/local-source';
 import { SourceType } from '../../datamodel/source-type';
@@ -70,5 +69,9 @@ test('@thoth/view/folder/folder-sidebar', () => {
 
       await assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(true);
     });
+  });
+
+  test('setupAddItemClick', () => {
+    should.only(`open the dialog correctly`);
   });
 });

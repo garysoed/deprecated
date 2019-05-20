@@ -4,8 +4,8 @@ import { _p, Dialog } from '@mask';
 import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap, withLatestFrom } from '@rxjs/operators';
-import { ItemMetadata } from 'src/datamodel/item-metadata';
-import { $itemMetadataCollection } from 'src/datamodel/item-metadata-collection';
+import { ItemMetadata } from '../../datamodel/item-metadata';
+import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, AddProjectDialog, openDialog } from './add-project-dialog';
 

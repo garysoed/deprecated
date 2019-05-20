@@ -4,9 +4,11 @@ import { GapiHandler } from '@gs-tools/gapi';
 import { Observable, of as observableOf, ReplaySubject, Subject } from '@rxjs';
 import { $gapiClient, $gapiUrl } from '../api/gapi-client';
 
+type PartialResponse<T> = Partial<gapi.client.Response<T>>;
+
 interface FakeDriveFilesClient {
-  list: Spy<Observable<gapi.client.Response<gapi.client.drive.FileList>>, [{}]>;
-  listSubject: Subject<gapi.client.Response<gapi.client.drive.FileList>>;
+  list: Spy<Observable<PartialResponse<gapi.client.drive.FileList>>, [{}]>;
+  listSubject: Subject<PartialResponse<gapi.client.drive.FileList>>;
 }
 
 interface FakeDriveClient {
@@ -19,11 +21,11 @@ export interface FakeGapiClient {
 
 export function installFakeGapiClient(vine: Vine): FakeGapiClient {
   const driveFilesListSubject =
-      new ReplaySubject<gapi.client.Response<gapi.client.drive.FileList>>(1);
+      new ReplaySubject<PartialResponse<gapi.client.drive.FileList>>(1);
   const fakeGapiClient = {
     drive: {
       files: {
-        list: createSpy<Subject<gapi.client.Response<gapi.client.drive.FileList>>, [{}]>(''),
+        list: createSpy<Subject<PartialResponse<gapi.client.drive.FileList>>, [{}]>(''),
         listSubject: driveFilesListSubject,
       },
     },
