@@ -1,11 +1,10 @@
 import { Vine } from '@grapevine';
-import { ArrayDiff } from '@gs-tools/rxjs';
+import { ArrayDiff, mapArray } from '@gs-tools/rxjs';
 import { ElementWithTagType } from '@gs-types';
 import { _p, _v, ThemedCustomElementCtrl } from '@mask';
-import { element, InitFn, repeated } from '@persona';
+import { element, InitFn, repeated, RepeatedSpec } from '@persona';
 import { Observable } from '@rxjs';
 import { switchMap } from '@rxjs/operators';
-import { mapArray } from 'persona/node_modules/gs-tools/export/rxjs';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { ProjectListItem } from './project-list-item';
 import template from './project-list-view.html';
@@ -31,11 +30,11 @@ export class ProjectListView extends ThemedCustomElementCtrl {
     ];
   }
 
-  private renderProjectList(vine: Vine): Observable<ArrayDiff<Map<string, string>>> {
+  private renderProjectList(vine: Vine): Observable<ArrayDiff<RepeatedSpec>> {
     return $projectCollection.get(vine)
         .pipe(
             switchMap(collection => collection.getProjectIds()),
-            mapArray(id => new Map([['project-id', id]])),
+            mapArray(id => ({attr: new Map([['project-id', id]])})),
         );
   }
 }

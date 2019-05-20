@@ -3,7 +3,7 @@ import { _v } from '@mask';
 import { BehaviorSubject, ReplaySubject } from '@rxjs';
 
 export const $gapiUrl = _v.source(() => new BehaviorSubject(GAPI_URL), globalThis);
-export const $gapiService = _v.source(
+export const $gapiClient = _v.source(
     () => {
         const subject = new ReplaySubject<GapiHandler>(1);
         new GapiBuilder(

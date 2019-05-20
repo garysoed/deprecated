@@ -2,7 +2,7 @@ import { GapiHandler } from '@gs-tools/gapi';
 import { _v } from '@mask';
 import { from, Observable } from '@rxjs';
 import { map, switchMap } from '@rxjs/operators';
-import { $gapiService as $gapiClient } from './gapi-client';
+import { $gapiClient as $gapiClient } from './gapi-client';
 
 class DriveClient {
   constructor(private readonly handler: GapiHandler) {}
