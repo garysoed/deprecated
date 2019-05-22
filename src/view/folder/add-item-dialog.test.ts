@@ -4,6 +4,7 @@ import { _p } from '@mask';
 import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap } from '@rxjs/operators';
+import { ItemType } from 'src/datamodel/item-type';
 import { FakeGapiClient, installFakeGapiClient } from '../../testing/fake-gapi';
 import { $, AddItemDialog, openDialog } from './add-item-dialog';
 
@@ -41,9 +42,9 @@ test('@thoth/view/folder/add-item-dialog', () => {
       fakeGapi.drive.files.listSubject.next({
         result: {
           files: [
-            {id: id1, name: name1},
-            {id: id2, name: name2},
-            {id: id3, name: name3},
+            {id: id1, mimeType: 'application/x-javascript', name: name1},
+            {id: id2, mimeType: 'application/vnd.google-apps.folder', name: name2},
+            {id: id3, mimeType: 'text/plain', name: name3},
           ],
         },
       });
@@ -67,7 +68,13 @@ test('@thoth/view/folder/add-item-dialog', () => {
       await assert(idsObs).to
           .emitWith(match.anyArrayThat<string>().haveExactElements([id1, id2, id3]));
 
-
+      const typesObs = nodesObs
+          .pipe(map(nodes => nodes.map(node => node.getAttribute('item-type'))));
+      await assert(typesObs).to.emitWith(match.anyArrayThat<string>().haveExactElements([
+        ItemType.CONVERTER,
+        ItemType.FOLDER,
+        ItemType.UNKNOWN,
+      ]));
     });
   });
 

@@ -1,14 +1,12 @@
 import { Vine } from '@grapevine';
 import { assert, setup, should, test } from '@gs-testing';
-import { _v } from 'mask/export';
-import { $window } from 'mask/export';
+import { $window, _v } from 'mask/export';
 import { createFakeWindow } from 'persona/export/testing';
-import { BehaviorSubject } from 'rxjs';
 import { shareReplay, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 import { createPath } from 'src/datamodel/folder-path';
 import { $itemMetadataCollection } from 'src/datamodel/item-metadata-collection';
-import { LocalSource } from 'src/datamodel/local-source';
 import { SourceType } from 'src/datamodel/source-type';
+import { LocalSource } from 'src/datamodel/source/local-source';
 import { $selectedFolderId, $selectedFolderMetadata } from './selected-folder';
 
 test('@thoth/view/folder/selected-folder', () => {
@@ -43,7 +41,7 @@ test('@thoth/view/folder/selected-folder', () => {
       const metadataObs = $itemMetadataCollection.get(vine)
           .pipe(
               switchMap(collection => collection
-                  .newMetadata(true, new LocalSource({type: SourceType.LOCAL}))
+                  .newLocalFolderMetadata(true, new LocalSource({type: SourceType.LOCAL}))
                   .pipe(switchMap(metadata => collection.setMetadata(metadata))),
               ),
               shareReplay(1),

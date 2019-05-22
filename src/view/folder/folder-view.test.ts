@@ -1,13 +1,13 @@
 import { assert, match, runEnvironment, setup, should, test } from '@gs-testing';
-import { $window, CrumbData, _p } from '@mask';
+import { $window, _p, CrumbData } from '@mask';
 import { createFakeWindow, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { BehaviorSubject, of as observableOf } from '@rxjs';
 import { map, scan, switchMap, withLatestFrom } from '@rxjs/operators';
 import { createPath } from '../../datamodel/folder-path';
 import { ItemMetadata } from '../../datamodel/item-metadata';
 import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
-import { LocalSource } from '../../datamodel/local-source';
 import { SourceType } from '../../datamodel/source-type';
+import { LocalSource } from '../../datamodel/source/local-source';
 import { $, FolderView } from './folder-view';
 
 const factory = new PersonaTesterFactory(_p);
@@ -38,7 +38,7 @@ test('@thoth/view/folder/folder-view', () => {
           .pipe(
               withLatestFrom($itemMetadataCollection.get(tester.vine)),
               switchMap(([display, collection]) => {
-                return collection.newMetadata(false, new LocalSource({type: SourceType.LOCAL}))
+                return collection.newLocalFolderMetadata(false, new LocalSource({type: SourceType.LOCAL}))
                     .pipe(
                         switchMap(metadata => collection.setMetadata(metadata.setName(display))),
                     );

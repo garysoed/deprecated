@@ -4,6 +4,7 @@ import { Observable, of as observableOf } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
 import { SERIALIZABLE_ITEM_METADATA_CONVERTER, SerializableItemMetadata } from '../serializable/serializable-item-metadata';
 import { ItemMetadata } from './item-metadata';
+import { ItemType } from './item-type';
 import { Source } from './source';
 
 export class ItemMetadataCollection {
@@ -27,7 +28,7 @@ export class ItemMetadataCollection {
         );
   }
 
-  newMetadata(isEditable: boolean, source: Source): Observable<ItemMetadata> {
+  newLocalFolderMetadata(isEditable: boolean, source: Source): Observable<ItemMetadata> {
     return this.storage.generateId()
         .pipe(
             take(1),
@@ -36,6 +37,7 @@ export class ItemMetadataCollection {
               isEditable,
               name: 'New item',
               source: source.serializable,
+              type: ItemType.FOLDER,
             })),
             shareReplay(1),
         );

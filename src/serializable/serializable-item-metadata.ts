@@ -1,5 +1,6 @@
-import { BooleanType, HasPropertiesType, StringType } from '@gs-types';
+import { BooleanType, EnumType, HasPropertiesType, StringType } from '@gs-types';
 import { Result, Serializable } from '@nabu';
+import { ItemType } from '../datamodel/item-type';
 import { SerializableSource, SerializableSourceType } from './serializable-source';
 
 export type SerializableItemMetadata = {
@@ -7,6 +8,7 @@ export type SerializableItemMetadata = {
   readonly isEditable: boolean;
   readonly name: string;
   readonly source: SerializableSource;
+  readonly type: ItemType;
 };
 
 export const SerializableItemMetadataType = HasPropertiesType<SerializableItemMetadata>({
@@ -14,6 +16,7 @@ export const SerializableItemMetadataType = HasPropertiesType<SerializableItemMe
   isEditable: BooleanType,
   name: StringType,
   source: SerializableSourceType,
+  type: EnumType(ItemType),
 });
 
 export const SERIALIZABLE_ITEM_METADATA_CONVERTER = {

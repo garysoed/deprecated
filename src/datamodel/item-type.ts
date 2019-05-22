@@ -1,4 +1,8 @@
 export enum ItemType {
-  FILE = 'fo',
-  FOLDER = 'fi',
+  CONVERTER = 'c',
+  DATA = 'd',
+  FOLDER = 'f',
+  RENDER = 'r',
+  TEMPLATE = 't',
+  UNKNOWN = 'u',
 }

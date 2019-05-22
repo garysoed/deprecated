@@ -8,8 +8,9 @@ import { SerializableItemMetadata } from '../serializable/serializable-item-meta
 import { SerializableSource } from '../serializable/serializable-source';
 import { ItemMetadata } from './item-metadata';
 import { ItemMetadataCollection } from './item-metadata-collection';
-import { LocalSource } from './local-source';
+import { ItemType } from './item-type';
 import { SourceType } from './source-type';
+import { LocalSource } from './source/local-source';
 
 test('@thoth/datamodel/item-metadata-collection', () => {
   let storage: EditableStorage<SerializableItemMetadata>;
@@ -29,6 +30,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
         isEditable: true,
         name: itemName,
         source: {type: SourceType.LOCAL},
+        type: ItemType.FOLDER,
       };
 
       storage.update(itemId, metadataSerializable).subscribe();
@@ -54,6 +56,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
         isEditable: true,
         name: itemName,
         source: {type: SourceType.LOCAL},
+        type: ItemType.FOLDER,
       };
 
       storage.update(itemId, metadataSerializable).subscribe();
@@ -99,24 +102,42 @@ test('@thoth/datamodel/item-metadata-collection', () => {
       storage
           .update(
               metadataId1,
-              {id: metadataId1, isEditable: true, name: 'name', source: serializableSource},
+              {
+                id: metadataId1,
+                isEditable: true,
+                name: 'name',
+                source: serializableSource,
+                type: ItemType.FOLDER,
+              },
           )
           .subscribe();
       storage
           .update(
               metadataId2,
-              {id: metadataId2, isEditable: true, name: 'name', source: serializableSource},
+              {
+                id: metadataId2,
+                isEditable: true,
+                name: 'name',
+                source: serializableSource,
+                type: ItemType.FOLDER,
+              },
           )
           .subscribe();
       storage
           .update(
               metadataId3,
-              {id: metadataId3, isEditable: true, name: 'name', source: serializableSource},
+              {
+                id: metadataId3,
+                isEditable: true,
+                name: 'name',
+                source: serializableSource,
+                type: ItemType.FOLDER,
+              },
           )
           .subscribe();
 
       const source = new LocalSource(serializableSource);
-      const newMetadataObs = collection.newMetadata(false, source)
+      const newMetadataObs = collection.newLocalFolderMetadata(false, source)
           .pipe(take(1), shareReplay(1));
 
       await assert(newMetadataObs.pipe(map(({isEditable}) => isEditable))).to.emitWith(false);
@@ -136,7 +157,13 @@ test('@thoth/datamodel/item-metadata-collection', () => {
       storage
           .update(
               id,
-              {id, isEditable: true, name: 'name', source: {type: SourceType.LOCAL}},
+              {
+                id,
+                isEditable: true,
+                name: 'name',
+                source: {type: SourceType.LOCAL},
+                type: ItemType.FOLDER,
+              },
           )
           .subscribe();
 

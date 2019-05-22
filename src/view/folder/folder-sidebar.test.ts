@@ -1,10 +1,10 @@
 import { assert, setup, should, test } from '@gs-testing';
-import { $window, _p } from '@mask';
+import { $dialogService, $window, _p, ActionEvent } from '@mask';
 import { createFakeWindow, PersonaTester, PersonaTesterFactory } from '@persona/testing';
-import { switchMap, tap } from '@rxjs/operators';
+import { map, switchMap, tap } from '@rxjs/operators';
 import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
-import { LocalSource } from '../../datamodel/local-source';
 import { SourceType } from '../../datamodel/source-type';
+import { LocalSource } from '../../datamodel/source/local-source';
 import { $, FolderSidebar } from './folder-sidebar';
 
 test('@thoth/view/folder/folder-sidebar', () => {
@@ -27,7 +27,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
       $itemMetadataCollection.get(tester.vine)
           .pipe(
               switchMap(collection => collection
-                  .newMetadata(
+                  .newLocalFolderMetadata(
                       true,
                       new LocalSource({type: SourceType.LOCAL}),
                   )
@@ -47,7 +47,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
       $itemMetadataCollection.get(tester.vine)
           .pipe(
               switchMap(collection => collection
-                  .newMetadata(
+                  .newLocalFolderMetadata(
                       false,
                       new LocalSource({type: SourceType.LOCAL}),
                   )
@@ -72,6 +72,15 @@ test('@thoth/view/folder/folder-sidebar', () => {
   });
 
   test('setupAddItemClick', () => {
-    should.only(`open the dialog correctly`);
+    should(`open the dialog correctly`, async () => {
+      tester.dispatchEvent(el, $.addItem._.actionEvent, new ActionEvent()).subscribe();
+
+      const isOpenObs = $dialogService.get(tester.vine)
+          .pipe(
+              switchMap(service => service.getStateObs()),
+              map(state => state.isOpen),
+          );
+      await assert(isOpenObs).to.emitWith(true);
+    });
   });
 });

@@ -5,18 +5,20 @@ import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElem
 import { api, element, InitFn, repeated, RepeatedSpec } from '@persona';
 import { EMPTY, Observable, of as observableOf } from '@rxjs';
 import { switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
+import { createFromDrive } from 'src/datamodel/item-metadata';
 import { $driveClient } from '../../api/drive-client';
 import template from './add-item-dialog.html';
+import { FileListItem } from './file-list-item';
 
 export const $ = {
   results: element('results', InstanceofType(HTMLDivElement), {
-    list: repeated('#list', 'th-add-item-list-item'),
+    list: repeated('#list', 'th-file-list-item'),
   }),
   search: element('search', ElementWithTagType('mk-text-input'), api($textInput)),
 };
 
 @_p.customElement({
-  dependencies: [Dialog, TextInput],
+  dependencies: [Dialog, FileListItem, TextInput],
   tag: 'th-add-item-dialog',
   template,
 })
@@ -44,7 +46,14 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
                 return {};
               }
 
-              return {attr: new Map([['label', file.name || ''], ['drive-id', id]])};
+              const metadata = createFromDrive(file);
+
+              return {attr: new Map([
+                ['label', metadata.name],
+                ['drive-id', metadata.id],
+                ['item-type', metadata.type],
+                ['source-type', metadata.source.type],
+              ])};
             }),
         )),
     );
@@ -56,17 +65,15 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
         switchMap(([query, driveClient]) => driveClient.find(`name contains '${query}'`)),
         tap(results => {
           const ids = [];
-          const newData = new Map<string, gapi.client.drive.File>();
           for (const result of results) {
             if (!result.id) {
               continue;
             }
 
             ids.push(result.id);
-            newData.set(result.id, result);
+            this.resultDataMap.set(result.id, result);
           }
 
-          this.resultDataMap.addAll(newData);
           this.resultIdsSubject.setAll(ids);
         }),
     );
