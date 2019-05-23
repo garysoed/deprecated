@@ -6,8 +6,6 @@ import { map, scan, switchMap, withLatestFrom } from '@rxjs/operators';
 import { createPath } from '../../datamodel/folder-path';
 import { ItemMetadata } from '../../datamodel/item-metadata';
 import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
-import { SourceType } from '../../datamodel/source-type';
-import { LocalSource } from '../../datamodel/source/local-source';
 import { $, FolderView } from './folder-view';
 
 const factory = new PersonaTesterFactory(_p);
@@ -38,7 +36,7 @@ test('@thoth/view/folder/folder-view', () => {
           .pipe(
               withLatestFrom($itemMetadataCollection.get(tester.vine)),
               switchMap(([display, collection]) => {
-                return collection.newLocalFolderMetadata(false, new LocalSource({type: SourceType.LOCAL}))
+                return collection.newLocalFolderMetadata()
                     .pipe(
                         switchMap(metadata => collection.setMetadata(metadata.setName(display))),
                     );
@@ -55,7 +53,7 @@ test('@thoth/view/folder/folder-view', () => {
       const crumbDataMatches = newMetadata
           .map(({id, name}) => match.anyObjectThat<CrumbData>().haveProperties({
             display: name,
-            key: id,
+            key: id.toString(),
           }));
 
       await assert(tester.getAttribute(el, $.breadcrumb._.path).pipe(map(list => [...list])))

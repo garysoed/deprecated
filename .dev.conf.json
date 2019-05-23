@@ -5,7 +5,7 @@
       "actions": ["npm link grapevine gs-testing gs-tools gs-types dev persona mask nabu moirai santa"]
     },
     {
-      "command": "server",
+      "command": "run",
       "actions": ["simpleserver src/main/main.conf.json"]
     }
   ]

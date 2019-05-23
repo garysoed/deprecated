@@ -4,6 +4,7 @@ import { _v } from '@mask';
 import { Observable, of as observableOf } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
 import { SERIALIZABLE_PROJECT_CONVERTER, SerializableProject } from '../serializable/serializable-project';
+import { ItemId } from './item-id';
 import { Project } from './project';
 
 export class ProjectCollection {
@@ -32,7 +33,7 @@ export class ProjectCollection {
     return this.storage.listIds();
   }
 
-  newProject(rootFolderId: string): Observable<Project> {
+  newProject(rootFolderId: ItemId): Observable<Project> {
     return this.storage
         .generateId()
         .pipe(
@@ -41,7 +42,7 @@ export class ProjectCollection {
               return new Project({
                 id: newProjectId,
                 name: `Project ${newProjectId}`,
-                rootFolderId,
+                rootFolderId: rootFolderId.serializable,
               });
             }),
             shareReplay(1),

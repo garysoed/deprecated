@@ -3,6 +3,7 @@ import { $window, _p } from '@mask';
 import { createFakeWindow, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { ReplaySubject } from '@rxjs';
 import { mapTo, switchMap, take, withLatestFrom } from '@rxjs/operators';
+import { parseId } from '../../datamodel/item-id';
 import { Project } from '../../datamodel/project';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, ProjectListItem } from './project-list-item';
@@ -11,7 +12,7 @@ const factory = new PersonaTesterFactory(_p);
 test('@thoth/view/projectlist/project-list-item', () => {
   runEnvironment(new PersonaTesterEnvironment());
 
-  const ROOT_FOLDER_ID = 'rootFolderId';
+  const ROOT_FOLDER_ID = parseId('lo_rootFolderId');
 
   let projectSubject: ReplaySubject<Project>;
   let fakeWindow: Window;

@@ -1,20 +1,15 @@
 import { Errors } from '@gs-tools/error';
-import { SerializableDriveSource } from 'src/serializable/serializable-source';
-import { SerializableItemMetadata } from '../serializable/serializable-item-metadata';
+import { SerializableItem } from '../serializable/serializable-item';
+import { ItemId } from './item-id';
 import { ItemType } from './item-type';
-import { Source } from './source';
-import { createSource } from './source-factory';
 import { SourceType } from './source-type';
 
 export class ItemMetadata {
-  readonly source: Source;
-
-  constructor(readonly serializable: SerializableItemMetadata) {
-    this.source = createSource(serializable.source);
+  constructor(readonly serializable: SerializableItem) {
   }
 
-  get id(): string {
-    return this.serializable.id;
+  get id(): ItemId {
+    return new ItemId(this.serializable.id);
   }
 
   get isEditable(): boolean {
@@ -43,10 +38,9 @@ export function createFromDrive(drive: gapi.client.drive.File): ItemMetadata {
   }
 
   return new ItemMetadata({
-    id: drive.id,
+    id: {id: drive.id, source: SourceType.DRIVE},
     isEditable: false,
     name: drive.name || '',
-    source: {driveId: drive.id, type: SourceType.DRIVE} as SerializableDriveSource,
     type: getTypeFromDrive(drive),
   });
 }

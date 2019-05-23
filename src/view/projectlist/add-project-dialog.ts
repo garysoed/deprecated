@@ -6,8 +6,6 @@ import { BehaviorSubject, combineLatest, EMPTY, Observable } from '@rxjs';
 import { map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
-import { SourceType } from '../../datamodel/source-type';
-import { LocalSource } from '../../datamodel/source/local-source';
 import template from './add-project-dialog.html';
 import { logger } from './logger';
 
@@ -83,7 +81,7 @@ function onClose(canceled: boolean, value: NewProjectSpec|null, vine: Vine): Obs
   .pipe(
       take(1),
       switchMap(([projectCollection, itemMetadataCollection]) => {
-        return itemMetadataCollection.newLocalFolderMetadata(true, new LocalSource({type: SourceType.LOCAL}))
+        return itemMetadataCollection.newLocalFolderMetadata()
             .pipe(
                 switchMap(newMetadata => itemMetadataCollection.setMetadata(newMetadata)),
                 switchMap(newMetadata => projectCollection.newProject(newMetadata.id)),

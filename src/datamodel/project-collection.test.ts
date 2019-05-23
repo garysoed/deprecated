@@ -4,6 +4,7 @@ import { scanArray } from '@gs-tools/rxjs';
 import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { BehaviorSubject } from '@rxjs';
 import { SerializableProject } from '../serializable/serializable-project';
+import { parseId } from './item-id';
 import { Project } from './project';
 import { ProjectCollection } from './project-collection';
 
@@ -20,11 +21,11 @@ test('@thoth/datamodel/project-collection', () => {
     should(`emit the correct project`, () => {
       const projectId = 'projectId';
       const projectName = `Test Project`;
-      const rootFolderId = 'rootFolderId';
+      const rootFolderId = parseId('lo_rootFolderId');
       const projectSerializable = {
         id: projectId,
         name: projectName,
-        rootFolderId,
+        rootFolderId: rootFolderId.serializable,
       };
 
       storage.update(projectId, projectSerializable).subscribe();
@@ -37,7 +38,7 @@ test('@thoth/datamodel/project-collection', () => {
       assert(project.serializable).to.equal(match.anyObjectThat().haveProperties({
         id: projectId,
         name: projectName,
-        rootFolderId,
+        rootFolderId: match.anyObjectThat().haveProperties(rootFolderId.serializable),
       }));
     });
 
@@ -54,11 +55,20 @@ test('@thoth/datamodel/project-collection', () => {
       const projectId1 = 'projectId1';
       const projectId2 = 'projectId2';
       const projectId3 = 'projectId3';
-      const rootFolderId = 'rootFolderId';
+      const rootFolderId = parseId('lo_rootFolderId');
 
-      storage.update(projectId1, {id: projectId1, name: 'name', rootFolderId}).subscribe();
-      storage.update(projectId2, {id: projectId2, name: 'name', rootFolderId}).subscribe();
-      storage.update(projectId3, {id: projectId3, name: 'name', rootFolderId}).subscribe();
+      storage.update(
+          projectId1,
+          {id: projectId1, name: 'name', rootFolderId: rootFolderId.serializable},
+      ).subscribe();
+      storage.update(
+          projectId2,
+          {id: projectId2, name: 'name', rootFolderId: rootFolderId.serializable},
+      ).subscribe();
+      storage.update(
+          projectId3,
+          {id: projectId3, name: 'name', rootFolderId: rootFolderId.serializable},
+      ).subscribe();
 
       const projectIdsSubject = new BehaviorSubject<string[]>([]);
       collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
@@ -72,11 +82,20 @@ test('@thoth/datamodel/project-collection', () => {
       const projectId1 = 'projectId1';
       const projectId2 = 'projectId2';
       const projectId3 = 'projectId3';
-      const rootFolderId = 'rootFolderId';
+      const rootFolderId = parseId('lo_rootFolderId');
 
-      storage.update(projectId1, {id: projectId1, name: 'name', rootFolderId}).subscribe();
-      storage.update(projectId2, {id: projectId2, name: 'name', rootFolderId}).subscribe();
-      storage.update(projectId3, {id: projectId3, name: 'name', rootFolderId}).subscribe();
+      storage.update(
+          projectId1,
+          {id: projectId1, name: 'name', rootFolderId: rootFolderId.serializable},
+      ).subscribe();
+      storage.update(
+          projectId2,
+          {id: projectId2, name: 'name', rootFolderId: rootFolderId.serializable},
+      ).subscribe();
+      storage.update(
+          projectId3,
+          {id: projectId3, name: 'name', rootFolderId: rootFolderId.serializable},
+      ).subscribe();
 
       const projectIdsSubject = new BehaviorSubject<string[]>([]);
       collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
@@ -90,13 +109,19 @@ test('@thoth/datamodel/project-collection', () => {
   test('setProject', () => {
     should(`update the project`, () => {
       const projectId = 'projectId';
-      const rootFolderId = 'rootFolderId';
+      const rootFolderId = parseId('lo_rootFolderId');
 
       const projectIdsSubject = new BehaviorSubject<string[]>([]);
       collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
 
       collection
-          .setProject(new Project({id: projectId, name: 'project', rootFolderId}))
+          .setProject(
+              new Project({
+                id: projectId,
+                name: 'project',
+                rootFolderId: rootFolderId.serializable,
+              }),
+          )
           .subscribe();
 
       assert(projectIdsSubject.getValue()).to.haveElements([projectId]);

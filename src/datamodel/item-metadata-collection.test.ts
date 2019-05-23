@@ -4,16 +4,15 @@ import { filterNonNull } from '@gs-tools/rxjs';
 import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { ReplaySubject } from '@rxjs';
 import { map, shareReplay, switchMap, take } from '@rxjs/operators';
-import { SerializableItemMetadata } from '../serializable/serializable-item-metadata';
-import { SerializableSource } from '../serializable/serializable-source';
+import { SerializableItem } from '../serializable/serializable-item';
+import { parseId } from './item-id';
 import { ItemMetadata } from './item-metadata';
 import { ItemMetadataCollection } from './item-metadata-collection';
 import { ItemType } from './item-type';
 import { SourceType } from './source-type';
-import { LocalSource } from './source/local-source';
 
 test('@thoth/datamodel/item-metadata-collection', () => {
-  let storage: EditableStorage<SerializableItemMetadata>;
+  let storage: EditableStorage<SerializableItem>;
   let collection: ItemMetadataCollection;
 
   setup(() => {
@@ -23,17 +22,16 @@ test('@thoth/datamodel/item-metadata-collection', () => {
 
   test('deleteMetadata', () => {
     should(`delete the metadata correctly`, async () => {
-      const itemId = 'itemId';
+      const itemId = parseId('lo_itemId');
       const itemName = `Test Item`;
       const metadataSerializable = {
-        id: itemId,
+        id: itemId.serializable,
         isEditable: true,
         name: itemName,
-        source: {type: SourceType.LOCAL},
         type: ItemType.FOLDER,
       };
 
-      storage.update(itemId, metadataSerializable).subscribe();
+      storage.update(itemId.toString(), metadataSerializable).subscribe();
 
       const metadataSubject = new ReplaySubject<ItemMetadata|null>(2);
       collection.getMetadata(itemId).subscribe(metadataSubject);
@@ -49,17 +47,16 @@ test('@thoth/datamodel/item-metadata-collection', () => {
 
   test('getMetadata', () => {
     should(`emit the correct metadata`, async () => {
-      const itemId = 'itemId';
+      const itemId = parseId('lo_itemId');
       const itemName = `Test Item`;
       const metadataSerializable = {
-        id: itemId,
+        id: itemId.serializable,
         isEditable: true,
         name: itemName,
-        source: {type: SourceType.LOCAL},
         type: ItemType.FOLDER,
       };
 
-      storage.update(itemId, metadataSerializable).subscribe();
+      storage.update(itemId.toString(), metadataSerializable).subscribe();
 
       const metadataSubject = createSpySubject<ItemMetadata|null>();
       collection.getMetadata(itemId).subscribe(metadataSubject);
@@ -71,19 +68,17 @@ test('@thoth/datamodel/item-metadata-collection', () => {
           );
 
       await assert(serializableMetadataObs).to.emitWith(
-          match.anyObjectThat<SerializableItemMetadata>().haveProperties({
-            id: itemId,
+          match.anyObjectThat<SerializableItem>().haveProperties({
+            id: match.anyObjectThat().haveProperties(itemId.serializable),
             isEditable: true,
             name: itemName,
-            source: match.anyObjectThat<SerializableSource>().haveProperties({
-              type: SourceType.LOCAL,
-            }),
+            type: ItemType.FOLDER,
           }),
       );
     });
 
     should(`emit null if the metadata does not exist`, async () => {
-      const itemId = 'itemId';
+      const itemId = parseId('lo_itemId');
 
       const metadataSubject = createSpySubject<ItemMetadata|null>();
       collection.getMetadata(itemId).subscribe(metadataSubject);
@@ -94,53 +89,48 @@ test('@thoth/datamodel/item-metadata-collection', () => {
 
   test('newMetadata', () => {
     should(`emit a new metadata that does not exist`, async () => {
-      const metadataId1 = 'metadataId1';
-      const metadataId2 = 'metadataId2';
-      const metadataId3 = 'metadataId3';
+      const metadataId1 = parseId('lo_metadataId1');
+      const metadataId2 = parseId('lo_metadataId2');
+      const metadataId3 = parseId('lo_metadataId3');
 
-      const serializableSource = {type: SourceType.LOCAL};
       storage
           .update(
-              metadataId1,
+              metadataId1.toString(),
               {
-                id: metadataId1,
+                id: metadataId1.serializable,
                 isEditable: true,
                 name: 'name',
-                source: serializableSource,
                 type: ItemType.FOLDER,
               },
           )
           .subscribe();
       storage
           .update(
-              metadataId2,
+              metadataId2.toString(),
               {
-                id: metadataId2,
+                id: metadataId2.serializable,
                 isEditable: true,
                 name: 'name',
-                source: serializableSource,
                 type: ItemType.FOLDER,
               },
           )
           .subscribe();
       storage
           .update(
-              metadataId3,
+              metadataId3.toString(),
               {
-                id: metadataId3,
+                id: metadataId3.serializable,
                 isEditable: true,
                 name: 'name',
-                source: serializableSource,
                 type: ItemType.FOLDER,
               },
           )
           .subscribe();
 
-      const source = new LocalSource(serializableSource);
-      const newMetadataObs = collection.newLocalFolderMetadata(false, source)
+      const newMetadataObs = collection.newLocalFolderMetadata()
           .pipe(take(1), shareReplay(1));
 
-      await assert(newMetadataObs.pipe(map(({isEditable}) => isEditable))).to.emitWith(false);
+      await assert(newMetadataObs.pipe(map(({isEditable}) => isEditable))).to.emitWith(true);
 
       const storedNewMetadata = newMetadataObs
           .pipe(switchMap(newMetadata => collection.getMetadata(newMetadata.id)));
@@ -150,27 +140,33 @@ test('@thoth/datamodel/item-metadata-collection', () => {
 
   test('setMetadata', () => {
     should(`update the metadata correctly`, async () => {
-      const id = 'id';
-      const metadataSubject = new ReplaySubject<ItemMetadata|null>(2);
-      collection.getMetadata(id).subscribe(metadataSubject);
+      const id = parseId('lo_id');
+      const metadataSubject = new ReplaySubject<string|null>(2);
+      collection.getMetadata(id)
+          .pipe(
+              map(metadata => {
+                if (!metadata) {
+                  return null;
+                }
+
+                return metadata.id.toString();
+              }),
+          )
+          .subscribe(metadataSubject);
 
       storage
           .update(
-              id,
+              id.toString(),
               {
-                id,
+                id: id.serializable,
                 isEditable: true,
                 name: 'name',
-                source: {type: SourceType.LOCAL},
                 type: ItemType.FOLDER,
               },
           )
           .subscribe();
 
-      await assert(metadataSubject).to.emitSequence([
-        null,
-        match.anyObjectThat<ItemMetadata>().haveProperties({id}),
-      ]);
+      await assert(metadataSubject).to.emitSequence([null, id.toString()]);
     });
   });
 });

@@ -50,7 +50,7 @@ export class FolderView extends ThemedCustomElementCtrl {
                     return itemMetadataCollection.getMetadata(id)
                         .pipe(
                             map(metadata => metadata ? metadata.name : ''),
-                            map(display => ({display, key: id})),
+                            map(display => ({display, key: id.toString()})),
                         );
                   });
 

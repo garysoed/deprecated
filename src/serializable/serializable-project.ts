@@ -1,16 +1,17 @@
 import { HasPropertiesType, StringType } from '@gs-types';
 import { Result, Serializable } from '@nabu';
+import { SerializableItemId, SerializableItemIdType } from './serializable-item-id';
 
 export interface SerializableProject {
   readonly id: string;
   readonly name: string;
-  readonly rootFolderId: string;
+  readonly rootFolderId: SerializableItemId;
 }
 
 export const SerializableProjectType = HasPropertiesType<SerializableProject>({
   id: StringType,
   name: StringType,
-  rootFolderId: StringType,
+  rootFolderId: SerializableItemIdType,
 });
 
 export const SERIALIZABLE_PROJECT_CONVERTER = {

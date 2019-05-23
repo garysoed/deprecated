@@ -1,4 +1,5 @@
 import { SerializableProject } from '../serializable/serializable-project';
+import { ItemId } from './item-id';
 
 export class Project {
   constructor(readonly serializable: SerializableProject) { }
@@ -11,8 +12,8 @@ export class Project {
     return this.serializable.name;
   }
 
-  get rootFolderId(): string {
-    return this.serializable.rootFolderId;
+  get rootFolderId(): ItemId {
+    return new ItemId(this.serializable.rootFolderId);
   }
 
   setName(newName: string): Project {

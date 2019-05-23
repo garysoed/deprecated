@@ -3,8 +3,6 @@ import { $dialogService, $window, _p, ActionEvent } from '@mask';
 import { createFakeWindow, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap, tap } from '@rxjs/operators';
 import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
-import { SourceType } from '../../datamodel/source-type';
-import { LocalSource } from '../../datamodel/source/local-source';
 import { $, FolderSidebar } from './folder-sidebar';
 
 test('@thoth/view/folder/folder-sidebar', () => {
@@ -27,10 +25,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
       $itemMetadataCollection.get(tester.vine)
           .pipe(
               switchMap(collection => collection
-                  .newLocalFolderMetadata(
-                      true,
-                      new LocalSource({type: SourceType.LOCAL}),
-                  )
+                  .newLocalFolderMetadata()
                   .pipe(switchMap(newMetadata => collection.setMetadata(newMetadata))),
               ),
               tap(newMetadata => {
@@ -43,25 +38,22 @@ test('@thoth/view/folder/folder-sidebar', () => {
       await assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(false);
     });
 
-    should(`disable if not editable`, async () => {
-      $itemMetadataCollection.get(tester.vine)
-          .pipe(
-              switchMap(collection => collection
-                  .newLocalFolderMetadata(
-                      false,
-                      new LocalSource({type: SourceType.LOCAL}),
-                  )
-                  .pipe(switchMap(newMetadata => collection.setMetadata(newMetadata))),
-              ),
-              tap(newMetadata => {
-                fakeWindow.history.pushState({}, '', `/p/${newMetadata.id}`);
-                fakeWindow.dispatchEvent(new CustomEvent('popstate'));
-              }),
-          )
-          .subscribe();
+    // should(`disable if not editable`, async () => {
+    //   $itemMetadataCollection.get(tester.vine)
+    //       .pipe(
+    //           switchMap(collection => collection
+    //               .newLocalFolderMetadata()
+    //               .pipe(switchMap(newMetadata => collection.setMetadata(newMetadata))),
+    //           ),
+    //           tap(newMetadata => {
+    //             fakeWindow.history.pushState({}, '', `/p/${newMetadata.id}`);
+    //             fakeWindow.dispatchEvent(new CustomEvent('popstate'));
+    //           }),
+    //       )
+    //       .subscribe();
 
-      await assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(true);
-    });
+    //   await assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(true);
+    // });
 
     should(`disable if item does not exist`, async () => {
       fakeWindow.history.pushState({}, '', `/p/other`);

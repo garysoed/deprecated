@@ -50,9 +50,8 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
 
               return {attr: new Map([
                 ['label', metadata.name],
-                ['drive-id', metadata.id],
+                ['item-id', metadata.id.toString()],
                 ['item-type', metadata.type],
-                ['source-type', metadata.source.type],
               ])};
             }),
         )),

@@ -64,9 +64,12 @@ test('@thoth/view/folder/add-item-dialog', () => {
       await assert(labelsObs).to
           .emitWith(match.anyArrayThat<string>().haveExactElements([name1, name2, name3]));
 
-      const idsObs = nodesObs.pipe(map(nodes => nodes.map(node => node.getAttribute('drive-id'))));
-      await assert(idsObs).to
-          .emitWith(match.anyArrayThat<string>().haveExactElements([id1, id2, id3]));
+      const idsObs = nodesObs.pipe(map(nodes => nodes.map(node => node.getAttribute('item-id'))));
+      await assert(idsObs).to.emitWith(match.anyArrayThat<string>().haveExactElements([
+        `dr_${id1}`,
+        `dr_${id2}`,
+        `dr_${id3}`,
+      ]));
 
       const typesObs = nodesObs
           .pipe(map(nodes => nodes.map(node => node.getAttribute('item-type'))));
@@ -105,8 +108,9 @@ test('@thoth/view/folder/add-item-dialog', () => {
               ),
           );
 
-      const idsObs = nodesObs.pipe(map(nodes => nodes.map(node => node.getAttribute('drive-id'))));
-      await assert(idsObs).to.emitWith(match.anyArrayThat<string>().haveExactElements([id]));
+      const idsObs = nodesObs.pipe(map(nodes => nodes.map(node => node.getAttribute('item-id'))));
+      await assert(idsObs).to.emitWith(match.anyArrayThat<string>()
+          .haveExactElements([`dr_${id}`]));
 
       assert(fakeGapi.drive.files.list).to.haveBeenCalledWith(match.anyObjectThat().haveProperties({
         q: `name contains '${query}'`,

@@ -3,6 +3,7 @@ import { _p } from '@mask';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import {of as observableOf } from '@rxjs';
 import { map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
+import { parseId } from '../../datamodel/item-id';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, ProjectListView } from './project-list-view';
 
@@ -28,7 +29,7 @@ test('@thoth/view/projectlist/project-list-view', () => {
           .pipe(
               withLatestFrom($projectCollection.get(tester.vine)),
               switchMap(([id, collection]) => {
-                return collection.newProject('rootFolderId')
+                return collection.newProject(parseId('lo_rootFolderId'))
                     .pipe(
                         map(newProject => newProject.setName(`Project ${id}`)),
                         switchMap(newProject => collection.setProject(newProject)),
