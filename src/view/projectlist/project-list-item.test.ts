@@ -43,7 +43,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
   });
 
   test('renderItemName', () => {
-    should(`render the project name correctly`, async () => {
+    should(`render the project name correctly`, () => {
       const projectName = 'projectName';
       $projectCollection.get(tester.vine)
           .pipe(
@@ -55,18 +55,18 @@ test('@thoth/view/projectlist/project-list-item', () => {
           )
           .subscribe();
 
-      await assert(tester.getAttribute(el, $.item._.itemName)).to.emitWith(projectName);
+      assert(tester.getAttribute(el, $.item._.itemName)).to.emitWith(projectName);
     });
 
-    should(`render '' if the project cannot be found`, async () => {
+    should(`render '' if the project cannot be found`, () => {
       tester.setAttribute(el, $.host._.projectId, 'nonExistentId').subscribe();
 
-      await assert(tester.getAttribute(el, $.item._.itemName)).to.emitWith('');
+      assert(tester.getAttribute(el, $.item._.itemName)).to.emitWith('');
     });
   });
 
   test('setupHandleAction', () => {
-    should(`go to the correct view`, async () => {
+    should(`go to the correct view`, () => {
       tester.dispatchEvent(el, $.item._.onClick).subscribe();
 
       assert(fakeWindow.location.pathname).to.equal(`/p/${ROOT_FOLDER_ID}`);
@@ -74,7 +74,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
   });
 
   test('setupHandleDelete', () => {
-    should(`delete the project correctly`, async () => {
+    should(`delete the project correctly`, () => {
       const projectCollectionObs = $projectCollection.get(tester.vine);
 
       // Click the delete button.
@@ -89,7 +89,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
               }),
           );
 
-      await assert(projectObs).to.emitWith(null);
+      assert(projectObs).to.emitWith(null);
     });
   });
 });

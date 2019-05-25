@@ -17,27 +17,26 @@ test('@thoth/view/projectlist/project-list-sidebar', () => {
   });
 
   test('renderAddProjectDisabled', () => {
-    should(`disable if the dialog is open`, async () => {
+    should(`disable if the dialog is open`, () => {
       $dialogService.get(tester.vine)
           .pipe(
               switchMap(service => service.open({
                 cancelable: false,
                 content: {tag: 'div'},
-                onClose: () => EMPTY,
                 title: 'test',
               })),
           )
           .subscribe();
-      await assert(tester.hasAttribute(el, $.addProject._.disabled)).to.emitWith(true);
+      assert(tester.hasAttribute(el, $.addProject._.disabled)).to.emitWith(true);
     });
 
-    should(`not disable if the dialog is closed`, async () => {
-      await assert(tester.hasAttribute(el, $.addProject._.disabled)).to.emitWith(false);
+    should(`not disable if the dialog is closed`, () => {
+      assert(tester.hasAttribute(el, $.addProject._.disabled)).to.emitWith(false);
     });
   });
 
   test('setupOnAddProjectAction', () => {
-    should(`open the dialog correctly`, async () => {
+    should(`open the dialog correctly`, () => {
       tester.dispatchEvent(el, $.addProject._.actionEvent, new ActionEvent()).subscribe();
 
       const isOpenObs = $dialogService.get(tester.vine)
@@ -45,7 +44,7 @@ test('@thoth/view/projectlist/project-list-sidebar', () => {
               switchMap(service => service.getStateObs()),
               map(state => state.isOpen),
           );
-      await assert(isOpenObs).to.emitWith(true);
+      assert(isOpenObs).to.emitWith(true);
     });
   });
 });

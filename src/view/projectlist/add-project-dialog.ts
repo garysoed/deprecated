@@ -51,16 +51,15 @@ export class AddProjectDialog extends ThemedCustomElementCtrl {
 export function openDialog(vine: Vine): Observable<unknown> {
   return $dialogService.get(vine)
       .pipe(
-          take(1),
           switchMap(
               service => service.open<NewProjectSpec>({
                 cancelable: true,
                 content: {tag: 'th-add-project-dialog'},
-                onClose,
                 source: $newProjectSpec,
                 title: 'Create new project',
               }),
           ),
+          switchMap(({canceled, value}) => onClose(canceled, value, vine)),
       );
 }
 

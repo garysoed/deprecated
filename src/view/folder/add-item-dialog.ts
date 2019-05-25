@@ -87,10 +87,10 @@ export function openDialog(vine: Vine): Observable<unknown> {
               service => service.open({
                 cancelable: true,
                 content: {tag: 'th-add-item-dialog'},
-                onClose,
                 title: 'Add item',
               }),
           ),
+          switchMap(() => onClose()),
       );
 }
 

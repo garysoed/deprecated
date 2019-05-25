@@ -17,14 +17,14 @@ test('@thoth/view/folder/file-list-item', () => {
   });
 
   test('renderIcon', () => {
-    should(`render the icon correctly`, async () => {
+    should(`render the icon correctly`, () => {
       const itemType = ItemType.CONVERTER;
       const sourceType = SourceType.DRIVE;
 
       tester.setAttribute(el, $.host._.itemType, itemType).subscribe();
       tester.setAttribute(el, $.host._.sourceType, sourceType).subscribe();
 
-      await assert(tester.getAttribute(el, $.item._.icon)).to.emitWith(`${itemType}_${sourceType}`);
+      assert(tester.getAttribute(el, $.item._.icon)).to.emitWith(`${itemType}_${sourceType}`);
     });
   });
 });
