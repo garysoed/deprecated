@@ -5,7 +5,7 @@ import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElem
 import { api, element, InitFn, repeated, RepeatedSpec } from '@persona';
 import { EMPTY, Observable, of as observableOf } from '@rxjs';
 import { switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
-import { createFromDrive } from 'src/datamodel/item-metadata';
+import { createFromDrive } from 'src/datamodel/item';
 import { $driveClient } from '../../api/drive-client';
 import template from './add-item-dialog.html';
 import { FileListItem } from './file-list-item';

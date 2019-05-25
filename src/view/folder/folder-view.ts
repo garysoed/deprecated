@@ -6,7 +6,7 @@ import { api, element, InitFn } from '@persona';
 import { combineLatest, merge, Observable } from '@rxjs';
 import { map, switchMap, take, withLatestFrom } from '@rxjs/operators';
 import { getFolderIds } from '../../datamodel/folder-path';
-import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
+import { $itemMetadataCollection } from '../../datamodel/item-collection';
 import { $locationService } from '../../main/route';
 import template from './folder-view.html';
 

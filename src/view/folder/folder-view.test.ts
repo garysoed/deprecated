@@ -4,8 +4,8 @@ import { createFakeWindow, PersonaTester, PersonaTesterEnvironment, PersonaTeste
 import { BehaviorSubject, of as observableOf } from '@rxjs';
 import { map, scan, switchMap, withLatestFrom } from '@rxjs/operators';
 import { createPath } from '../../datamodel/folder-path';
-import { ItemMetadata } from '../../datamodel/item-metadata';
-import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
+import { Item } from '../../datamodel/item';
+import { $itemMetadataCollection } from '../../datamodel/item-collection';
 import { $, FolderView } from './folder-view';
 
 const factory = new PersonaTesterFactory(_p);
@@ -30,7 +30,7 @@ test('@thoth/view/folder/folder-view', () => {
       const display2 = 'display2';
       const display3 = 'display3';
 
-      const newMetadataSubject = new BehaviorSubject([] as ItemMetadata[]);
+      const newMetadataSubject = new BehaviorSubject([] as Item[]);
 
       observableOf(display1, display2, display3)
           .pipe(
@@ -41,7 +41,7 @@ test('@thoth/view/folder/folder-view', () => {
                         switchMap(metadata => collection.setMetadata(metadata.setName(display))),
                     );
               }),
-              scan((acc: ItemMetadata[], value: ItemMetadata) => [...acc, value], []),
+              scan((acc: Item[], value: Item) => [...acc, value], []),
           )
           .subscribe(newMetadataSubject);
 

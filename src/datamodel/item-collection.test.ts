@@ -6,8 +6,8 @@ import { ReplaySubject } from '@rxjs';
 import { map, shareReplay, switchMap, take } from '@rxjs/operators';
 import { SerializableItem } from '../serializable/serializable-item';
 import { parseId } from './item-id';
-import { ItemMetadata } from './item-metadata';
-import { ItemMetadataCollection } from './item-metadata-collection';
+import { Item } from './item';
+import { ItemMetadataCollection } from './item-collection';
 import { ItemType } from './item-type';
 import { SourceType } from './source-type';
 
@@ -33,13 +33,13 @@ test('@thoth/datamodel/item-metadata-collection', () => {
 
       storage.update(itemId.toString(), metadataSerializable).subscribe();
 
-      const metadataSubject = new ReplaySubject<ItemMetadata|null>(2);
+      const metadataSubject = new ReplaySubject<Item|null>(2);
       collection.getMetadata(itemId).subscribe(metadataSubject);
 
       collection.deleteMetadata(itemId).subscribe();
 
       await assert(metadataSubject).to.emitSequence([
-        match.anyObjectThat<ItemMetadata>().beAnInstanceOf(ItemMetadata),
+        match.anyObjectThat<Item>().beAnInstanceOf(Item),
         null,
       ]);
     });
@@ -58,7 +58,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
 
       storage.update(itemId.toString(), metadataSerializable).subscribe();
 
-      const metadataSubject = createSpySubject<ItemMetadata|null>();
+      const metadataSubject = createSpySubject<Item|null>();
       collection.getMetadata(itemId).subscribe(metadataSubject);
 
       const serializableMetadataObs = metadataSubject
@@ -80,7 +80,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
     should(`emit null if the metadata does not exist`, async () => {
       const itemId = parseId('lo_itemId');
 
-      const metadataSubject = createSpySubject<ItemMetadata|null>();
+      const metadataSubject = createSpySubject<Item|null>();
       collection.getMetadata(itemId).subscribe(metadataSubject);
 
       await assert(metadataSubject).to.emitWith(null);

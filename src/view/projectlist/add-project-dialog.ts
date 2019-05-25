@@ -4,7 +4,7 @@ import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElem
 import { api, element, InitFn } from '@persona';
 import { BehaviorSubject, combineLatest, EMPTY, Observable } from '@rxjs';
 import { map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
-import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
+import { $itemMetadataCollection } from '../../datamodel/item-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
 import template from './add-project-dialog.html';
 import { logger } from './logger';

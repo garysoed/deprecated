@@ -3,8 +3,8 @@ import { _v } from '@mask';
 import { Observable, of as observableOf } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
 import { SERIALIZABLE_ITEM_CONVERTER, SerializableItem } from '../serializable/serializable-item';
+import { Item } from './item';
 import { ItemId } from './item-id';
-import { ItemMetadata } from './item-metadata';
 import { ItemType } from './item-type';
 import { LocalFolder } from './local-folder';
 import { SourceType } from './source-type';
@@ -17,7 +17,7 @@ export class ItemMetadataCollection {
     return this.storage.delete(itemId.toString());
   }
 
-  getMetadata(itemId: ItemId): Observable<ItemMetadata|null> {
+  getMetadata(itemId: ItemId): Observable<Item|null> {
     return this.storage.read(itemId.toString())
         .pipe(
             map(serializable => {
@@ -25,7 +25,7 @@ export class ItemMetadataCollection {
                 return null;
               }
 
-              return new ItemMetadata(serializable);
+              return new Item(serializable);
             }),
             shareReplay(1),
         );
@@ -46,7 +46,7 @@ export class ItemMetadataCollection {
         );
   }
 
-  setMetadata(metadata: ItemMetadata): Observable<ItemMetadata> {
+  setMetadata(metadata: Item): Observable<Item> {
     return this.storage.update(metadata.id.toString(), metadata.serializable)
         .pipe(mapTo(metadata));
   }
@@ -57,7 +57,7 @@ export const $itemMetadataCollection = _v.stream(
         new ItemMetadataCollection(
             new LocalStorage(
                 window,
-                'th2.im',
+                'th2.ic',
                 SERIALIZABLE_ITEM_CONVERTER,
             ),
         ),

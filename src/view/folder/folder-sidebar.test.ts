@@ -2,7 +2,7 @@ import { assert, setup, should, test } from '@gs-testing';
 import { $dialogService, $window, _p, ActionEvent } from '@mask';
 import { createFakeWindow, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap, tap } from '@rxjs/operators';
-import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
+import { $itemMetadataCollection } from '../../datamodel/item-collection';
 import { $, FolderSidebar } from './folder-sidebar';
 
 test('@thoth/view/folder/folder-sidebar', () => {

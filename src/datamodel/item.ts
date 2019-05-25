@@ -4,7 +4,7 @@ import { ItemId } from './item-id';
 import { ItemType } from './item-type';
 import { SourceType } from './source-type';
 
-export class ItemMetadata {
+export class Item {
   constructor(private readonly serializableItem: SerializableItem) {
   }
 
@@ -35,12 +35,12 @@ export class ItemMetadata {
   }
 }
 
-export function createFromDrive(drive: gapi.client.drive.File): ItemMetadata {
+export function createFromDrive(drive: gapi.client.drive.File): Item {
   if (!drive.id) {
     throw Errors.assert('drive.id').shouldExist().butNot();
   }
 
-  return new ItemMetadata({
+  return new Item({
     id: {id: drive.id, source: SourceType.DRIVE},
     isEditable: false,
     name: drive.name || '',

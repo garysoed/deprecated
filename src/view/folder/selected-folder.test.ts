@@ -6,7 +6,7 @@ import { createFakeWindow } from '@persona/testing';
 import { map, shareReplay, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { createPath } from '../../datamodel/folder-path';
 import { parseId } from '../../datamodel/item-id';
-import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
+import { $itemMetadataCollection } from '../../datamodel/item-collection';
 import { $selectedFolderId, $selectedFolderMetadata } from './selected-folder';
 
 test('@thoth/view/folder/selected-folder', () => {

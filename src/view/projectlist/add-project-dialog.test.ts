@@ -4,8 +4,8 @@ import { _p, Dialog } from '@mask';
 import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap, withLatestFrom } from '@rxjs/operators';
-import { ItemMetadata } from '../../datamodel/item-metadata';
-import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
+import { Item } from '../../datamodel/item';
+import { $itemMetadataCollection } from '../../datamodel/item-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, AddProjectDialog, openDialog } from './add-project-dialog';
 
@@ -62,7 +62,7 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
               switchMap(([project, collection]) => collection.getMetadata(project.rootFolderId)),
           );
       await assert(itemMetadataObs).to
-          .emitWith(match.anyObjectThat<ItemMetadata>().beAnInstanceOf(ItemMetadata));
+          .emitWith(match.anyObjectThat<Item>().beAnInstanceOf(Item));
     });
 
     should(`do nothing if there are no project names`, async () => {

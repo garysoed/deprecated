@@ -2,7 +2,7 @@ import { _v } from '@mask';
 import { of as observableOf } from '@rxjs';
 import { map, switchMap, withLatestFrom } from '@rxjs/operators';
 import { getFolderIds } from '../../datamodel/folder-path';
-import { $itemMetadataCollection } from '../../datamodel/item-metadata-collection';
+import { $itemMetadataCollection } from '../../datamodel/item-collection';
 import { $locationService } from '../../main/route';
 
 export const $selectedFolderId = _v.stream(

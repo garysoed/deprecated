@@ -1,8 +1,8 @@
 import { SerializableLocalFolder } from 'src/serializable/serializable-local-folder';
 import { ItemId } from './item-id';
-import { ItemMetadata } from './item-metadata';
+import { Item } from './item';
 
-export class LocalFolder extends ItemMetadata {
+export class LocalFolder extends Item {
   constructor(private readonly serializableLocalFolder: SerializableLocalFolder) {
     super(serializableLocalFolder);
   }
