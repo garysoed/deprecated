@@ -6,6 +6,7 @@ import { SERIALIZABLE_ITEM_CONVERTER, SerializableItem } from '../serializable/s
 import { ItemId } from './item-id';
 import { ItemMetadata } from './item-metadata';
 import { ItemType } from './item-type';
+import { LocalFolder } from './local-folder';
 import { SourceType } from './source-type';
 
 // TODO: Handle drive files.
@@ -30,11 +31,12 @@ export class ItemMetadataCollection {
         );
   }
 
-  newLocalFolderMetadata(): Observable<ItemMetadata> {
+  newLocalFolderMetadata(): Observable<LocalFolder> {
     return this.storage.generateId()
         .pipe(
             take(1),
-            map(metadataId => new ItemMetadata({
+            map(metadataId => new LocalFolder({
+              contentIds: [],
               id: {id: metadataId, source: SourceType.LOCAL},
               isEditable: true,
               name: 'New item',

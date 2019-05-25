@@ -5,30 +5,33 @@ import { ItemType } from './item-type';
 import { SourceType } from './source-type';
 
 export class ItemMetadata {
-  constructor(readonly serializable: SerializableItem) {
+  constructor(private readonly serializableItem: SerializableItem) {
   }
 
   get id(): ItemId {
-    return new ItemId(this.serializable.id);
+    return new ItemId(this.serializableItem.id);
   }
 
   get isEditable(): boolean {
-    return this.serializable.isEditable;
+    return this.serializableItem.isEditable;
   }
 
   get name(): string {
-    return this.serializable.name;
+    return this.serializableItem.name;
   }
 
-  setName(newName: string): ItemMetadata {
-    return new ItemMetadata({
-      ...this.serializable,
-      name: newName,
-    });
+  setName(newName: string): this {
+    this.serializableItem.name = newName;
+
+    return this;
+  }
+
+  get serializable(): SerializableItem {
+    return {...this.serializableItem};
   }
 
   get type(): ItemType {
-    return this.serializable.type;
+    return this.serializableItem.type;
   }
 }
 
