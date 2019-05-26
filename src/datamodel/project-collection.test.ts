@@ -5,7 +5,7 @@ import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { BehaviorSubject } from '@rxjs';
 import { SerializableProject } from '../serializable/serializable-project';
 import { parseId } from './item-id';
-import { Project } from './project';
+import { projectFactory, ProjectSpec } from './project';
 import { ProjectCollection } from './project-collection';
 
 test('@thoth/datamodel/project-collection', () => {
@@ -30,7 +30,7 @@ test('@thoth/datamodel/project-collection', () => {
 
       storage.update(projectId, projectSerializable).subscribe();
 
-      const projectSubject = new BehaviorSubject<Project|null>(null);
+      const projectSubject = new BehaviorSubject<ProjectSpec|null>(null);
       collection.getProject(projectId).subscribe(projectSubject);
 
       // tslint:disable-next-line:no-non-null-assertion
@@ -43,7 +43,7 @@ test('@thoth/datamodel/project-collection', () => {
     });
 
     should(`emit null if the project does not exist`, () => {
-      const projectSubject = new BehaviorSubject<Project|null>(createSpyInstance(Project));
+      const projectSubject = new BehaviorSubject<ProjectSpec|null>(createSpyInstance(ProjectSpec));
       collection.getProject('projectId').subscribe(projectSubject);
 
       assert(projectSubject.getValue()).to.beNull();
@@ -116,7 +116,7 @@ test('@thoth/datamodel/project-collection', () => {
 
       collection
           .setProject(
-              new Project({
+              projectFactory.$create({
                 id: projectId,
                 name: 'project',
                 rootFolderId: rootFolderId.serializable,

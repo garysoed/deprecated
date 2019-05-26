@@ -2,7 +2,7 @@ import { assert, match, runEnvironment, setup, should, test } from '@gs-testing'
 import { _p } from '@mask';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import {of as observableOf } from '@rxjs';
-import { map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
+import { filter, map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { parseId } from '../../datamodel/item-id';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, ProjectListView } from './project-list-view';
@@ -31,38 +31,36 @@ test('@thoth/view/projectlist/project-list-view', () => {
               switchMap(([id, collection]) => {
                 return collection.newProject(parseId('lo_rootFolderId'))
                     .pipe(
-                        map(newProject => newProject.setName(`Project ${id}`)),
+                        map(newProject => newProject
+                            .$update(newProject.$set.name(`Project ${id}`))),
                         switchMap(newProject => collection.setProject(newProject)),
                     );
               }),
           )
           .subscribe();
 
-      const nodes = await tester
-          .getNodesAfter(el, $.projectList._.repeated).pipe(take(1))
-          .toPromise();
+      const nodesObs = tester.getNodesAfter(el, $.projectList._.repeated)
+          .pipe(
+              switchMap(nodes => observableOf(...nodes)),
+              filter((node): node is Element => node instanceof Element),
+          );
 
-      assert(nodes).to.startWith([
-        match.anyThat<Node>().beAnInstanceOf(Element),
-        match.anyThat<Node>().beAnInstanceOf(Element),
-        match.anyThat<Node>().beAnInstanceOf(Element),
-      ]);
-      assert(nodes as Element[]).to.startWith([
+      assert(nodesObs).to.emitSequence([
         match.anyElementThat().haveTag('th-project-list-item'),
         match.anyElementThat().haveTag('th-project-list-item'),
         match.anyElementThat().haveTag('th-project-list-item'),
       ]);
 
       // Get the projectID attributes
-      const projectNameObs = observableOf(...(nodes as Element[]))
+      const projectNameObs = nodesObs
           .pipe(
               take(3),
-              map(el => el.getAttribute('project-id')!),
+              map(el => (el as Element).getAttribute('project-id')!),
               withLatestFrom($projectCollection.get(tester.vine)),
               switchMap(([projectId, collection]) => collection.getProject(projectId)),
               map(project => project!.name),
           );
-      await assert(projectNameObs).to.emitSequence(['Project 1', 'Project 2', 'Project 3']);
+      assert(projectNameObs).to.emitSequence(['Project 1', 'Project 2', 'Project 3']);
     });
   });
 });

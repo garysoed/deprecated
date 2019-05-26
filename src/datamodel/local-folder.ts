@@ -1,8 +1,9 @@
+import { generateImmutable, Immutable } from '@gs-tools/immutable';
 import { SerializableLocalFolder } from '../serializable/serializable-local-folder';
-import { Item, ItemUpdater } from './item';
+import { ItemSpec } from './item';
 import { ItemId } from './item-id';
 
-export class LocalFolder extends Item {
+class LocalFolderSpec extends ItemSpec {
   constructor(private readonly serializableLocalFolder: SerializableLocalFolder) {
     super(serializableLocalFolder);
   }
@@ -10,34 +11,10 @@ export class LocalFolder extends Item {
   get contentIds(): ItemId[] {
     return this.serializableLocalFolder.contentIds.map(id => new ItemId(id));
   }
-
-  update(updater: LocalFolderUpdater): LocalFolder {
-    return new LocalFolder({
-      ...this.serializableLocalFolder,
-      ...updater.changeSerializable,
-    });
-  }
-
-  get set(): LocalFolderUpdater {
-    return new LocalFolderUpdater();
+  set contentIds(contentIds: ItemId[]) {
+    this.serializableLocalFolder.contentIds = contentIds.map(id => id.serializable);
   }
 }
 
-type MutablePartial<T> = {-readonly [K in keyof T]+?: T[K]};
-
-export class LocalFolderUpdater extends ItemUpdater {
-  protected readonly localFolderChangeSerializable: MutablePartial<SerializableLocalFolder> = {};
-
-  get changeSerializable(): MutablePartial<SerializableLocalFolder> {
-    return {
-      ...this.itemChangeSerializable,
-      ...this.localFolderChangeSerializable,
-    };
-  }
-
-  contentIds(contentIds: ItemId[]): this {
-    this.localFolderChangeSerializable.contentIds = contentIds.map(id => id.serializable);
-
-    return this;
-  }
-}
+export const localFolderFactory = generateImmutable(LocalFolderSpec);
+export type LocalFolder = Immutable<LocalFolderSpec, SerializableLocalFolder>;

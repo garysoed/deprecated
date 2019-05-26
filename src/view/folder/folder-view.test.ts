@@ -25,7 +25,7 @@ test('@thoth/view/folder/folder-view', () => {
   });
 
   test('renderBreadcrumbPath', () => {
-    should(`render the crumbs correctly`, async () => {
+    should(`render the crumbs correctly`, () => {
       const display1 = 'display1';
       const display2 = 'display2';
       const display3 = 'display3';
@@ -40,7 +40,7 @@ test('@thoth/view/folder/folder-view', () => {
                     .pipe(
                         switchMap(item => collection
                             .setItem(
-                                item.update(item.set.name(display)),
+                                item.$update(item.$set.name(display)),
                             ),
                         ),
                     );
@@ -60,7 +60,7 @@ test('@thoth/view/folder/folder-view', () => {
             key: id.toString(),
           }));
 
-      await assert(tester.getAttribute(el, $.breadcrumb._.path).pipe(map(list => [...list])))
+      assert(tester.getAttribute(el, $.breadcrumb._.path).pipe(map(list => [...list])))
           .to.emitWith(match.anyArrayThat<CrumbData>().haveExactElements(crumbDataMatches));
     });
   });

@@ -50,7 +50,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
               take(1),
               withLatestFrom(projectSubject),
               switchMap(([collection, project]) => collection
-                  .setProject(project.setName(projectName)),
+                  .setProject(project.$update(project.$set.name(projectName))),
               ),
           )
           .subscribe();

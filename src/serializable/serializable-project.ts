@@ -1,10 +1,10 @@
 import { HasPropertiesType, StringType } from '@gs-types';
-import { Result, Serializable } from '@nabu';
+import { Result, Serializable, SerializableObject } from '@nabu';
 import { SerializableItemId, SerializableItemIdType } from './serializable-item-id';
 
-export interface SerializableProject {
+export interface SerializableProject extends SerializableObject {
   readonly id: string;
-  readonly name: string;
+  name: string;
   readonly rootFolderId: SerializableItemId;
 }
 

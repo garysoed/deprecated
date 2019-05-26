@@ -1,10 +1,9 @@
-import { assert, match, runEnvironment, setup, should, test } from '@gs-testing';
+import { assert, runEnvironment, setup, should, test } from '@gs-testing';
 import { filterNonNull, scanArray } from '@gs-tools/rxjs';
 import { _p, Dialog } from '@mask';
 import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap, withLatestFrom } from '@rxjs/operators';
-import { Item } from '../../datamodel/item';
 import { $itemMetadataCollection } from '../../datamodel/item-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, AddProjectDialog, openDialog } from './add-project-dialog';
@@ -27,7 +26,7 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
       openDialog(tester.vine).subscribe();
     });
 
-    should(`create the new project correctly`, async () => {
+    should(`create the new project correctly`, () => {
       const newProjectName = 'newProjectName';
       dialogTester.getContentObs()
           .pipe(
@@ -54,18 +53,17 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
               filterNonNull(),
           );
 
-      await assert(projectObs.pipe(map(project => project.name))).to.emitWith(newProjectName);
+      assert(projectObs.pipe(map(project => project.name))).to.emitWith(newProjectName);
 
-      const itemMetadataObs = projectObs
+      const itemObs = projectObs
           .pipe(
               withLatestFrom($itemMetadataCollection.get(tester.vine)),
               switchMap(([project, collection]) => collection.getMetadata(project.rootFolderId)),
           );
-      await assert(itemMetadataObs).to
-          .emitWith(match.anyObjectThat<Item>().beAnInstanceOf(Item));
+      assert(itemObs.pipe(filterNonNull())).to.emit();
     });
 
-    should(`do nothing if there are no project names`, async () => {
+    should(`do nothing if there are no project names`, () => {
       dialogTester.clickOk().subscribe();
 
       const projectCount = $projectCollection.get(tester.vine)
@@ -74,10 +72,10 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
               scanArray(),
               map(ids => ids.length),
           );
-      await assert(projectCount).to.emitWith(0);
+      assert(projectCount).to.emitWith(0);
     });
 
-    should(`do nothing if dialog is canceled`, async () => {
+    should(`do nothing if dialog is canceled`, () => {
       const newProjectName = 'newProjectName';
       dialogTester.getContentObs()
           .pipe(
@@ -96,7 +94,7 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
               scanArray(),
               map(ids => ids.length),
           );
-      await assert(projectCount).to.emitWith(0);
+      assert(projectCount).to.emitWith(0);
     });
   });
 });

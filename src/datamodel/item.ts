@@ -1,10 +1,11 @@
 import { Errors } from '@gs-tools/error';
+import { generateImmutable, Immutable } from '@gs-tools/immutable';
 import { SerializableItem } from '../serializable/serializable-item';
 import { ItemId } from './item-id';
 import { ItemType } from './item-type';
 import { SourceType } from './source-type';
 
-export class Item {
+export class ItemSpec {
   constructor(private readonly serializableItem: SerializableItem) { }
 
   get id(): ItemId {
@@ -18,49 +19,24 @@ export class Item {
   get name(): string {
     return this.serializableItem.name;
   }
-
-  get serializable(): SerializableItem {
-    return {...this.serializableItem};
+  set name(newName: string) {
+    this.serializableItem.name = newName;
   }
 
   get type(): ItemType {
     return this.serializableItem.type;
   }
-
-  update(updater: ItemUpdater): Item {
-    return new Item({
-      ...this.serializableItem,
-      ...updater.changeSerializable,
-    });
-  }
-
-  get set(): ItemUpdater {
-    return new ItemUpdater();
-  }
 }
 
-type MutablePartial<T> = {-readonly [K in keyof T]+?: T[K]};
-
-export class ItemUpdater {
-  protected readonly itemChangeSerializable: MutablePartial<SerializableItem> = {};
-
-  get changeSerializable(): MutablePartial<SerializableItem> {
-    return this.itemChangeSerializable;
-  }
-
-  name(newName: string): this {
-    this.itemChangeSerializable.name = newName;
-
-    return this;
-  }
-}
+export const itemFactory = generateImmutable(ItemSpec);
+export type Item = Immutable<ItemSpec, SerializableItem>;
 
 export function createFromDrive(drive: gapi.client.drive.File): Item {
   if (!drive.id) {
     throw Errors.assert('drive.id').shouldExist().butNot();
   }
 
-  return new Item({
+  return itemFactory.$create({
     id: {id: drive.id, source: SourceType.DRIVE},
     isEditable: false,
     name: drive.name || '',

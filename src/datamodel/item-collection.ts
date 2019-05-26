@@ -3,10 +3,10 @@ import { _v } from '@mask';
 import { Observable, of as observableOf } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
 import { SERIALIZABLE_ITEM_CONVERTER, SerializableItem } from '../serializable/serializable-item';
-import { Item } from './item';
+import { Item, itemFactory } from './item';
 import { ItemId } from './item-id';
 import { ItemType } from './item-type';
-import { LocalFolder } from './local-folder';
+import { LocalFolder, localFolderFactory } from './local-folder';
 import { SourceType } from './source-type';
 
 // TODO: Handle drive files.
@@ -25,7 +25,7 @@ export class ItemMetadataCollection {
                 return null;
               }
 
-              return new Item(serializable);
+              return itemFactory.$create(serializable);
             }),
             shareReplay(1),
         );
@@ -35,7 +35,7 @@ export class ItemMetadataCollection {
     return this.storage.generateId()
         .pipe(
             take(1),
-            map(metadataId => new LocalFolder({
+            map(metadataId => localFolderFactory.$create({
               contentIds: [],
               id: {id: metadataId, source: SourceType.LOCAL},
               isEditable: true,

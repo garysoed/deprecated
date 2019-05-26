@@ -5,7 +5,7 @@ import { Observable, of as observableOf } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
 import { SERIALIZABLE_PROJECT_CONVERTER, SerializableProject } from '../serializable/serializable-project';
 import { ItemId } from './item-id';
-import { Project } from './project';
+import { Project, projectFactory } from './project';
 
 export class ProjectCollection {
   constructor(private readonly storage: EditableStorage<SerializableProject>) { }
@@ -23,7 +23,7 @@ export class ProjectCollection {
                 return null;
               }
 
-              return new Project(projectSerializable);
+              return projectFactory.$create(projectSerializable);
             }),
             shareReplay(1),
         );
@@ -39,7 +39,7 @@ export class ProjectCollection {
         .pipe(
             take(1),
             map(newProjectId => {
-              return new Project({
+              return projectFactory.$create({
                 id: newProjectId,
                 name: `Project ${newProjectId}`,
                 rootFolderId: rootFolderId.serializable,

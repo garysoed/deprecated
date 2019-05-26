@@ -1,7 +1,8 @@
+import { generateImmutable, Immutable } from '@gs-tools/immutable';
 import { SerializableProject } from '../serializable/serializable-project';
 import { ItemId } from './item-id';
 
-export class Project {
+export class ProjectSpec {
   constructor(readonly serializable: SerializableProject) { }
 
   get id(): string {
@@ -11,42 +12,15 @@ export class Project {
   get name(): string {
     return this.serializable.name;
   }
+  set name(newName: string) {
+    this.serializable.name = newName;
+  }
 
   get rootFolderId(): ItemId {
     return new ItemId(this.serializable.rootFolderId);
   }
-
-  setName(newName: string): Project {
-    return new Project({
-      ...this.serializable,
-      name: newName,
-    });
-  }
-
-  update(updater: ProjectUpdater): Project {
-    return new Project({
-      ...this.serializable,
-      ...updater.changeSerializable,
-    });
-  }
-
-  get updater(): ProjectUpdater {
-    return new ProjectUpdater();
-  }
 }
 
-type MutablePartial<T> = {-readonly [K in keyof T]+?: T[K]};
+export const projectFactory = generateImmutable(ProjectSpec);
 
-export class ProjectUpdater {
-  protected readonly projectChangeSerializable: MutablePartial<SerializableProject> = {};
-
-  get changeSerializable(): MutablePartial<SerializableProject> {
-    return this.projectChangeSerializable;
-  }
-
-  setName(newName: string): this {
-    this.projectChangeSerializable.name = newName;
-
-    return this;
-  }
-}
+export type Project = Immutable<ProjectSpec, SerializableProject>;

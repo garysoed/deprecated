@@ -87,7 +87,9 @@ function onClose(canceled: boolean, value: NewProjectSpec|null, vine: Vine): Obs
                 switchMap(newProject => {
                   logger.info('NEW_PROJECT', value.projectName);
 
-                  return projectCollection.setProject(newProject.setName(value.projectName || ''));
+                  return projectCollection.setProject(
+                      newProject.$update(newProject.$set.name(value.projectName || '')),
+                  );
                 }),
                 take(1),
             );
