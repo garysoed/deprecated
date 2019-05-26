@@ -1,11 +1,13 @@
-import { assert, setup, should, test } from '@gs-testing';
+import { assert, runEnvironment, setup, should, test } from '@gs-testing';
 import { _p } from '@mask';
-import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
+import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { ItemType } from '../../datamodel/item-type';
 import { SourceType } from '../../datamodel/source-type';
 import { $, FileListItem } from './file-list-item';
 
 test('@thoth/view/folder/file-list-item', () => {
+  runEnvironment(new PersonaTesterEnvironment());
+
   const factory = new PersonaTesterFactory(_p);
 
   let el: HTMLElement;
