@@ -6,7 +6,7 @@ import { SerializableItemId, SerializableItemIdType } from './serializable-item-
 export interface SerializableItem {
   readonly id: SerializableItemId;
   readonly isEditable: boolean;
-  name: string;
+  readonly name: string;
   readonly type: ItemType;
 }
 

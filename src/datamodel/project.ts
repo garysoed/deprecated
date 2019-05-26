@@ -22,4 +22,31 @@ export class Project {
       name: newName,
     });
   }
+
+  update(updater: ProjectUpdater): Project {
+    return new Project({
+      ...this.serializable,
+      ...updater.changeSerializable,
+    });
+  }
+
+  get updater(): ProjectUpdater {
+    return new ProjectUpdater();
+  }
+}
+
+type MutablePartial<T> = {-readonly [K in keyof T]+?: T[K]};
+
+export class ProjectUpdater {
+  protected readonly projectChangeSerializable: MutablePartial<SerializableProject> = {};
+
+  get changeSerializable(): MutablePartial<SerializableProject> {
+    return this.projectChangeSerializable;
+  }
+
+  setName(newName: string): this {
+    this.projectChangeSerializable.name = newName;
+
+    return this;
+  }
 }

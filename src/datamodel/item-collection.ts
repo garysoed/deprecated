@@ -46,7 +46,7 @@ export class ItemMetadataCollection {
         );
   }
 
-  setMetadata(metadata: Item): Observable<Item> {
+  setItem(metadata: Item): Observable<Item> {
     return this.storage.update(metadata.id.toString(), metadata.serializable)
         .pipe(mapTo(metadata));
   }

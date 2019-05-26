@@ -52,7 +52,7 @@ test('@thoth/view/folder/selected-folder', () => {
           .pipe(
               switchMap(collection => collection
                   .newLocalFolderMetadata()
-                  .pipe(switchMap(metadata => collection.setMetadata(metadata))),
+                  .pipe(switchMap(metadata => collection.setItem(metadata))),
               ),
               shareReplay(1),
           );

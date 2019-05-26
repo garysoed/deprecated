@@ -5,8 +5,7 @@ import { ItemType } from './item-type';
 import { SourceType } from './source-type';
 
 export class Item {
-  constructor(private readonly serializableItem: SerializableItem) {
-  }
+  constructor(private readonly serializableItem: SerializableItem) { }
 
   get id(): ItemId {
     return new ItemId(this.serializableItem.id);
@@ -20,18 +19,39 @@ export class Item {
     return this.serializableItem.name;
   }
 
-  setName(newName: string): this {
-    this.serializableItem.name = newName;
-
-    return this;
-  }
-
   get serializable(): SerializableItem {
     return {...this.serializableItem};
   }
 
   get type(): ItemType {
     return this.serializableItem.type;
+  }
+
+  update(updater: ItemUpdater): Item {
+    return new Item({
+      ...this.serializableItem,
+      ...updater.changeSerializable,
+    });
+  }
+
+  get set(): ItemUpdater {
+    return new ItemUpdater();
+  }
+}
+
+type MutablePartial<T> = {-readonly [K in keyof T]+?: T[K]};
+
+export class ItemUpdater {
+  protected readonly itemChangeSerializable: MutablePartial<SerializableItem> = {};
+
+  get changeSerializable(): MutablePartial<SerializableItem> {
+    return this.itemChangeSerializable;
+  }
+
+  name(newName: string): this {
+    this.itemChangeSerializable.name = newName;
+
+    return this;
   }
 }
 

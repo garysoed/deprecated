@@ -82,7 +82,7 @@ function onClose(canceled: boolean, value: NewProjectSpec|null, vine: Vine): Obs
       switchMap(([projectCollection, itemMetadataCollection]) => {
         return itemMetadataCollection.newLocalFolderMetadata()
             .pipe(
-                switchMap(newMetadata => itemMetadataCollection.setMetadata(newMetadata)),
+                switchMap(newMetadata => itemMetadataCollection.setItem(newMetadata)),
                 switchMap(newMetadata => projectCollection.newProject(newMetadata.id)),
                 switchMap(newProject => {
                   logger.info('NEW_PROJECT', value.projectName);

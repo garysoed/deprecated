@@ -26,7 +26,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
           .pipe(
               switchMap(collection => collection
                   .newLocalFolderMetadata()
-                  .pipe(switchMap(newMetadata => collection.setMetadata(newMetadata))),
+                  .pipe(switchMap(newMetadata => collection.setItem(newMetadata))),
               ),
               tap(newMetadata => {
                 fakeWindow.history.pushState({}, '', `/p/${newMetadata.id}`);

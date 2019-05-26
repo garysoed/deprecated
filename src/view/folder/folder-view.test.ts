@@ -38,7 +38,11 @@ test('@thoth/view/folder/folder-view', () => {
               switchMap(([display, collection]) => {
                 return collection.newLocalFolderMetadata()
                     .pipe(
-                        switchMap(metadata => collection.setMetadata(metadata.setName(display))),
+                        switchMap(item => collection
+                            .setItem(
+                                item.update(item.set.name(display)),
+                            ),
+                        ),
                     );
               }),
               scan((acc: Item[], value: Item) => [...acc, value], []),
