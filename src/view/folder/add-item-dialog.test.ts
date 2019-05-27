@@ -5,7 +5,7 @@ import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { Observable, of as observableOf, ReplaySubject } from '@rxjs';
 import { filter, map, shareReplay, switchMap, take, withLatestFrom } from '@rxjs/operators';
-import { $itemCollection } from '../../datamodel/item-collection';
+import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { ItemId } from '../../datamodel/item-id';
 import { ItemType } from '../../datamodel/item-type';
 import { LocalFolder, localFolderFactory } from '../../datamodel/local-folder';
@@ -32,8 +32,8 @@ test('@thoth/view/folder/add-item-dialog', () => {
         .pipe(
             take(1),
             switchMap(collection => {
-              return collection.newLocalFolder().pipe(
-                  switchMap(item => collection.setItem(item)),
+              return collection.create().pipe(
+                  switchMap(item => collection.update(item)),
               );
             }),
             map(item => item.id),
@@ -185,7 +185,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
       contentIdsObs = $itemCollection.get(tester.vine)
           .pipe(
               withLatestFrom(localFolderIdObs),
-              switchMap(([collection, localFolderId]) => collection.getMetadata(localFolderId)),
+              switchMap(([collection, localFolderId]) => collection.get(localFolderId)),
               filterNonNull(),
               filter((item): item is LocalFolder => localFolderFactory.factoryOf(item)),
               map(localFolder => localFolder.contentIds.map(id => id.id)),

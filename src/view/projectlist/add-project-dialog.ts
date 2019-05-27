@@ -4,7 +4,7 @@ import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElem
 import { api, element, InitFn } from '@persona';
 import { BehaviorSubject, combineLatest, EMPTY, Observable } from '@rxjs';
 import { map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
-import { $itemCollection } from '../../datamodel/item-collection';
+import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
 import template from './add-project-dialog.html';
 import { logger } from './logger';
@@ -80,9 +80,9 @@ function onClose(canceled: boolean, value: NewProjectSpec|null, vine: Vine): Obs
   .pipe(
       take(1),
       switchMap(([projectCollection, itemMetadataCollection]) => {
-        return itemMetadataCollection.newLocalFolder()
+        return itemMetadataCollection.create()
             .pipe(
-                switchMap(newMetadata => itemMetadataCollection.setItem(newMetadata)),
+                switchMap(newMetadata => itemMetadataCollection.update(newMetadata)),
                 switchMap(newMetadata => projectCollection.newProject(newMetadata.id)),
                 switchMap(newProject => {
                   logger.info('NEW_PROJECT', value.projectName);

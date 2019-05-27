@@ -6,7 +6,7 @@ import { api, element, InitFn } from '@persona';
 import { combineLatest, merge, Observable } from '@rxjs';
 import { map, switchMap, take, withLatestFrom } from '@rxjs/operators';
 import { getFolderIds } from '../../datamodel/folder-path';
-import { $itemCollection } from '../../datamodel/item-collection';
+import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { $locationService } from '../../main/route';
 import template from './folder-view.html';
 
@@ -47,7 +47,7 @@ export class FolderView extends ThemedCustomElementCtrl {
             switchMap(([{payload}, itemMetadataCollection]) => {
               const folderCrumbDataObs = getFolderIds(payload.route)
                   .map(id => {
-                    return itemMetadataCollection.getMetadata(id)
+                    return itemMetadataCollection.get(id)
                         .pipe(
                             map(metadata => metadata ? metadata.name : ''),
                             map(display => ({display, key: id.toString()})),

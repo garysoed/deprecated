@@ -9,28 +9,10 @@ import { LocalFolder, localFolderFactory } from './local-folder';
 import { SourceType } from './source-type';
 
 // TODO: Handle drive files.
-export class ItemMetadataCollection {
+export class LocalFolderCollection {
   constructor(private readonly storage: EditableStorage<SerializableLocalFolder>) { }
 
-  deleteMetadata(itemId: ItemId): Observable<unknown> {
-    return this.storage.delete(itemId.toString());
-  }
-
-  getMetadata(itemId: ItemId): Observable<LocalFolder|null> {
-    return this.storage.read(itemId.toString())
-        .pipe(
-            map(serializable => {
-              if (!serializable) {
-                return null;
-              }
-
-              return localFolderFactory.create(serializable);
-            }),
-            shareReplay(1),
-        );
-  }
-
-  newLocalFolder(): Observable<LocalFolder> {
+  create(): Observable<LocalFolder> {
     return this.storage.generateId()
         .pipe(
             take(1),
@@ -45,7 +27,25 @@ export class ItemMetadataCollection {
         );
   }
 
-  setItem(metadata: LocalFolder): Observable<LocalFolder> {
+  delete(itemId: ItemId): Observable<unknown> {
+    return this.storage.delete(itemId.toString());
+  }
+
+  get(itemId: ItemId): Observable<LocalFolder|null> {
+    return this.storage.read(itemId.toString())
+        .pipe(
+            map(serializable => {
+              if (!serializable) {
+                return null;
+              }
+
+              return localFolderFactory.create(serializable);
+            }),
+            shareReplay(1),
+        );
+  }
+
+  update(metadata: LocalFolder): Observable<LocalFolder> {
     return this.storage.update(metadata.id.toString(), metadata.serializable)
         .pipe(mapTo(metadata));
   }
@@ -53,7 +53,7 @@ export class ItemMetadataCollection {
 
 export const $itemCollection = _v.stream(
     () => observableOf(
-        new ItemMetadataCollection(
+        new LocalFolderCollection(
             new LocalStorage(
                 window,
                 'th2.ic',

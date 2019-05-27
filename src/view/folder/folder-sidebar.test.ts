@@ -3,7 +3,7 @@ import { $dialogService, $window, _p, ActionEvent } from '@mask';
 import { createFakeWindow, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { Observable } from '@rxjs';
 import { map, shareReplay, switchMap, tap } from '@rxjs/operators';
-import { $itemCollection } from '../../datamodel/item-collection';
+import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { LocalFolder } from '../../datamodel/local-folder';
 import { $, FolderSidebar } from './folder-sidebar';
 
@@ -27,8 +27,8 @@ test('@thoth/view/folder/folder-sidebar', () => {
       $itemCollection.get(tester.vine)
           .pipe(
               switchMap(collection => collection
-                  .newLocalFolder()
-                  .pipe(switchMap(newMetadata => collection.setItem(newMetadata))),
+                  .create()
+                  .pipe(switchMap(newMetadata => collection.update(newMetadata))),
               ),
               tap(newMetadata => {
                 fakeWindow.history.pushState({}, '', `/p/${newMetadata.id}`);
@@ -72,8 +72,8 @@ test('@thoth/view/folder/folder-sidebar', () => {
       localFolderObs = $itemCollection.get(tester.vine)
           .pipe(
               switchMap(collection => {
-                return collection.newLocalFolder()
-                    .pipe(switchMap(localFolder => collection.setItem(localFolder)));
+                return collection.create()
+                    .pipe(switchMap(localFolder => collection.update(localFolder)));
               }),
               shareReplay(1),
           );

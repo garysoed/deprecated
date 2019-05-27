@@ -7,7 +7,7 @@ import { BehaviorSubject, Observable, of as observableOf } from '@rxjs';
 import { filter, map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { $driveClient } from '../../api/drive-client';
 import { createFromDrive, Item } from '../../datamodel/item';
-import { $itemCollection } from '../../datamodel/item-collection';
+import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { ItemId } from '../../datamodel/item-id';
 import { LocalFolder } from '../../datamodel/local-folder';
 import { SourceType } from '../../datamodel/source-type';
@@ -125,7 +125,7 @@ function onClose(item: Item, folder: LocalFolder, vine: Vine): Observable<any> {
   return $itemCollection.get(vine)
       .pipe(
           switchMap(collection => {
-            return collection.setItem(
+            return collection.update(
               folder.$update(folder.$set.contentIds([...folder.contentIds, item.id])),
 
           ); }),

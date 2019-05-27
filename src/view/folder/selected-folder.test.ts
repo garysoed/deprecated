@@ -5,7 +5,7 @@ import { $window, _v } from '@mask';
 import { createFakeWindow } from '@persona/testing';
 import { map, shareReplay, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { createPath } from '../../datamodel/folder-path';
-import { $itemCollection } from '../../datamodel/item-collection';
+import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { parseId } from '../../datamodel/item-id';
 import { $selectedFolderId, $selectedFolderMetadata } from './selected-folder';
 
@@ -51,8 +51,8 @@ test('@thoth/view/folder/selected-folder', () => {
       const metadataObs = $itemCollection.get(vine)
           .pipe(
               switchMap(collection => collection
-                  .newLocalFolder()
-                  .pipe(switchMap(metadata => collection.setItem(metadata))),
+                  .create()
+                  .pipe(switchMap(metadata => collection.update(metadata))),
               ),
               shareReplay(1),
           );
