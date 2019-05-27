@@ -5,13 +5,14 @@ import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { ReplaySubject } from '@rxjs';
 import { map, shareReplay, switchMap, take } from '@rxjs/operators';
 import { SerializableItem } from '../serializable/serializable-item';
+import { SerializableLocalFolder } from '../serializable/serializable-local-folder';
 import { Item } from './item';
 import { ItemMetadataCollection } from './item-collection';
 import { parseId } from './item-id';
 import { ItemType } from './item-type';
 
 test('@thoth/datamodel/item-metadata-collection', () => {
-  let storage: EditableStorage<SerializableItem>;
+  let storage: EditableStorage<SerializableLocalFolder>;
   let collection: ItemMetadataCollection;
 
   setup(() => {
@@ -23,14 +24,15 @@ test('@thoth/datamodel/item-metadata-collection', () => {
     should(`delete the metadata correctly`, () => {
       const itemId = parseId('lo_itemId');
       const itemName = `Test Item`;
-      const metadataSerializable = {
+      const localFolderSerializable = {
+        contentIds: [],
         id: itemId.serializable,
         isEditable: true,
         name: itemName,
         type: ItemType.FOLDER,
       };
 
-      storage.update(itemId.toString(), metadataSerializable).subscribe();
+      storage.update(itemId.toString(), localFolderSerializable).subscribe();
 
       const itemSubject = new ReplaySubject<Item|null>(2);
       collection.getMetadata(itemId).subscribe(itemSubject);
@@ -49,6 +51,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
       const itemId = parseId('lo_itemId');
       const itemName = `Test Item`;
       const metadataSerializable = {
+        contentIds: [],
         id: itemId.serializable,
         isEditable: true,
         name: itemName,
@@ -96,6 +99,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
           .update(
               metadataId1.toString(),
               {
+                contentIds: [],
                 id: metadataId1.serializable,
                 isEditable: true,
                 name: 'name',
@@ -107,6 +111,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
           .update(
               metadataId2.toString(),
               {
+                contentIds: [],
                 id: metadataId2.serializable,
                 isEditable: true,
                 name: 'name',
@@ -118,6 +123,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
           .update(
               metadataId3.toString(),
               {
+                contentIds: [],
                 id: metadataId3.serializable,
                 isEditable: true,
                 name: 'name',
@@ -126,7 +132,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
           )
           .subscribe();
 
-      const newMetadataObs = collection.newLocalFolderMetadata()
+      const newMetadataObs = collection.newLocalFolder()
           .pipe(take(1), shareReplay(1));
 
       assert(newMetadataObs.pipe(map(({isEditable}) => isEditable))).to.emitWith(true);
@@ -157,6 +163,7 @@ test('@thoth/datamodel/item-metadata-collection', () => {
           .update(
               id.toString(),
               {
+                contentIds: [],
                 id: id.serializable,
                 isEditable: true,
                 name: 'name',

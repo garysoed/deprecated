@@ -23,7 +23,7 @@ export class ProjectCollection {
                 return null;
               }
 
-              return projectFactory.$create(projectSerializable);
+              return projectFactory.create(projectSerializable);
             }),
             shareReplay(1),
         );
@@ -39,7 +39,7 @@ export class ProjectCollection {
         .pipe(
             take(1),
             map(newProjectId => {
-              return projectFactory.$create({
+              return projectFactory.create({
                 id: newProjectId,
                 name: `Project ${newProjectId}`,
                 rootFolderId: rootFolderId.serializable,

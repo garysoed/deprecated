@@ -4,7 +4,7 @@ import { _p, Dialog } from '@mask';
 import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap, withLatestFrom } from '@rxjs/operators';
-import { $itemMetadataCollection } from '../../datamodel/item-collection';
+import { $itemCollection } from '../../datamodel/item-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, AddProjectDialog, openDialog } from './add-project-dialog';
 
@@ -57,7 +57,7 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
 
       const itemObs = projectObs
           .pipe(
-              withLatestFrom($itemMetadataCollection.get(tester.vine)),
+              withLatestFrom($itemCollection.get(tester.vine)),
               switchMap(([project, collection]) => collection.getMetadata(project.rootFolderId)),
           );
       assert(itemObs.pipe(filterNonNull())).to.emit();

@@ -1,8 +1,10 @@
 import { assert, setup, should, test } from '@gs-testing';
 import { $dialogService, $window, _p, ActionEvent } from '@mask';
 import { createFakeWindow, PersonaTester, PersonaTesterFactory } from '@persona/testing';
-import { map, switchMap, tap } from '@rxjs/operators';
-import { $itemMetadataCollection } from '../../datamodel/item-collection';
+import { Observable } from '@rxjs';
+import { map, shareReplay, switchMap, tap } from '@rxjs/operators';
+import { $itemCollection } from '../../datamodel/item-collection';
+import { LocalFolder } from '../../datamodel/local-folder';
 import { $, FolderSidebar } from './folder-sidebar';
 
 test('@thoth/view/folder/folder-sidebar', () => {
@@ -21,11 +23,11 @@ test('@thoth/view/folder/folder-sidebar', () => {
   });
 
   test('renderAddItemDisabled', () => {
-    should(`enable if editable`, async () => {
-      $itemMetadataCollection.get(tester.vine)
+    should(`enable if editable`, () => {
+      $itemCollection.get(tester.vine)
           .pipe(
               switchMap(collection => collection
-                  .newLocalFolderMetadata()
+                  .newLocalFolder()
                   .pipe(switchMap(newMetadata => collection.setItem(newMetadata))),
               ),
               tap(newMetadata => {
@@ -35,10 +37,10 @@ test('@thoth/view/folder/folder-sidebar', () => {
           )
           .subscribe();
 
-      await assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(false);
+      assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(false);
     });
 
-    // should(`disable if not editable`, async () => {
+    // should(`disable if not editable`, () => {
     //   $itemMetadataCollection.get(tester.vine)
     //       .pipe(
     //           switchMap(collection => collection
@@ -52,19 +54,37 @@ test('@thoth/view/folder/folder-sidebar', () => {
     //       )
     //       .subscribe();
 
-    //   await assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(true);
+    //   assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(true);
     // });
 
-    should(`disable if item does not exist`, async () => {
+    should(`disable if item does not exist`, () => {
       fakeWindow.history.pushState({}, '', `/p/other`);
       fakeWindow.dispatchEvent(new CustomEvent('popstate'));
 
-      await assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(true);
+      assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(true);
     });
   });
 
   test('setupAddItemClick', () => {
-    should(`open the dialog correctly`, async () => {
+    let localFolderObs: Observable<LocalFolder>;
+
+    setup(() => {
+      localFolderObs = $itemCollection.get(tester.vine)
+          .pipe(
+              switchMap(collection => {
+                return collection.newLocalFolder()
+                    .pipe(switchMap(localFolder => collection.setItem(localFolder)));
+              }),
+              shareReplay(1),
+          );
+    });
+
+    should(`open the dialog correctly`, () => {
+      localFolderObs.subscribe(localFolder => {
+        fakeWindow.history.pushState({}, '', `/p/${localFolder.id.toString()}`);
+        fakeWindow.dispatchEvent(new CustomEvent('popstate'));
+      });
+
       tester.dispatchEvent(el, $.addItem._.actionEvent, new ActionEvent()).subscribe();
 
       const isOpenObs = $dialogService.get(tester.vine)
@@ -72,7 +92,21 @@ test('@thoth/view/folder/folder-sidebar', () => {
               switchMap(service => service.getStateObs()),
               map(state => state.isOpen),
           );
-      await assert(isOpenObs).to.emitWith(true);
+      assert(isOpenObs).to.emitWith(true);
+    });
+
+    should(`not open the dialog if the selected item is not local folder`, () => {
+      fakeWindow.history.pushState({}, '', `/p/notexist`);
+      fakeWindow.dispatchEvent(new CustomEvent('popstate'));
+
+      tester.dispatchEvent(el, $.addItem._.actionEvent, new ActionEvent()).subscribe();
+
+      const isOpenObs = $dialogService.get(tester.vine)
+          .pipe(
+              switchMap(service => service.getStateObs()),
+              map(state => state.isOpen),
+          );
+      assert(isOpenObs).to.emitWith(false);
     });
   });
 });

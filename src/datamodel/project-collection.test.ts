@@ -116,7 +116,7 @@ test('@thoth/datamodel/project-collection', () => {
 
       collection
           .setProject(
-              projectFactory.$create({
+              projectFactory.create({
                 id: projectId,
                 name: 'project',
                 rootFolderId: rootFolderId.serializable,

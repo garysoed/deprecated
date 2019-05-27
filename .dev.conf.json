@@ -6,7 +6,7 @@
     },
     {
       "command": "run",
-      "actions": ["{ webpack; } & { simpleserver src/main/main.conf.json; } && fg"]
+      "actions": ["simpleserver src/main/main.conf.json"]
     }
   ]
 }

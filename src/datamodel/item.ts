@@ -36,7 +36,7 @@ export function createFromDrive(drive: gapi.client.drive.File): Item {
     throw Errors.assert('drive.id').shouldExist().butNot();
   }
 
-  return itemFactory.$create({
+  return itemFactory.create({
     id: {id: drive.id, source: SourceType.DRIVE},
     isEditable: false,
     name: drive.name || '',

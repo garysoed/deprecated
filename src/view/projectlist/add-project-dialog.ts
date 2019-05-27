@@ -4,7 +4,7 @@ import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElem
 import { api, element, InitFn } from '@persona';
 import { BehaviorSubject, combineLatest, EMPTY, Observable } from '@rxjs';
 import { map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
-import { $itemMetadataCollection } from '../../datamodel/item-collection';
+import { $itemCollection } from '../../datamodel/item-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
 import template from './add-project-dialog.html';
 import { logger } from './logger';
@@ -75,12 +75,12 @@ function onClose(canceled: boolean, value: NewProjectSpec|null, vine: Vine): Obs
 
   return combineLatest(
       $projectCollection.get(vine),
-      $itemMetadataCollection.get(vine),
+      $itemCollection.get(vine),
   )
   .pipe(
       take(1),
       switchMap(([projectCollection, itemMetadataCollection]) => {
-        return itemMetadataCollection.newLocalFolderMetadata()
+        return itemMetadataCollection.newLocalFolder()
             .pipe(
                 switchMap(newMetadata => itemMetadataCollection.setItem(newMetadata)),
                 switchMap(newMetadata => projectCollection.newProject(newMetadata.id)),

@@ -8,6 +8,14 @@ const SEPARATOR = '_';
 export class ItemId {
   constructor(readonly serializable: SerializableItemId) { }
 
+  get id(): string {
+    return this.serializable.id;
+  }
+
+  get source(): SourceType {
+    return this.serializable.source;
+  }
+
   toString(): string {
     return `${this.serializable.source}${SEPARATOR}${this.serializable.id}`;
   }
