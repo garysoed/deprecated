@@ -1,8 +1,8 @@
-import { assert, match, runEnvironment, setup, should, test } from '@gs-testing';
+import { assert, match, setup, should, test } from '@gs-testing';
 import { filterNonNull } from '@gs-tools/rxjs';
 import { _p } from '@mask';
 import { DialogTester } from '@mask/testing';
-import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
+import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { Observable, of as observableOf, ReplaySubject } from '@rxjs';
 import { filter, map, shareReplay, switchMap, take, withLatestFrom } from '@rxjs/operators';
 import { ItemId } from '../../datamodel/item-id';
@@ -15,7 +15,6 @@ import { $, AddItemDialog, openDialog } from './add-item-dialog';
 import { ItemClickEvent } from './item-click-event';
 
 test('@thoth/view/folder/add-item-dialog', () => {
-  runEnvironment(new PersonaTesterEnvironment());
   const factory = new PersonaTesterFactory(_p);
 
   let localFolderIdObs: Observable<ItemId>;

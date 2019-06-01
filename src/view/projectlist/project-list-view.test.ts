@@ -1,6 +1,6 @@
-import { assert, match, runEnvironment, setup, should, test } from '@gs-testing';
+import { assert, match, setup, should, test } from '@gs-testing';
 import { _p } from '@mask';
-import { ElementTester, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
+import { ElementTester, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { of as observableOf } from '@rxjs';
 import { filter, map, switchMap, take, withLatestFrom } from '@rxjs/operators';
 import { parseId } from '../../datamodel/item-id';
@@ -11,8 +11,6 @@ import { $, ProjectListView } from './project-list-view';
 const testerFactory = new PersonaTesterFactory(_p);
 
 test('@thoth/view/projectlist/project-list-view', () => {
-  runEnvironment(new PersonaTesterEnvironment());
-
   let el: ElementTester;
   let tester: PersonaTester;
 

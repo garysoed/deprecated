@@ -1,8 +1,8 @@
-import { assert, runEnvironment, setup, should, test } from '@gs-testing';
+import { assert, setup, should, test } from '@gs-testing';
 import { filterNonNull, scanArray } from '@gs-tools/rxjs';
 import { _p, Dialog } from '@mask';
 import { DialogTester } from '@mask/testing';
-import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
+import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap, withLatestFrom } from '@rxjs/operators';
 import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { $projectCollection } from '../../datamodel/project-collection';
@@ -11,8 +11,6 @@ import { $, AddProjectDialog, openDialog } from './add-project-dialog';
 const factory = new PersonaTesterFactory(_p);
 
 test('@thoth/view/projectlist/add-project-dialog', () => {
-  runEnvironment(new PersonaTesterEnvironment());
-
   let dialogTester: DialogTester;
   let tester: PersonaTester;
 

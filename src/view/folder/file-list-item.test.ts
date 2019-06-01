@@ -1,6 +1,6 @@
-import { assert, runEnvironment, setup, should, test } from '@gs-testing';
+import { assert, setup, should, test } from '@gs-testing';
 import { _p } from '@mask';
-import { ElementTester, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
+import { ElementTester, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { fromEvent, ReplaySubject } from '@rxjs';
 import { map } from '@rxjs/operators';
 import { ItemType } from '../../datamodel/item-type';
@@ -9,8 +9,6 @@ import { $, FileListItem } from './file-list-item';
 import { ITEM_CLICK_EVENT, ItemClickEvent } from './item-click-event';
 
 test('@thoth/view/folder/file-list-item', () => {
-  runEnvironment(new PersonaTesterEnvironment());
-
   const factory = new PersonaTesterFactory(_p);
 
   let el: ElementTester;
