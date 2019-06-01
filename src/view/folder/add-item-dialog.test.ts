@@ -25,7 +25,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
 
   setup(() => {
     tester = factory.build([AddItemDialog]);
-    dialogTester = new DialogTester(tester, document.body);
+    dialogTester = new DialogTester(tester, document.body, tester.vine);
     fakeGapi = installFakeGapiClient(tester.vine);
 
     localFolderIdObs = $itemCollection.get(tester.vine)
@@ -67,10 +67,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
       const name3 = 'name3';
 
       dialogTester.getContentObs()
-          .pipe(
-              filterNonNull(),
-              switchMap(el => tester.setAttribute(el, $.search._.value, query)),
-          )
+          .setAttribute($.search._.value, query)
           .subscribe();
       fakeGapi.drive.files.listSubject.next({
         result: {
@@ -83,9 +80,8 @@ test('@thoth/view/folder/add-item-dialog', () => {
       });
 
       const nodesObs = dialogTester.getContentObs()
+          .getNodesAfter($.results._.list)
           .pipe(
-              filterNonNull(),
-              switchMap(el => tester.getNodesAfter(el, $.results._.list)),
               map(nodes => nodes
                   .filter((node): node is HTMLElement => node instanceof HTMLElement),
               ),
@@ -114,14 +110,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
 
       // Click one of the items.
       dialogTester.getContentObs()
-          .pipe(
-              filterNonNull(),
-              switchMap(el => tester.dispatchEvent(
-                  el,
-                  $.results._.dispatchItemClick,
-                  new ItemClickEvent(`dr_${id2}`),
-              )),
-          )
+          .dispatchEvent($.results._.dispatchItemClick, new ItemClickEvent(`dr_${id2}`))
           .subscribe();
 
       const selectedObs = nodesObs.pipe(
@@ -145,16 +134,12 @@ test('@thoth/view/folder/add-item-dialog', () => {
       });
 
       dialogTester.getContentObs()
-          .pipe(
-              filterNonNull(),
-              switchMap(el => tester.setAttribute(el, $.search._.value, query)),
-          )
+          .setAttribute($.search._.value, query)
           .subscribe();
 
       const nodesObs = dialogTester.getContentObs()
-          .pipe(
-              filterNonNull(),
-              switchMap(el => tester.getNodesAfter(el, $.results._.list)),
+            .getNodesAfter($.results._.list)
+            .pipe(
               map(nodes => nodes
                   .filter((node): node is HTMLElement => node instanceof HTMLElement),
               ),
@@ -183,18 +168,12 @@ test('@thoth/view/folder/add-item-dialog', () => {
         },
       });
 
-      dialogTester.getContentObs()
-          .pipe(
-              filterNonNull(),
-              switchMap(el => tester.setAttribute(el, $.search._.value, 'query')),
-          )
-          .subscribe();
+      dialogTester.getContentObs().setAttribute($.search._.value, 'query').subscribe();
 
       resultsObs = new ReplaySubject(1);
       dialogTester.getContentObs()
+          .getNodesAfter($.results._.list)
           .pipe(
-              filterNonNull(),
-              switchMap(el => tester.getNodesAfter(el, $.results._.list)),
               switchMap(nodes => observableOf(...nodes)),
               filter((node): node is HTMLElement => node instanceof HTMLElement),
           )
@@ -213,15 +192,11 @@ test('@thoth/view/folder/add-item-dialog', () => {
     should(`add the new item`, () => {
       // Select the item.
       dialogTester.getContentObs()
-          .pipe(
-              filterNonNull(),
-              switchMap(contentEl => tester.dispatchEvent(
-                  contentEl,
-                  $.results._.dispatchItemClick,
-                  new ItemClickEvent(new ItemId({id: ID, source: SourceType.DRIVE}).toString()),
-              )),
-              take(1),
+          .dispatchEvent(
+              $.results._.dispatchItemClick,
+              new ItemClickEvent(new ItemId({id: ID, source: SourceType.DRIVE}).toString()),
           )
+          .pipe(take(1))
           .subscribe();
       dialogTester.clickOk().subscribe();
 
@@ -237,15 +212,11 @@ test('@thoth/view/folder/add-item-dialog', () => {
     should(`do nothing if canceled`, () => {
       // Select the item.
       dialogTester.getContentObs()
-          .pipe(
-              filterNonNull(),
-              switchMap(contentEl => tester.dispatchEvent(
-                  contentEl,
-                  $.results._.dispatchItemClick,
-                  new ItemClickEvent(new ItemId({id: ID, source: SourceType.DRIVE}).toString()),
-              )),
-              take(1),
+          .dispatchEvent(
+              $.results._.dispatchItemClick,
+              new ItemClickEvent(new ItemId({id: ID, source: SourceType.DRIVE}).toString()),
           )
+          .pipe(take(1))
           .subscribe();
       dialogTester.clickCancel().subscribe();
 

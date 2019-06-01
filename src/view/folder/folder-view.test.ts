@@ -1,6 +1,6 @@
 import { assert, match, runEnvironment, setup, should, test } from '@gs-testing';
 import { $window, _p, CrumbData } from '@mask';
-import { createFakeWindow, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
+import { createFakeWindow, ElementTester, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { BehaviorSubject, of as observableOf } from '@rxjs';
 import { map, scan, switchMap, withLatestFrom } from '@rxjs/operators';
 import { createPath } from '../../datamodel/folder-path';
@@ -14,7 +14,7 @@ test('@thoth/view/folder/folder-view', () => {
 
   let fakeWindow: Window;
   let tester: PersonaTester;
-  let el: HTMLElement;
+  let el: ElementTester;
 
   setup(() => {
     fakeWindow = createFakeWindow();
@@ -60,7 +60,7 @@ test('@thoth/view/folder/folder-view', () => {
             key: id.toString(),
           }));
 
-      assert(tester.getAttribute(el, $.breadcrumb._.path).pipe(map(list => [...list])))
+      assert(el.getAttribute($.breadcrumb._.path).pipe(map(list => [...list])))
           .to.emitWith(match.anyArrayThat<CrumbData>().haveExactElements(crumbDataMatches));
     });
   });

@@ -1,6 +1,6 @@
 import { assert, runEnvironment, setup, should, test } from '@gs-testing';
 import { $window, _p } from '@mask';
-import { createFakeWindow, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
+import { createFakeWindow, ElementTester, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { ReplaySubject } from '@rxjs';
 import { mapTo, switchMap, take, withLatestFrom } from '@rxjs/operators';
 import { parseId } from '../../datamodel/item-id';
@@ -16,7 +16,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
 
   let projectSubject: ReplaySubject<Project>;
   let fakeWindow: Window;
-  let el: HTMLElement;
+  let el: ElementTester;
   let tester: PersonaTester;
 
   setup(() => {
@@ -35,7 +35,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
                 .pipe(switchMap(newProject => collection.setProject(newProject)),
                 ),
             ),
-            switchMap(newProject => tester.setAttribute(el, $.host._.projectId, newProject.id)
+            switchMap(newProject => el.setAttribute($.host._.projectId, newProject.id)
                 .pipe(mapTo(newProject)),
             ),
         )
@@ -55,19 +55,19 @@ test('@thoth/view/projectlist/project-list-item', () => {
           )
           .subscribe();
 
-      assert(tester.getAttribute(el, $.item._.itemName)).to.emitWith(projectName);
+      assert(el.getAttribute($.item._.itemName)).to.emitWith(projectName);
     });
 
     should(`render '' if the project cannot be found`, () => {
-      tester.setAttribute(el, $.host._.projectId, 'nonExistentId').subscribe();
+      el.setAttribute($.host._.projectId, 'nonExistentId').subscribe();
 
-      assert(tester.getAttribute(el, $.item._.itemName)).to.emitWith('');
+      assert(el.getAttribute($.item._.itemName)).to.emitWith('');
     });
   });
 
   test('setupHandleAction', () => {
     should(`go to the correct view`, () => {
-      tester.dispatchEvent(el, $.item._.onClick).subscribe();
+      el.dispatchEvent($.item._.onClick).subscribe();
 
       assert(fakeWindow.location.pathname).to.equal(`/p/${ROOT_FOLDER_ID}`);
     });
@@ -78,7 +78,7 @@ test('@thoth/view/projectlist/project-list-item', () => {
       const projectCollectionObs = $projectCollection.get(tester.vine);
 
       // Click the delete button.
-      tester.dispatchEvent(el, $.delete._.actionEvent).subscribe();
+      el.dispatchEvent($.delete._.actionEvent).subscribe();
 
       const projectObs = projectSubject
           .pipe(

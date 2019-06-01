@@ -18,7 +18,7 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
 
   setup(() => {
     tester = factory.build([AddProjectDialog, Dialog]);
-    dialogTester = new DialogTester(tester, document.body);
+    dialogTester = new DialogTester(tester, document.body, tester.vine);
   });
 
   test('onClose', () => {
@@ -29,13 +29,7 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
     should(`create the new project correctly`, () => {
       const newProjectName = 'newProjectName';
       dialogTester.getContentObs()
-          .pipe(
-              filterNonNull(),
-              switchMap(
-                  contentEl => tester
-                      .setAttribute(contentEl, $.addProjectName._.value, newProjectName),
-              ),
-          )
+          .setAttribute($.addProjectName._.value, newProjectName)
           .subscribe();
       dialogTester.clickOk().subscribe();
 
@@ -78,13 +72,7 @@ test('@thoth/view/projectlist/add-project-dialog', () => {
     should(`do nothing if dialog is canceled`, () => {
       const newProjectName = 'newProjectName';
       dialogTester.getContentObs()
-          .pipe(
-              filterNonNull(),
-              switchMap(
-                  contentEl => tester
-                      .setAttribute(contentEl, $.addProjectName._.value, newProjectName),
-              ),
-          )
+          .setAttribute($.addProjectName._.value, newProjectName)
           .subscribe();
       dialogTester.clickCancel().subscribe();
 

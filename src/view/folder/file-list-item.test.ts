@@ -1,6 +1,6 @@
 import { assert, runEnvironment, setup, should, test } from '@gs-testing';
 import { _p } from '@mask';
-import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
+import { ElementTester, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { fromEvent, ReplaySubject } from '@rxjs';
 import { map } from '@rxjs/operators';
 import { ItemType } from '../../datamodel/item-type';
@@ -13,7 +13,7 @@ test('@thoth/view/folder/file-list-item', () => {
 
   const factory = new PersonaTesterFactory(_p);
 
-  let el: HTMLElement;
+  let el: ElementTester;
   let tester: PersonaTester;
 
   setup(() => {
@@ -24,12 +24,12 @@ test('@thoth/view/folder/file-list-item', () => {
   test('renderDispatchItemClick', () => {
     should(`dispatch the correct event`, () => {
       const itemId = 'itemId';
-      tester.setAttribute(el, $.host._.itemId, itemId).subscribe();
+      el.setAttribute($.host._.itemId, itemId).subscribe();
 
       const replaySubject = new ReplaySubject<ItemClickEvent>(1);
-      fromEvent<ItemClickEvent>(el, ITEM_CLICK_EVENT).subscribe(replaySubject);
+      fromEvent<ItemClickEvent>(el.element, ITEM_CLICK_EVENT).subscribe(replaySubject);
 
-      tester.dispatchEvent(el, $.host._.onClick).subscribe();
+      el.dispatchEvent($.host._.onClick).subscribe();
 
       assert(replaySubject).to.emit();
       assert(replaySubject.pipe(map(event => event.itemId))).to.emitWith(itemId);
@@ -41,10 +41,10 @@ test('@thoth/view/folder/file-list-item', () => {
       const itemType = ItemType.CONVERTER;
       const sourceType = SourceType.DRIVE;
 
-      tester.setAttribute(el, $.host._.itemType, itemType).subscribe();
-      tester.setAttribute(el, $.host._.sourceType, sourceType).subscribe();
+      el.setAttribute($.host._.itemType, itemType).subscribe();
+      el.setAttribute($.host._.sourceType, sourceType).subscribe();
 
-      assert(tester.getAttribute(el, $.item._.icon)).to.emitWith(`${itemType}_${sourceType}`);
+      assert(el.getAttribute($.item._.icon)).to.emitWith(`${itemType}_${sourceType}`);
     });
   });
 });

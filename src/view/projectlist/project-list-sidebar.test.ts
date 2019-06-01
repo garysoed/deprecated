@@ -1,14 +1,13 @@
 import { assert, setup, should, test } from '@gs-testing';
 import { $dialogService, _p, ActionEvent } from '@mask';
-import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
-import { EMPTY } from '@rxjs';
+import { ElementTester, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { map, switchMap } from '@rxjs/operators';
 import { $, ProjectListSidebar } from './project-list-sidebar';
 
 const testerFactory = new PersonaTesterFactory(_p);
 
 test('@thoth/view/projectlist/project-list-sidebar', () => {
-  let el: HTMLElement;
+  let el: ElementTester;
   let tester: PersonaTester;
 
   setup(() => {
@@ -27,17 +26,17 @@ test('@thoth/view/projectlist/project-list-sidebar', () => {
               })),
           )
           .subscribe();
-      assert(tester.hasAttribute(el, $.addProject._.disabled)).to.emitWith(true);
+      assert(el.hasAttribute($.addProject._.disabled)).to.emitWith(true);
     });
 
     should(`not disable if the dialog is closed`, () => {
-      assert(tester.hasAttribute(el, $.addProject._.disabled)).to.emitWith(false);
+      assert(el.hasAttribute($.addProject._.disabled)).to.emitWith(false);
     });
   });
 
   test('setupOnAddProjectAction', () => {
     should(`open the dialog correctly`, () => {
-      tester.dispatchEvent(el, $.addProject._.actionEvent, new ActionEvent()).subscribe();
+      el.dispatchEvent($.addProject._.actionEvent, new ActionEvent()).subscribe();
 
       const isOpenObs = $dialogService.get(tester.vine)
           .pipe(

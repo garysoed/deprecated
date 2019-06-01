@@ -1,16 +1,16 @@
 import { assert, setup, should, test } from '@gs-testing';
 import { $dialogService, $window, _p, ActionEvent } from '@mask';
-import { createFakeWindow, PersonaTester, PersonaTesterFactory } from '@persona/testing';
+import { createFakeWindow, ElementTester, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { Observable } from '@rxjs';
 import { map, shareReplay, switchMap, tap } from '@rxjs/operators';
-import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { LocalFolder } from '../../datamodel/local-folder';
+import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { $, FolderSidebar } from './folder-sidebar';
 
 test('@thoth/view/folder/folder-sidebar', () => {
   const factory = new PersonaTesterFactory(_p);
   let tester: PersonaTester;
-  let el: HTMLElement;
+  let el: ElementTester;
   let fakeWindow: Window;
 
   setup(() => {
@@ -37,7 +37,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
           )
           .subscribe();
 
-      assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(false);
+      assert(el.hasAttribute($.addItem._.disabled)).to.emitWith(false);
     });
 
     // should(`disable if not editable`, () => {
@@ -54,14 +54,14 @@ test('@thoth/view/folder/folder-sidebar', () => {
     //       )
     //       .subscribe();
 
-    //   assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(true);
+    //   assert(el.hasAttribute($.addItem._.disabled)).to.emitWith(true);
     // });
 
     should(`disable if item does not exist`, () => {
       fakeWindow.history.pushState({}, '', `/p/other`);
       fakeWindow.dispatchEvent(new CustomEvent('popstate'));
 
-      assert(tester.hasAttribute(el, $.addItem._.disabled)).to.emitWith(true);
+      assert(el.hasAttribute($.addItem._.disabled)).to.emitWith(true);
     });
   });
 
@@ -85,7 +85,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
         fakeWindow.dispatchEvent(new CustomEvent('popstate'));
       });
 
-      tester.dispatchEvent(el, $.addItem._.actionEvent, new ActionEvent()).subscribe();
+      el.dispatchEvent($.addItem._.actionEvent, new ActionEvent()).subscribe();
 
       const isOpenObs = $dialogService.get(tester.vine)
           .pipe(
@@ -99,7 +99,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
       fakeWindow.history.pushState({}, '', `/p/notexist`);
       fakeWindow.dispatchEvent(new CustomEvent('popstate'));
 
-      tester.dispatchEvent(el, $.addItem._.actionEvent, new ActionEvent()).subscribe();
+      el.dispatchEvent($.addItem._.actionEvent, new ActionEvent()).subscribe();
 
       const isOpenObs = $dialogService.get(tester.vine)
           .pipe(

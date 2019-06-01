@@ -1,8 +1,8 @@
 import { assert, match, runEnvironment, setup, should, test } from '@gs-testing';
 import { _p } from '@mask';
-import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
-import {of as observableOf } from '@rxjs';
-import { filter, map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
+import { ElementTester, PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
+import { of as observableOf } from '@rxjs';
+import { filter, map, switchMap, take, withLatestFrom } from '@rxjs/operators';
 import { parseId } from '../../datamodel/item-id';
 import { $projectCollection } from '../../datamodel/project-collection';
 import { $, ProjectListView } from './project-list-view';
@@ -13,7 +13,7 @@ const testerFactory = new PersonaTesterFactory(_p);
 test('@thoth/view/projectlist/project-list-view', () => {
   runEnvironment(new PersonaTesterEnvironment());
 
-  let el: HTMLElement;
+  let el: ElementTester;
   let tester: PersonaTester;
 
   setup(() => {
@@ -39,7 +39,7 @@ test('@thoth/view/projectlist/project-list-view', () => {
           )
           .subscribe();
 
-      const nodesObs = tester.getNodesAfter(el, $.projectList._.repeated)
+      const nodesObs = el.getNodesAfter($.projectList._.repeated)
           .pipe(
               switchMap(nodes => observableOf(...nodes)),
               filter((node): node is Element => node instanceof Element),
