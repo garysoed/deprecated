@@ -1,6 +1,6 @@
 import { ElementWithTagType } from '@gs-types';
 import { $listItem, enumParser, ListItem, stringParser, ThemedCustomElementCtrl, _p, _v } from '@mask';
-import { api, attributeIn, dispatcher, element, InitFn, onDom } from '@persona';
+import { api, attributeIn, dispatcher, element, InitFn, onDom, hasAttribute } from '@persona';
 import { combineLatest, Observable } from '@rxjs';
 import { map, withLatestFrom } from '@rxjs/operators';
 import { ItemType } from '../../datamodel/item-type';
@@ -14,6 +14,7 @@ export const $$ = {
   itemType: attributeIn('item-type', enumParser(ItemType), ItemType.UNKNOWN),
   label: attributeIn('label', stringParser()),
   onClick: onDom('click'),
+  selected: hasAttribute('selected'),
   sourceType: attributeIn('source-type', enumParser(SourceType), SourceType.LOCAL),
 };
 
@@ -34,6 +35,7 @@ export class FileListItem extends ThemedCustomElementCtrl {
   private readonly itemTypeObs = _p.input($.host._.itemType, this);
   private readonly labelObs = _p.input($.host._.label, this);
   private readonly onClick = _p.input($.host._.onClick, this);
+  private readonly selectedObs = _p.input($.host._.selected, this);
   private readonly sourceTypeObs = _p.input($.host._.sourceType, this);
 
   getInitFunctions(): InitFn[] {
@@ -42,6 +44,7 @@ export class FileListItem extends ThemedCustomElementCtrl {
       _p.render($.item._.itemName).withObservable(this.labelObs),
       _p.render($.item._.icon).withVine(_v.stream(this.renderIcon, this)),
       _p.render($.host._.dispatchItemClick).withVine(_v.stream(this.renderDispatchItemClick, this)),
+      _p.render($.item._.selected).withObservable(this.selectedObs),
     ];
   }
 

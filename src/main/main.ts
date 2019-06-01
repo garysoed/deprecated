@@ -2,12 +2,12 @@ import { $pipe, $push, asImmutableMap } from '@gs-tools/collect';
 import { $svgConfig, Palette, start, SvgConfig, Theme } from '@mask';
 import { take } from '@rxjs/operators';
 import { ConsoleDestination, logDestination } from '@santa';
-import * as addIcon from '../asset/add.svg';
-import * as converterDriveIcon from '../asset/converter_drive.svg';
-import * as deleteIcon from '../asset/delete.svg';
-import * as folderDriveIcon from '../asset/folder_drive.svg';
-import * as folderLocalIcon from '../asset/folder_local.svg';
-import * as thothIcon from '../asset/thoth.svg';
+import addIcon from '../asset/add.svg';
+import converterDriveIcon from '../asset/converter_drive.svg';
+import deleteIcon from '../asset/delete.svg';
+import folderDriveIcon from '../asset/folder_drive.svg';
+import folderLocalIcon from '../asset/folder_local.svg';
+import thothIcon from '../asset/thoth.svg';
 import { RootView } from '../view/root/root-view';
 
 const iconConfigs: Map<string, SvgConfig> = new Map([

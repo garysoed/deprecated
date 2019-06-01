@@ -5,10 +5,10 @@ import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterEnvironment, PersonaTesterFactory } from '@persona/testing';
 import { Observable, of as observableOf, ReplaySubject } from '@rxjs';
 import { filter, map, shareReplay, switchMap, take, withLatestFrom } from '@rxjs/operators';
-import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { ItemId } from '../../datamodel/item-id';
 import { ItemType } from '../../datamodel/item-type';
 import { LocalFolder, localFolderFactory } from '../../datamodel/local-folder';
+import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { SourceType } from '../../datamodel/source-type';
 import { FakeGapiClient, installFakeGapiClient } from '../../testing/fake-gapi';
 import { $, AddItemDialog, openDialog } from './add-item-dialog';
@@ -111,6 +111,24 @@ test('@thoth/view/folder/add-item-dialog', () => {
         ItemType.FOLDER,
         ItemType.UNKNOWN,
       ]));
+
+      // Click one of the items.
+      dialogTester.getContentObs()
+          .pipe(
+              filterNonNull(),
+              switchMap(el => tester.dispatchEvent(
+                  el,
+                  $.results._.dispatchItemClick,
+                  new ItemClickEvent(`dr_${id2}`),
+              )),
+          )
+          .subscribe();
+
+      const selectedObs = nodesObs.pipe(
+          map(nodes => nodes.map(node => node.getAttribute('selected'))),
+          switchMap(selected => observableOf(...selected)),
+      );
+      assert(selectedObs).to.emitSequence([null, '', null]);
     });
   });
 

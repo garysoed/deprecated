@@ -1,15 +1,15 @@
 import { Vine } from '@grapevine';
-import { ArrayDiff, ArraySubject, filterNonNull, mapArray, MapSubject, scanMap } from '@gs-tools/rxjs';
+import { ArrayDiff, ArraySubject, debug, filterNonNull, mapArray, MapSubject, scanArray, scanMap } from '@gs-tools/rxjs';
 import { ElementWithTagType, InstanceofType } from '@gs-types';
 import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElementCtrl } from '@mask';
 import { api, element, InitFn, repeated, RepeatedSpec } from '@persona';
-import { BehaviorSubject, Observable, of as observableOf } from '@rxjs';
-import { filter, map, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
+import { BehaviorSubject, merge, Observable, of as observableOf } from '@rxjs';
+import { filter, map, pairwise, startWith, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { $driveClient } from '../../api/drive-client';
 import { createFromDrive, Item } from '../../datamodel/item';
-import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { ItemId } from '../../datamodel/item-id';
 import { LocalFolder } from '../../datamodel/local-folder';
+import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { SourceType } from '../../datamodel/source-type';
 import template from './add-item-dialog.html';
 import { $$ as $fileListItem, FileListItem } from './file-list-item';
@@ -30,12 +30,12 @@ const $addedItem = _v.source(() => new BehaviorSubject<Item|null>(null), globalT
   template,
 })
 export class AddItemDialog extends ThemedCustomElementCtrl {
-  private readonly addedItemSbj = $addedItem.asSubject();
   private readonly driveClient = $driveClient.asObservable();
   private readonly onClickResult = _p.input($.results._.dispatchItemClick, this);
   private readonly onSearchValue = _p.input($.search._.value, this);
   private readonly resultDataMap = new MapSubject<string, gapi.client.drive.File>();
   private readonly resultIdsSubject = new ArraySubject<string>();
+  private readonly selectedItemSbj = $addedItem.asSubject();
 
   getInitFunctions(): InitFn[] {
     return [
@@ -47,27 +47,54 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
   }
 
   private renderSearchResults(): Observable<ArrayDiff<RepeatedSpec>> {
-    return this.resultIdsSubject.getDiffs().pipe(
-        withLatestFrom(this.resultDataMap.getDiffs().pipe(scanMap())),
-        switchMap(([diff, data]) => observableOf(diff).pipe(
-            mapArray(id => {
-              const file = data.get(id);
-              if (!file) {
-                return {};
-              }
-
-              const item = createFromDrive(file);
-
-              return {
-                attr: new Map([
-                  ['label', item.name],
-                  ['item-id', item.id.toString()],
-                  ['item-type', item.type],
-                ]),
-              };
-            }),
+    const fromSearchResultsObs = this.resultIdsSubject.getDiffs().pipe(
+        withLatestFrom(
+            this.resultDataMap.getDiffs().pipe(scanMap()),
+            this.selectedItemSbj,
+        ),
+        switchMap(([diff, data, selectedItem]) => observableOf(diff).pipe(
+            mapArray(id => createRenderSpec(id, data, selectedItem)),
         )),
     );
+
+    const fromSelectedObs = this.selectedItemSbj.pipe(
+        startWith(null),
+        pairwise(),
+        filter(([prev, next]) => {
+          if (prev === null) {
+            return !!next;
+          }
+
+          if (next === null) {
+            return !!prev;
+          }
+
+          return prev.id !== next.id;
+        }),
+        withLatestFrom(
+            this.resultDataMap.getDiffs().pipe(scanMap()),
+            this.resultIdsSubject.getDiffs().pipe(scanArray()),
+        ),
+        switchMap(([[prevSelected, nextSelected], data, resultIds]):
+            Observable<ArrayDiff<RepeatedSpec>> => {
+          const specs: Array<ArrayDiff<RepeatedSpec>> = [];
+          for (let i = 0; i < resultIds.length; i++) {
+            const result = resultIds[i];
+            if ((prevSelected && prevSelected.id.toString() === result)
+                || (nextSelected && nextSelected.id.toString() === result)) {
+              specs.push({
+                index: i,
+                type: 'set',
+                value: createRenderSpec(result, data, nextSelected),
+              });
+            }
+          }
+
+          return observableOf(...specs);
+        }),
+    );
+
+    return merge(fromSearchResultsObs, fromSelectedObs);
   }
 
   private setupOnClickResult(): Observable<unknown> {
@@ -76,7 +103,7 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
             withLatestFrom(this.resultDataMap.getDiffs().pipe(scanMap())),
             map(([event, resultsMap]) => resultsMap.get(event.itemId) || null),
             filterNonNull(),
-            tap(driveFile => this.addedItemSbj.next(createFromDrive(driveFile))),
+            tap(driveFile => this.selectedItemSbj.next(createFromDrive(driveFile))),
         );
   }
 
@@ -131,4 +158,29 @@ function onClose(item: Item, folder: LocalFolder, vine: Vine): Observable<any> {
           ); }),
           take(1),
       );
+}
+
+
+function createRenderSpec(
+    id: string,
+    data: Map<string, gapi.client.drive.File>,
+    selectedItem: Item|null,
+): RepeatedSpec {
+  const file = data.get(id);
+  if (!file) {
+    return {};
+  }
+
+  const item = createFromDrive(file);
+  const attr = new Map([
+    ['label', item.name],
+    ['item-id', item.id.toString()],
+    ['item-type', item.type],
+  ]);
+
+  if (selectedItem && selectedItem.id.toString() === id) {
+    attr.set('selected', '');
+  }
+
+  return {attr};
 }
