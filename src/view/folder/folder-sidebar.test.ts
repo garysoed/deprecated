@@ -4,7 +4,7 @@ import { createFakeWindow, ElementTester, PersonaTester, PersonaTesterFactory } 
 import { Observable } from '@rxjs';
 import { map, shareReplay, switchMap, tap } from '@rxjs/operators';
 import { LocalFolder } from '../../datamodel/local-folder';
-import { $itemCollection } from '../../datamodel/local-folder-collection';
+import { $localFolderCollection } from '../../datamodel/local-folder-collection';
 import { toItemString } from '../../serializable/item-id';
 import { $, FolderSidebar } from './folder-sidebar';
 
@@ -26,7 +26,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
 
   test('renderAddItemDisabled', () => {
     should(`enable if editable`, () => {
-      $itemCollection.get(tester.vine)
+      $localFolderCollection.get(tester.vine)
           .pipe(
               switchMap(collection => collection
                   .create()
@@ -71,7 +71,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
     let localFolderObs: Observable<LocalFolder>;
 
     setup(() => {
-      localFolderObs = $itemCollection.get(tester.vine)
+      localFolderObs = $localFolderCollection.get(tester.vine)
           .pipe(
               switchMap(collection => {
                 return collection.create()

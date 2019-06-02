@@ -5,11 +5,12 @@ import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { Observable, of as observableOf, ReplaySubject } from '@rxjs';
 import { filter, map, shareReplay, switchMap, take, withLatestFrom } from '@rxjs/operators';
+import { $itemService } from '../../datamodel/item-service';
 import { ItemType } from '../../datamodel/item-type';
 import { LocalFolder, localFolderFactory } from '../../datamodel/local-folder';
-import { $itemCollection } from '../../datamodel/local-folder-collection';
+import { $localFolderCollection } from '../../datamodel/local-folder-collection';
 import { SourceType } from '../../datamodel/source-type';
-import { ItemId, LocalItemId, toItemString } from '../../serializable/item-id';
+import { LocalItemId, toItemString } from '../../serializable/item-id';
 import { FakeGapiClient, installFakeGapiClient } from '../../testing/fake-gapi';
 import { $, AddItemDialog, openDialog } from './add-item-dialog';
 import { ItemClickEvent } from './item-click-event';
@@ -17,7 +18,7 @@ import { ItemClickEvent } from './item-click-event';
 test('@thoth/view/folder/add-item-dialog', () => {
   const factory = new PersonaTesterFactory(_p);
 
-  let localFolderIdObs: Observable<ItemId>;
+  let localFolderIdObs: Observable<LocalItemId>;
   let fakeGapi: FakeGapiClient;
   let tester: PersonaTester;
   let dialogTester: DialogTester;
@@ -27,7 +28,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
     dialogTester = new DialogTester(tester, document.body, tester.vine);
     fakeGapi = installFakeGapiClient(tester.vine);
 
-    localFolderIdObs = $itemCollection.get(tester.vine)
+    localFolderIdObs = $localFolderCollection.get(tester.vine)
         .pipe(
             take(1),
             switchMap(collection => {
@@ -180,10 +181,10 @@ test('@thoth/view/folder/add-item-dialog', () => {
           )
           .subscribe(resultsObs);
 
-      contentIdsObs = $itemCollection.get(tester.vine)
+      contentIdsObs = $itemService.get(tester.vine)
           .pipe(
               withLatestFrom(localFolderIdObs),
-              switchMap(([collection, localFolderId]) => collection.get(localFolderId)),
+              switchMap(([collection, localFolderId]) => collection.getItem(localFolderId)),
               filterNonNull(),
               filter((item): item is LocalFolder => localFolderFactory.factoryOf(item)),
               map(localFolder => localFolder.contentIds.map(id => id.id)),

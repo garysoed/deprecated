@@ -1,16 +1,16 @@
 import { ArrayOfType, HasPropertiesType, IntersectType } from '@gs-types';
 import { Result, Serializable } from '@nabu';
-import { ItemId, ItemIdType, LocalItemId } from './item-id';
+import { BaseItemId, ItemIdType, LocalItemId } from './item-id';
 import { SerializableItem, SerializableItemType } from './serializable-item';
 
 export interface SerializableLocalFolder extends SerializableItem {
-  contentIds: ItemId[];
+  contentIds: BaseItemId[];
   id: LocalItemId;
 }
 
 export const SerializableLocalFolderType = IntersectType<SerializableLocalFolder>([
   SerializableItemType,
-  HasPropertiesType<{contentIds: ItemId[]}>({
+  HasPropertiesType<{contentIds: BaseItemId[]}>({
     contentIds: ArrayOfType(ItemIdType),
   }),
 ]);

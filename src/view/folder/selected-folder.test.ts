@@ -5,7 +5,7 @@ import { $window, _v } from '@mask';
 import { createFakeWindow } from '@persona/testing';
 import { map, shareReplay, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { createPath } from '../../datamodel/folder-path';
-import { $itemCollection } from '../../datamodel/local-folder-collection';
+import { $localFolderCollection } from '../../datamodel/local-folder-collection';
 import { parseId, toItemString } from '../../serializable/item-id';
 import { $selectedFolderId, $selectedFolderMetadata } from './selected-folder';
 
@@ -48,7 +48,7 @@ test('@thoth/view/folder/selected-folder', () => {
 
   test('selectedFolderMetadata', () => {
     should(`return the correct metadata`, () => {
-      const metadataObs = $itemCollection.get(vine)
+      const metadataObs = $localFolderCollection.get(vine)
           .pipe(
               switchMap(collection => collection
                   .create()

@@ -5,7 +5,7 @@ import { BehaviorSubject, of as observableOf } from '@rxjs';
 import { map, scan, switchMap, withLatestFrom } from '@rxjs/operators';
 import { createPath } from '../../datamodel/folder-path';
 import { Item } from '../../datamodel/item';
-import { $itemCollection } from '../../datamodel/local-folder-collection';
+import { $localFolderCollection } from '../../datamodel/local-folder-collection';
 import { $, FolderView } from './folder-view';
 
 const factory = new PersonaTesterFactory(_p);
@@ -32,7 +32,7 @@ test('@thoth/view/folder/folder-view', () => {
 
       observableOf(display1, display2, display3)
           .pipe(
-              withLatestFrom($itemCollection.get(tester.vine)),
+              withLatestFrom($localFolderCollection.get(tester.vine)),
               switchMap(([display, collection]) => {
                 return collection.create()
                     .pipe(

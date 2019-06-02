@@ -2,8 +2,9 @@ import { _v } from '@mask';
 import { of as observableOf } from '@rxjs';
 import { map, switchMap, withLatestFrom } from '@rxjs/operators';
 import { getFolderIds } from '../../datamodel/folder-path';
-import { $itemCollection } from '../../datamodel/local-folder-collection';
+import { $itemService } from '../../datamodel/item-service';
 import { $locationService } from '../../main/route';
+import { LocalItemId } from '../../serializable/item-id';
 
 export const $selectedFolderId = _v.stream(
     vine => {
@@ -27,13 +28,13 @@ export const $selectedFolderId = _v.stream(
 export const $selectedFolderMetadata = _v.stream(
     vine => $selectedFolderId.get(vine)
         .pipe(
-            withLatestFrom($itemCollection.get(vine)),
+            withLatestFrom($itemService.get(vine)),
             switchMap(([selectedFolderId, collection]) => {
               if (!selectedFolderId) {
                 return observableOf(null);
               }
 
-              return collection.get(selectedFolderId);
+              return collection.getItem(selectedFolderId);
             }),
         ),
     globalThis,

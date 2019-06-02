@@ -1,5 +1,5 @@
 import { generateImmutable, Immutable } from '@gs-tools/immutable';
-import { ItemId } from '../serializable/item-id';
+import { BaseItemId, LocalItemId } from '../serializable/item-id';
 import { SerializableLocalFolder } from '../serializable/serializable-local-folder';
 import { ItemSpec } from './item';
 
@@ -8,10 +8,14 @@ class LocalFolderSpec extends ItemSpec {
     super(serializableLocalFolder);
   }
 
-  get contentIds(): ItemId[] {
+  get id(): LocalItemId {
+    return {...this.serializableLocalFolder.id};
+  }
+
+  get contentIds(): BaseItemId[] {
     return [...this.serializableLocalFolder.contentIds];
   }
-  set contentIds(contentIds: ItemId[]) {
+  set contentIds(contentIds: BaseItemId[]) {
     this.serializableLocalFolder.contentIds = [...contentIds];
   }
 }

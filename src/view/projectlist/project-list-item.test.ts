@@ -5,12 +5,12 @@ import { ReplaySubject } from '@rxjs';
 import { mapTo, switchMap, take, withLatestFrom } from '@rxjs/operators';
 import { Project } from '../../datamodel/project';
 import { $projectCollection } from '../../datamodel/project-collection';
-import { parseId, toItemString } from '../../serializable/item-id';
+import { LocalItemId, parseId, toItemString } from '../../serializable/item-id';
 import { $, ProjectListItem } from './project-list-item';
 
 const factory = new PersonaTesterFactory(_p);
 test('@thoth/view/projectlist/project-list-item', () => {
-  const ROOT_FOLDER_ID = parseId('lo_rootFolderId');
+  const ROOT_FOLDER_ID = parseId('lo_rootFolderId') as LocalItemId;
 
   let projectSubject: ReplaySubject<Project>;
   let fakeWindow: Window;

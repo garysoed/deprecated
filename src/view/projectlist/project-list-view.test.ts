@@ -4,7 +4,7 @@ import { ElementTester, PersonaTester, PersonaTesterFactory } from '@persona/tes
 import { of as observableOf } from '@rxjs';
 import { filter, map, switchMap, take, withLatestFrom } from '@rxjs/operators';
 import { $projectCollection } from '../../datamodel/project-collection';
-import { parseId } from '../../serializable/item-id';
+import { LocalItemId, parseId } from '../../serializable/item-id';
 import { $, ProjectListView } from './project-list-view';
 
 
@@ -27,7 +27,7 @@ test('@thoth/view/projectlist/project-list-view', () => {
           .pipe(
               withLatestFrom($projectCollection.get(tester.vine)),
               switchMap(([id, collection]) => {
-                return collection.newProject(parseId('lo_rootFolderId'))
+                return collection.newProject(parseId('lo_rootFolderId') as LocalItemId)
                     .pipe(
                         map(newProject => newProject
                             .$update(newProject.$set.name(`Project ${id}`))),

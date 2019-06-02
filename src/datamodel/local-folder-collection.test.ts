@@ -69,14 +69,14 @@ test('@thoth/datamodel/local-folder-collection', () => {
       assert(newMetadataObs.pipe(map(({isEditable}) => isEditable))).to.emitWith(true);
 
       const storedNewMetadata = newMetadataObs
-          .pipe(switchMap(newMetadata => collection.get(newMetadata.id)));
+          .pipe(switchMap(newMetadata => collection.get(newMetadata.id as LocalItemId)));
       assert(storedNewMetadata).to.emitWith(null);
     });
   });
 
   test('delete', () => {
     should(`delete the folder correctly`, () => {
-      const itemId = parseId('lo_itemId');
+      const itemId = parseId('lo_itemId') as LocalItemId;
       const itemName = `Test Item`;
       const serializable = {
         contentIds: [],
@@ -99,7 +99,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
 
   test('get', () => {
     should(`emit the correct item`, () => {
-      const itemId = parseId('lo_itemId');
+      const itemId = parseId('lo_itemId') as LocalItemId;
       const itemName = `Test Item`;
       const serializable = {
         contentIds: [],
@@ -131,7 +131,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
     });
 
     should(`emit null if the folder does not exist`, () => {
-      const itemId = parseId('lo_itemId');
+      const itemId = parseId('lo_itemId') as LocalItemId;
 
       const subject = createSpySubject<Item|null>();
       collection.get(itemId).subscribe(subject);
@@ -142,7 +142,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
 
   test('setMetadata', () => {
     should(`update the metadata correctly`, () => {
-      const id = parseId('lo_id');
+      const id = parseId('lo_id') as LocalItemId;
       const metadataSubject = new ReplaySubject<string|null>(2);
       collection.get(id)
           .pipe(

@@ -1,6 +1,6 @@
 import { Errors } from '@gs-tools/error';
 import { generateImmutable, Immutable } from '@gs-tools/immutable';
-import { ItemId } from '../serializable/item-id';
+import { BaseItemId } from '../serializable/item-id';
 import { SerializableItem } from '../serializable/serializable-item';
 import { ItemType } from './item-type';
 import { SourceType } from './source-type';
@@ -8,7 +8,7 @@ import { SourceType } from './source-type';
 export class ItemSpec {
   constructor(private readonly serializableItem: SerializableItem) { }
 
-  get id(): ItemId {
+  get id(): BaseItemId {
     return {...this.serializableItem.id};
   }
 

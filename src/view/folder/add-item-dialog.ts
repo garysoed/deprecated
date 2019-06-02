@@ -8,7 +8,7 @@ import { filter, map, pairwise, startWith, switchMap, take, tap, withLatestFrom 
 import { $driveClient } from '../../api/drive-client';
 import { createFromDrive, Item } from '../../datamodel/item';
 import { LocalFolder } from '../../datamodel/local-folder';
-import { $itemCollection } from '../../datamodel/local-folder-collection';
+import { $localFolderCollection } from '../../datamodel/local-folder-collection';
 import { SourceType } from '../../datamodel/source-type';
 import { toItemString } from '../../serializable/item-id';
 import template from './add-item-dialog.html';
@@ -149,7 +149,7 @@ export function openDialog(vine: Vine, folder: LocalFolder): Observable<unknown>
 }
 
 function onClose(item: Item, folder: LocalFolder, vine: Vine): Observable<any> {
-  return $itemCollection.get(vine)
+  return $localFolderCollection.get(vine)
       .pipe(
           switchMap(collection => {
             return collection.update(

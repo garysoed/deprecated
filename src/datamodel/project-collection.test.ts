@@ -3,7 +3,7 @@ import { SimpleIdGenerator } from '@gs-tools/random';
 import { scanArray } from '@gs-tools/rxjs';
 import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { BehaviorSubject } from '@rxjs';
-import { parseId } from '../serializable/item-id';
+import { LocalItemId, parseId } from '../serializable/item-id';
 import { SerializableProject } from '../serializable/serializable-project';
 import { projectFactory, ProjectSpec } from './project';
 import { ProjectCollection } from './project-collection';
@@ -21,7 +21,7 @@ test('@thoth/datamodel/project-collection', () => {
     should(`emit the correct project`, () => {
       const projectId = 'projectId';
       const projectName = `Test Project`;
-      const rootFolderId = parseId('lo_rootFolderId');
+      const rootFolderId = parseId('lo_rootFolderId') as LocalItemId;
       const projectSerializable = {
         id: projectId,
         name: projectName,
@@ -55,7 +55,7 @@ test('@thoth/datamodel/project-collection', () => {
       const projectId1 = 'projectId1';
       const projectId2 = 'projectId2';
       const projectId3 = 'projectId3';
-      const rootFolderId = parseId('lo_rootFolderId');
+      const rootFolderId = parseId('lo_rootFolderId') as LocalItemId;
 
       storage.update(
           projectId1,
@@ -82,7 +82,7 @@ test('@thoth/datamodel/project-collection', () => {
       const projectId1 = 'projectId1';
       const projectId2 = 'projectId2';
       const projectId3 = 'projectId3';
-      const rootFolderId = parseId('lo_rootFolderId');
+      const rootFolderId = parseId('lo_rootFolderId') as LocalItemId;
 
       storage.update(
           projectId1,
@@ -109,7 +109,7 @@ test('@thoth/datamodel/project-collection', () => {
   test('setProject', () => {
     should(`update the project`, () => {
       const projectId = 'projectId';
-      const rootFolderId = parseId('lo_rootFolderId');
+      const rootFolderId = parseId('lo_rootFolderId') as LocalItemId;
 
       const projectIdsSubject = new BehaviorSubject<string[]>([]);
       collection.getProjectIds().pipe(scanArray()).subscribe(projectIdsSubject);
