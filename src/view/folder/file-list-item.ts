@@ -1,6 +1,6 @@
 import { ElementWithTagType } from '@gs-types';
 import { $listItem, enumParser, ListItem, stringParser, ThemedCustomElementCtrl, _p, _v } from '@mask';
-import { api, attributeIn, dispatcher, element, InitFn, onDom, hasAttribute } from '@persona';
+import { api, attributeIn, dispatcher, element, hasAttribute, InitFn, onDom } from '@persona';
 import { combineLatest, Observable } from '@rxjs';
 import { map, withLatestFrom } from '@rxjs/operators';
 import { ItemType } from '../../datamodel/item-type';
@@ -57,7 +57,7 @@ export class FileListItem extends ThemedCustomElementCtrl {
   }
 
   private renderIcon(): Observable<string> {
-    return combineLatest(this.itemTypeObs, this.sourceTypeObs)
+    return combineLatest([this.itemTypeObs, this.sourceTypeObs])
         .pipe(
             map(([itemType, sourceType]) => `${itemType}_${sourceType}`),
         );

@@ -110,6 +110,14 @@ test('@thoth/view/folder/add-item-dialog', () => {
         ItemType.UNKNOWN,
       ]));
 
+      const sourceObs = nodesObs
+          .pipe(map(nodes => nodes.map(node => node.getAttribute('source-type'))));
+      assert(sourceObs).to.emitWith(match.anyArrayThat<string>().haveExactElements([
+        SourceType.DRIVE,
+        SourceType.DRIVE,
+        SourceType.DRIVE,
+      ]));
+
       // Click one of the items.
       dialogTester.getContentObs()
           .dispatchEvent($.results._.dispatchItemClick, new ItemClickEvent(`dr_${id2}`))

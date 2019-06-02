@@ -1,7 +1,7 @@
 import { Vine } from '@grapevine';
 import { ArrayDiff, ArraySubject, filterNonNull, mapArray, MapSubject, scanArray, scanMap } from '@gs-tools/rxjs';
 import { ElementWithTagType, InstanceofType } from '@gs-types';
-import { $dialogService, $textInput, Dialog, TextInput, ThemedCustomElementCtrl, _p, _v } from '@mask';
+import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElementCtrl } from '@mask';
 import { api, element, InitFn, repeated, RepeatedSpec } from '@persona';
 import { BehaviorSubject, merge, Observable, of as observableOf } from '@rxjs';
 import { filter, map, pairwise, startWith, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
@@ -176,9 +176,10 @@ function createRenderSpec(
 
   const item = driveItemFactory.create(file);
   const attr = new Map([
-    ['label', item.name],
     ['item-id', toItemString(item.id)],
     ['item-type', item.type],
+    ['label', item.name],
+    ['source-type', item.id.source],
   ]);
 
   if (selectedItem && toItemString(selectedItem.id) === id) {
