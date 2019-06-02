@@ -8,6 +8,7 @@ import deleteIcon from '../asset/delete.svg';
 import folderDriveIcon from '../asset/folder_drive.svg';
 import folderLocalIcon from '../asset/folder_local.svg';
 import thothIcon from '../asset/thoth.svg';
+import unknownDriveIcon from '../asset/unknown_drive.svg';
 import { RootView } from '../view/root/root-view';
 
 const iconConfigs: Map<string, SvgConfig> = new Map([
@@ -16,6 +17,7 @@ const iconConfigs: Map<string, SvgConfig> = new Map([
   ['delete', {type: 'embed', content: deleteIcon}],
   ['f_dr', {type: 'embed', content: folderDriveIcon}],
   ['f_lo', {type: 'embed', content: folderLocalIcon}],
+  ['u_dr', {type: 'embed', content: unknownDriveIcon}],
   ['thoth', {type: 'embed', content: thothIcon}],
 ]);
 
