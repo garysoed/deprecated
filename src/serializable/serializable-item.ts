@@ -1,17 +1,17 @@
 import { BooleanType, EnumType, HasPropertiesType, StringType } from '@gs-types';
 import { Result, Serializable, SerializableObject } from '@nabu';
 import { ItemType } from '../datamodel/item-type';
-import { SerializableItemId, SerializableItemIdType } from './serializable-item-id';
+import { ItemId, ItemIdType } from './item-id';
 
 export interface SerializableItem extends SerializableObject {
-  readonly id: SerializableItemId;
+  readonly id: ItemId;
   readonly isEditable: boolean;
   name: string;
   readonly type: ItemType;
 }
 
 export const SerializableItemType = HasPropertiesType<SerializableItem>({
-  id: SerializableItemIdType,
+  id: ItemIdType,
   isEditable: BooleanType,
   name: StringType,
   type: EnumType(ItemType),

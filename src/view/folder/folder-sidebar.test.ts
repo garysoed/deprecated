@@ -5,7 +5,9 @@ import { Observable } from '@rxjs';
 import { map, shareReplay, switchMap, tap } from '@rxjs/operators';
 import { LocalFolder } from '../../datamodel/local-folder';
 import { $itemCollection } from '../../datamodel/local-folder-collection';
+import { toItemString } from '../../serializable/item-id';
 import { $, FolderSidebar } from './folder-sidebar';
+
 
 test('@thoth/view/folder/folder-sidebar', () => {
   const factory = new PersonaTesterFactory(_p);
@@ -31,7 +33,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
                   .pipe(switchMap(newMetadata => collection.update(newMetadata))),
               ),
               tap(newMetadata => {
-                fakeWindow.history.pushState({}, '', `/p/${newMetadata.id}`);
+                fakeWindow.history.pushState({}, '', `/p/${toItemString(newMetadata.id)}`);
                 fakeWindow.dispatchEvent(new CustomEvent('popstate'));
               }),
           )
@@ -81,7 +83,7 @@ test('@thoth/view/folder/folder-sidebar', () => {
 
     should(`open the dialog correctly`, () => {
       localFolderObs.subscribe(localFolder => {
-        fakeWindow.history.pushState({}, '', `/p/${localFolder.id.toString()}`);
+        fakeWindow.history.pushState({}, '', `/p/${toItemString(localFolder.id)}`);
         fakeWindow.dispatchEvent(new CustomEvent('popstate'));
       });
 

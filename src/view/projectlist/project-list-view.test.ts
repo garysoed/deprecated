@@ -3,8 +3,8 @@ import { _p } from '@mask';
 import { ElementTester, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { of as observableOf } from '@rxjs';
 import { filter, map, switchMap, take, withLatestFrom } from '@rxjs/operators';
-import { parseId } from '../../datamodel/item-id';
 import { $projectCollection } from '../../datamodel/project-collection';
+import { parseId } from '../../serializable/item-id';
 import { $, ProjectListView } from './project-list-view';
 
 

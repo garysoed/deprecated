@@ -4,10 +4,10 @@ import { filterNonNull } from '@gs-tools/rxjs';
 import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { ReplaySubject } from '@rxjs';
 import { map, shareReplay, switchMap, take } from '@rxjs/operators';
+import { parseId, toItemString } from '../serializable/item-id';
 import { SerializableItem } from '../serializable/serializable-item';
 import { SerializableLocalFolder } from '../serializable/serializable-local-folder';
 import { Item } from './item';
-import { parseId } from './item-id';
 import { ItemType } from './item-type';
 import { LocalFolderCollection } from './local-folder-collection';
 
@@ -28,10 +28,10 @@ test('@thoth/datamodel/local-folder-collection', () => {
 
       storage
           .update(
-              metadataId1.toString(),
+              toItemString(metadataId1),
               {
                 contentIds: [],
-                id: metadataId1.serializable,
+                id: metadataId1,
                 isEditable: true,
                 name: 'name',
                 type: ItemType.FOLDER,
@@ -40,10 +40,10 @@ test('@thoth/datamodel/local-folder-collection', () => {
           .subscribe();
       storage
           .update(
-              metadataId2.toString(),
+              toItemString(metadataId2),
               {
                 contentIds: [],
-                id: metadataId2.serializable,
+                id: metadataId2,
                 isEditable: true,
                 name: 'name',
                 type: ItemType.FOLDER,
@@ -52,10 +52,10 @@ test('@thoth/datamodel/local-folder-collection', () => {
           .subscribe();
       storage
           .update(
-              metadataId3.toString(),
+              toItemString(metadataId3),
               {
                 contentIds: [],
-                id: metadataId3.serializable,
+                id: metadataId3,
                 isEditable: true,
                 name: 'name',
                 type: ItemType.FOLDER,
@@ -80,13 +80,13 @@ test('@thoth/datamodel/local-folder-collection', () => {
       const itemName = `Test Item`;
       const serializable = {
         contentIds: [],
-        id: itemId.serializable,
+        id: itemId,
         isEditable: true,
         name: itemName,
         type: ItemType.FOLDER,
       };
 
-      storage.update(itemId.toString(), serializable).subscribe();
+      storage.update(toItemString(itemId), serializable).subscribe();
 
       const itemSubject = new ReplaySubject<Item|null>(2);
       collection.get(itemId).subscribe(itemSubject);
@@ -103,13 +103,13 @@ test('@thoth/datamodel/local-folder-collection', () => {
       const itemName = `Test Item`;
       const serializable = {
         contentIds: [],
-        id: itemId.serializable,
+        id: itemId,
         isEditable: true,
         name: itemName,
         type: ItemType.FOLDER,
       };
 
-      storage.update(itemId.toString(), serializable).subscribe();
+      storage.update(toItemString(itemId), serializable).subscribe();
 
       const metadataSubject = createSpySubject<Item|null>();
       collection.get(itemId).subscribe(metadataSubject);
@@ -122,7 +122,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
 
       assert(serializableMetadataObs).to.emitWith(
           match.anyObjectThat<SerializableItem>().haveProperties({
-            id: match.anyObjectThat().haveProperties(itemId.serializable),
+            id: match.anyObjectThat().haveProperties(itemId),
             isEditable: true,
             name: itemName,
             type: ItemType.FOLDER,
@@ -151,17 +151,17 @@ test('@thoth/datamodel/local-folder-collection', () => {
                   return null;
                 }
 
-                return metadata.id.toString();
+                return toItemString(metadata.id);
               }),
           )
           .subscribe(metadataSubject);
 
       storage
           .update(
-              id.toString(),
+              toItemString(id),
               {
                 contentIds: [],
-                id: id.serializable,
+                id,
                 isEditable: true,
                 name: 'name',
                 type: ItemType.FOLDER,
@@ -169,7 +169,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
           )
           .subscribe();
 
-      assert(metadataSubject).to.emitSequence([null, id.toString()]);
+      assert(metadataSubject).to.emitSequence([null, toItemString(id)]);
     });
   });
 });

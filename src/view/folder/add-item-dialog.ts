@@ -1,5 +1,5 @@
 import { Vine } from '@grapevine';
-import { ArrayDiff, ArraySubject, debug, filterNonNull, mapArray, MapSubject, scanArray, scanMap } from '@gs-tools/rxjs';
+import { ArrayDiff, ArraySubject, filterNonNull, mapArray, MapSubject, scanArray, scanMap } from '@gs-tools/rxjs';
 import { ElementWithTagType, InstanceofType } from '@gs-types';
 import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElementCtrl } from '@mask';
 import { api, element, InitFn, repeated, RepeatedSpec } from '@persona';
@@ -7,10 +7,10 @@ import { BehaviorSubject, merge, Observable, of as observableOf } from '@rxjs';
 import { filter, map, pairwise, startWith, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { $driveClient } from '../../api/drive-client';
 import { createFromDrive, Item } from '../../datamodel/item';
-import { ItemId } from '../../datamodel/item-id';
 import { LocalFolder } from '../../datamodel/local-folder';
 import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { SourceType } from '../../datamodel/source-type';
+import { toItemString } from '../../serializable/item-id';
 import template from './add-item-dialog.html';
 import { $$ as $fileListItem, FileListItem } from './file-list-item';
 
@@ -80,8 +80,8 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
           const specs: Array<ArrayDiff<RepeatedSpec>> = [];
           for (let i = 0; i < resultIds.length; i++) {
             const result = resultIds[i];
-            if ((prevSelected && prevSelected.id.toString() === result)
-                || (nextSelected && nextSelected.id.toString() === result)) {
+            if ((prevSelected && toItemString(prevSelected.id) === result)
+                || (nextSelected && toItemString(nextSelected.id) === result)) {
               specs.push({
                 index: i,
                 type: 'set',
@@ -118,7 +118,7 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
               continue;
             }
 
-            const id = new ItemId({id: result.id, source: SourceType.DRIVE}).toString();
+            const id = toItemString({id: result.id, source: SourceType.DRIVE});
             ids.push(id);
             this.resultDataMap.set(id, result);
           }
@@ -174,11 +174,11 @@ function createRenderSpec(
   const item = createFromDrive(file);
   const attr = new Map([
     ['label', item.name],
-    ['item-id', item.id.toString()],
+    ['item-id', toItemString(item.id)],
     ['item-type', item.type],
   ]);
 
-  if (selectedItem && selectedItem.id.toString() === id) {
+  if (selectedItem && toItemString(selectedItem.id) === id) {
     attr.set('selected', '');
   }
 

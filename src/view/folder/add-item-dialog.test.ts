@@ -5,11 +5,11 @@ import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { Observable, of as observableOf, ReplaySubject } from '@rxjs';
 import { filter, map, shareReplay, switchMap, take, withLatestFrom } from '@rxjs/operators';
-import { ItemId } from '../../datamodel/item-id';
 import { ItemType } from '../../datamodel/item-type';
 import { LocalFolder, localFolderFactory } from '../../datamodel/local-folder';
 import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { SourceType } from '../../datamodel/source-type';
+import { ItemId, toItemString } from '../../serializable/item-id';
 import { FakeGapiClient, installFakeGapiClient } from '../../testing/fake-gapi';
 import { $, AddItemDialog, openDialog } from './add-item-dialog';
 import { ItemClickEvent } from './item-click-event';
@@ -45,7 +45,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
           tester.vine,
           localFolderFactory.create({
             contentIds: [],
-            id: id.serializable,
+            id,
             isEditable: true,
             name: 'local',
             type: ItemType.FOLDER,
@@ -65,9 +65,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
       const name2 = 'name2';
       const name3 = 'name3';
 
-      dialogTester.getContentObs()
-          .setAttribute($.search._.value, query)
-          .subscribe();
+      dialogTester.getContentObs().setAttribute($.search._.value, query).subscribe();
       fakeGapi.drive.files.listSubject.next({
         result: {
           files: [
@@ -88,11 +86,15 @@ test('@thoth/view/folder/add-item-dialog', () => {
 
       assert(nodesObs.pipe(map(nodes => nodes.length))).to.emitWith(3);
 
-      const labelsObs = nodesObs.pipe(map(nodes => nodes.map(node => node.getAttribute('label'))));
+      const labelsObs = nodesObs.pipe(
+          map(nodes => nodes.map(node => node.getAttribute('label'))),
+      );
       assert(labelsObs).to
           .emitWith(match.anyArrayThat<string>().haveExactElements([name1, name2, name3]));
 
-      const idsObs = nodesObs.pipe(map(nodes => nodes.map(node => node.getAttribute('item-id'))));
+      const idsObs = nodesObs.pipe(
+          map(nodes => nodes.map(node => node.getAttribute('item-id'))),
+      );
       assert(idsObs).to.emitWith(match.anyArrayThat<string>().haveExactElements([
         `dr_${id1}`,
         `dr_${id2}`,
@@ -193,7 +195,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
       dialogTester.getContentObs()
           .dispatchEvent(
               $.results._.dispatchItemClick,
-              new ItemClickEvent(new ItemId({id: ID, source: SourceType.DRIVE}).toString()),
+              new ItemClickEvent(toItemString({id: ID, source: SourceType.DRIVE})),
           )
           .pipe(take(1))
           .subscribe();
@@ -213,7 +215,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
       dialogTester.getContentObs()
           .dispatchEvent(
               $.results._.dispatchItemClick,
-              new ItemClickEvent(new ItemId({id: ID, source: SourceType.DRIVE}).toString()),
+              new ItemClickEvent(toItemString({id: ID, source: SourceType.DRIVE})),
           )
           .pipe(take(1))
           .subscribe();

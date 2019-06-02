@@ -3,8 +3,8 @@ import { SimpleIdGenerator } from '@gs-tools/random';
 import { scanArray } from '@gs-tools/rxjs';
 import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { BehaviorSubject } from '@rxjs';
+import { parseId } from '../serializable/item-id';
 import { SerializableProject } from '../serializable/serializable-project';
-import { parseId } from './item-id';
 import { projectFactory, ProjectSpec } from './project';
 import { ProjectCollection } from './project-collection';
 
@@ -25,7 +25,7 @@ test('@thoth/datamodel/project-collection', () => {
       const projectSerializable = {
         id: projectId,
         name: projectName,
-        rootFolderId: rootFolderId.serializable,
+        rootFolderId,
       };
 
       storage.update(projectId, projectSerializable).subscribe();
@@ -38,7 +38,7 @@ test('@thoth/datamodel/project-collection', () => {
       assert(project.serializable).to.equal(match.anyObjectThat().haveProperties({
         id: projectId,
         name: projectName,
-        rootFolderId: match.anyObjectThat().haveProperties(rootFolderId.serializable),
+        rootFolderId: match.anyObjectThat().haveProperties(rootFolderId),
       }));
     });
 
@@ -59,15 +59,15 @@ test('@thoth/datamodel/project-collection', () => {
 
       storage.update(
           projectId1,
-          {id: projectId1, name: 'name', rootFolderId: rootFolderId.serializable},
+          {id: projectId1, name: 'name', rootFolderId},
       ).subscribe();
       storage.update(
           projectId2,
-          {id: projectId2, name: 'name', rootFolderId: rootFolderId.serializable},
+          {id: projectId2, name: 'name', rootFolderId},
       ).subscribe();
       storage.update(
           projectId3,
-          {id: projectId3, name: 'name', rootFolderId: rootFolderId.serializable},
+          {id: projectId3, name: 'name', rootFolderId},
       ).subscribe();
 
       const projectIdsSubject = new BehaviorSubject<string[]>([]);
@@ -86,15 +86,15 @@ test('@thoth/datamodel/project-collection', () => {
 
       storage.update(
           projectId1,
-          {id: projectId1, name: 'name', rootFolderId: rootFolderId.serializable},
+          {id: projectId1, name: 'name', rootFolderId},
       ).subscribe();
       storage.update(
           projectId2,
-          {id: projectId2, name: 'name', rootFolderId: rootFolderId.serializable},
+          {id: projectId2, name: 'name', rootFolderId},
       ).subscribe();
       storage.update(
           projectId3,
-          {id: projectId3, name: 'name', rootFolderId: rootFolderId.serializable},
+          {id: projectId3, name: 'name', rootFolderId},
       ).subscribe();
 
       const projectIdsSubject = new BehaviorSubject<string[]>([]);
@@ -119,7 +119,7 @@ test('@thoth/datamodel/project-collection', () => {
               projectFactory.create({
                 id: projectId,
                 name: 'project',
-                rootFolderId: rootFolderId.serializable,
+                rootFolderId,
               }),
           )
           .subscribe();

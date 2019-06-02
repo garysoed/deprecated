@@ -3,8 +3,8 @@ import { EditableStorage, LocalStorage } from '@gs-tools/store';
 import { _v } from '@mask';
 import { Observable, of as observableOf } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
+import { ItemId } from '../serializable/item-id';
 import { SERIALIZABLE_PROJECT_CONVERTER, SerializableProject } from '../serializable/serializable-project';
-import { ItemId } from './item-id';
 import { Project, projectFactory } from './project';
 
 export class ProjectCollection {
@@ -42,7 +42,7 @@ export class ProjectCollection {
               return projectFactory.create({
                 id: newProjectId,
                 name: `Project ${newProjectId}`,
-                rootFolderId: rootFolderId.serializable,
+                rootFolderId,
               });
             }),
             shareReplay(1),

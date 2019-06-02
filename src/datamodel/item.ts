@@ -1,7 +1,7 @@
 import { Errors } from '@gs-tools/error';
 import { generateImmutable, Immutable } from '@gs-tools/immutable';
+import { ItemId } from '../serializable/item-id';
 import { SerializableItem } from '../serializable/serializable-item';
-import { ItemId } from './item-id';
 import { ItemType } from './item-type';
 import { SourceType } from './source-type';
 
@@ -9,7 +9,7 @@ export class ItemSpec {
   constructor(private readonly serializableItem: SerializableItem) { }
 
   get id(): ItemId {
-    return new ItemId(this.serializableItem.id);
+    return {...this.serializableItem.id};
   }
 
   get isEditable(): boolean {

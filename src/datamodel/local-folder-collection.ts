@@ -2,8 +2,8 @@ import { EditableStorage, LocalStorage } from '@gs-tools/store';
 import { _v } from '@mask';
 import { Observable, of as observableOf } from '@rxjs';
 import { map, mapTo, shareReplay, take } from '@rxjs/operators';
+import { ItemId, toItemString } from '../serializable/item-id';
 import { SERIALIZABLE_LOCAL_FOLDER_CONVERTER, SerializableLocalFolder } from '../serializable/serializable-local-folder';
-import { ItemId } from './item-id';
 import { ItemType } from './item-type';
 import { LocalFolder, localFolderFactory } from './local-folder';
 import { SourceType } from './source-type';
@@ -28,11 +28,11 @@ export class LocalFolderCollection {
   }
 
   delete(itemId: ItemId): Observable<unknown> {
-    return this.storage.delete(itemId.toString());
+    return this.storage.delete(toItemString(itemId));
   }
 
   get(itemId: ItemId): Observable<LocalFolder|null> {
-    return this.storage.read(itemId.toString())
+    return this.storage.read(toItemString(itemId))
         .pipe(
             map(serializable => {
               if (!serializable) {
@@ -46,7 +46,7 @@ export class LocalFolderCollection {
   }
 
   update(metadata: LocalFolder): Observable<LocalFolder> {
-    return this.storage.update(metadata.id.toString(), metadata.serializable)
+    return this.storage.update(toItemString(metadata.id), metadata.serializable)
         .pipe(mapTo(metadata));
   }
 }

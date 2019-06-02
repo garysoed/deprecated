@@ -1,6 +1,6 @@
 import { generateImmutable, Immutable } from '@gs-tools/immutable';
+import { ItemId } from '../serializable/item-id';
 import { SerializableProject } from '../serializable/serializable-project';
-import { ItemId } from './item-id';
 
 export class ProjectSpec {
   constructor(readonly serializable: SerializableProject) { }
@@ -17,7 +17,7 @@ export class ProjectSpec {
   }
 
   get rootFolderId(): ItemId {
-    return new ItemId(this.serializable.rootFolderId);
+    return this.serializable.rootFolderId;
   }
 }
 

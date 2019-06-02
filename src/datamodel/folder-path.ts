@@ -1,9 +1,9 @@
-import { ItemId, parseId } from './item-id';
+import { ItemId, parseId, toItemString } from '../serializable/item-id';
 
 const SEPARATOR = '-';
 
 export function createPath(folderIds: ItemId[]): string {
-  return folderIds.map(id => id.toString()).join(SEPARATOR);
+  return folderIds.map(id => toItemString(id)).join(SEPARATOR);
 }
 
 export function getFolderIds(path: string): ItemId[] {

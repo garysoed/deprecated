@@ -6,7 +6,7 @@ import { createFakeWindow } from '@persona/testing';
 import { map, shareReplay, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { createPath } from '../../datamodel/folder-path';
 import { $itemCollection } from '../../datamodel/local-folder-collection';
-import { parseId } from '../../datamodel/item-id';
+import { parseId, toItemString } from '../../serializable/item-id';
 import { $selectedFolderId, $selectedFolderMetadata } from './selected-folder';
 
 test('@thoth/view/folder/selected-folder', () => {
@@ -34,8 +34,8 @@ test('@thoth/view/folder/selected-folder', () => {
           `/p/${path}`);
       fakeWindow.dispatchEvent(new CustomEvent('popstate'));
 
-      assert($selectedFolderId.get(vine).pipe(filterNonNull(), map(id => id.toString())))
-          .to.emitWith(folderId.toString());
+      assert($selectedFolderId.get(vine).pipe(filterNonNull(), map(id => toItemString(id))))
+          .to.emitWith(toItemString(folderId));
     });
 
     should(`return null if location is not PROJECT`, () => {
@@ -60,7 +60,7 @@ test('@thoth/view/folder/selected-folder', () => {
       metadataObs
           .pipe(
               tap(metadata => {
-                fakeWindow.history.pushState({}, '', `/p/${metadata.id}`);
+                fakeWindow.history.pushState({}, '', `/p/${toItemString(metadata.id)}`);
                 fakeWindow.dispatchEvent(new CustomEvent('popstate'));
               }),
           )
@@ -71,7 +71,7 @@ test('@thoth/view/folder/selected-folder', () => {
               take(1),
               withLatestFrom(metadataObs),
               tap(([selected, metadata]) => {
-                assert(selected!.id.toString()).to.equal(metadata.id.toString());
+                assert(toItemString(selected!.id)).to.equal(toItemString(metadata.id));
               }),
           )
           .subscribe();
