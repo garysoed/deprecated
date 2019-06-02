@@ -2,7 +2,7 @@ import { Vine } from '@grapevine';
 import { createSpy, createSpyInstance, fake, Spy } from '@gs-testing';
 import { GapiHandler } from '@gs-tools/gapi';
 import { Observable, of as observableOf, ReplaySubject, Subject } from '@rxjs';
-import { $gapiClient, $gapiUrl } from '../api/gapi-client';
+import { $gapiClient } from '../api/gapi-client';
 
 type PartialResponse<T> = Partial<gapi.client.Response<T>>;
 
@@ -37,7 +37,6 @@ export function installFakeGapiClient(vine: Vine): FakeGapiClient {
 
   const mockGapiHandler = createSpyInstance(GapiHandler);
   fake(mockGapiHandler.ensureSignedIn).always().return(observableOf(true));
-  $gapiUrl.get(vine).next('');
   $gapiClient.get(vine).next(mockGapiHandler);
 
   return fakeGapiClient;

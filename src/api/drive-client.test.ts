@@ -20,7 +20,6 @@ test('@thoth/api/drive-client', () => {
   test('find', () => {
     should(`return the correct data`, () => {
       const query = 'query';
-      const result: SerializableDriveFile[] = [];
       fakeGapi.drive.files.listSubject.next({
         result: {
           files: [

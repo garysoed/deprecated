@@ -1,8 +1,7 @@
-import { GAPI_URL, GapiBuilder, GapiHandler } from '@gs-tools/gapi';
+import { GapiBuilder, GapiHandler } from '@gs-tools/gapi';
 import { _v } from '@mask';
-import { BehaviorSubject, ReplaySubject } from '@rxjs';
+import { ReplaySubject } from '@rxjs';
 
-export const $gapiUrl = _v.source(() => new BehaviorSubject(GAPI_URL), globalThis);
 export const $gapiClient = _v.source(
     () => {
         const subject = new ReplaySubject<GapiHandler>(1);
