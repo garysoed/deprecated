@@ -9,7 +9,7 @@ import { ItemType } from '../../datamodel/item-type';
 import { LocalFolder, localFolderFactory } from '../../datamodel/local-folder';
 import { $itemCollection } from '../../datamodel/local-folder-collection';
 import { SourceType } from '../../datamodel/source-type';
-import { ItemId, toItemString } from '../../serializable/item-id';
+import { ItemId, LocalItemId, toItemString } from '../../serializable/item-id';
 import { FakeGapiClient, installFakeGapiClient } from '../../testing/fake-gapi';
 import { $, AddItemDialog, openDialog } from './add-item-dialog';
 import { ItemClickEvent } from './item-click-event';
@@ -45,7 +45,7 @@ test('@thoth/view/folder/add-item-dialog', () => {
           tester.vine,
           localFolderFactory.create({
             contentIds: [],
-            id,
+            id: id as LocalItemId,
             isEditable: true,
             name: 'local',
             type: ItemType.FOLDER,

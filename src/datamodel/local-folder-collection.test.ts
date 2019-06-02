@@ -4,7 +4,7 @@ import { filterNonNull } from '@gs-tools/rxjs';
 import { EditableStorage, InMemoryStorage } from '@gs-tools/store';
 import { ReplaySubject } from '@rxjs';
 import { map, shareReplay, switchMap, take } from '@rxjs/operators';
-import { parseId, toItemString } from '../serializable/item-id';
+import { LocalItemId, parseId, toItemString } from '../serializable/item-id';
 import { SerializableItem } from '../serializable/serializable-item';
 import { SerializableLocalFolder } from '../serializable/serializable-local-folder';
 import { Item } from './item';
@@ -31,7 +31,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
               toItemString(metadataId1),
               {
                 contentIds: [],
-                id: metadataId1,
+                id: metadataId1 as LocalItemId,
                 isEditable: true,
                 name: 'name',
                 type: ItemType.FOLDER,
@@ -43,7 +43,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
               toItemString(metadataId2),
               {
                 contentIds: [],
-                id: metadataId2,
+                id: metadataId2 as LocalItemId,
                 isEditable: true,
                 name: 'name',
                 type: ItemType.FOLDER,
@@ -55,7 +55,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
               toItemString(metadataId3),
               {
                 contentIds: [],
-                id: metadataId3,
+                id: metadataId3 as LocalItemId,
                 isEditable: true,
                 name: 'name',
                 type: ItemType.FOLDER,
@@ -80,7 +80,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
       const itemName = `Test Item`;
       const serializable = {
         contentIds: [],
-        id: itemId,
+        id: itemId as LocalItemId,
         isEditable: true,
         name: itemName,
         type: ItemType.FOLDER,
@@ -103,7 +103,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
       const itemName = `Test Item`;
       const serializable = {
         contentIds: [],
-        id: itemId,
+        id: itemId as LocalItemId,
         isEditable: true,
         name: itemName,
         type: ItemType.FOLDER,
@@ -161,7 +161,7 @@ test('@thoth/datamodel/local-folder-collection', () => {
               toItemString(id),
               {
                 contentIds: [],
-                id,
+                id: id as LocalItemId,
                 isEditable: true,
                 name: 'name',
                 type: ItemType.FOLDER,

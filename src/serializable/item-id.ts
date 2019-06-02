@@ -10,6 +10,14 @@ export interface ItemId extends SerializableObject {
   readonly source: SourceType;
 }
 
+export interface DriveItemId extends ItemId {
+  readonly source: SourceType.DRIVE;
+}
+
+export interface LocalItemId extends ItemId {
+  readonly source: SourceType.LOCAL;
+}
+
 export function toItemString(itemId: ItemId): string {
   return `${itemId.source}${SEPARATOR}${itemId.id}`;
 }
