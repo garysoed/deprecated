@@ -1,16 +1,17 @@
 import { Vine } from '@grapevine';
 import { ArrayDiff, ArraySubject, filterNonNull, mapArray, MapSubject, scanArray, scanMap } from '@gs-tools/rxjs';
 import { ElementWithTagType, InstanceofType } from '@gs-types';
-import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElementCtrl } from '@mask';
+import { $dialogService, $textInput, Dialog, TextInput, ThemedCustomElementCtrl, _p, _v } from '@mask';
 import { api, element, InitFn, repeated, RepeatedSpec } from '@persona';
 import { BehaviorSubject, merge, Observable, of as observableOf } from '@rxjs';
 import { filter, map, pairwise, startWith, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
 import { $driveClient } from '../../api/drive-client';
-import { createFromDrive, Item } from '../../datamodel/item';
+import { driveItemFactory } from '../../datamodel/drive-item';
+import { Item } from '../../datamodel/item';
 import { LocalFolder } from '../../datamodel/local-folder';
 import { $localFolderCollection } from '../../datamodel/local-folder-collection';
-import { SourceType } from '../../datamodel/source-type';
 import { toItemString } from '../../serializable/item-id';
+import { SerializableDriveFile } from '../../serializable/serializable-drive-file';
 import template from './add-item-dialog.html';
 import { $$ as $fileListItem, FileListItem } from './file-list-item';
 
@@ -33,7 +34,7 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
   private readonly driveClient = $driveClient.asObservable();
   private readonly onClickResult = _p.input($.results._.dispatchItemClick, this);
   private readonly onSearchValue = _p.input($.search._.value, this);
-  private readonly resultDataMap = new MapSubject<string, gapi.client.drive.File>();
+  private readonly resultDataMap = new MapSubject<string, SerializableDriveFile>();
   private readonly resultIdsSubject = new ArraySubject<string>();
   private readonly selectedItemSbj = $addedItem.asSubject();
 
@@ -103,7 +104,9 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
             withLatestFrom(this.resultDataMap.getDiffs().pipe(scanMap())),
             map(([event, resultsMap]) => resultsMap.get(event.itemId) || null),
             filterNonNull(),
-            tap(driveFile => this.selectedItemSbj.next(createFromDrive(driveFile))),
+            tap(driveFile => this.selectedItemSbj.next(
+                driveItemFactory.create(driveFile),
+            )),
         );
   }
 
@@ -118,7 +121,7 @@ export class AddItemDialog extends ThemedCustomElementCtrl {
               continue;
             }
 
-            const id = toItemString({id: result.id, source: SourceType.DRIVE});
+            const id = toItemString(result.id);
             ids.push(id);
             this.resultDataMap.set(id, result);
           }
@@ -163,7 +166,7 @@ function onClose(item: Item, folder: LocalFolder, vine: Vine): Observable<any> {
 
 function createRenderSpec(
     id: string,
-    data: Map<string, gapi.client.drive.File>,
+    data: Map<string, SerializableDriveFile>,
     selectedItem: Item|null,
 ): RepeatedSpec {
   const file = data.get(id);
@@ -171,7 +174,7 @@ function createRenderSpec(
     return {};
   }
 
-  const item = createFromDrive(file);
+  const item = driveItemFactory.create(file);
   const attr = new Map([
     ['label', item.name],
     ['item-id', toItemString(item.id)],
