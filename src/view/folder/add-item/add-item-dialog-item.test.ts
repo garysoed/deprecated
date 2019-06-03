@@ -5,8 +5,8 @@ import { fromEvent, ReplaySubject } from '@rxjs';
 import { map } from '@rxjs/operators';
 import { ItemType } from '../../../datamodel/item-type';
 import { SourceType } from '../../../datamodel/source-type';
-import { ITEM_CLICK_EVENT, ItemClickEvent } from '../item-click-event';
 import { $, AddItemDialogItem } from './add-item-dialog-item';
+import { ITEM_CLICK_EVENT, ItemClickEvent } from './item-click-event';
 
 test('@thoth/view/folder/add-item/add-item-dialog-item', () => {
   const factory = new PersonaTesterFactory(_p);

@@ -5,7 +5,7 @@ import { combineLatest, Observable } from '@rxjs';
 import { map, withLatestFrom } from '@rxjs/operators';
 import { ItemType } from '../../../datamodel/item-type';
 import { SourceType } from '../../../datamodel/source-type';
-import { ItemClickEvent, ITEM_CLICK_EVENT } from '../item-click-event';
+import { ItemClickEvent, ITEM_CLICK_EVENT } from './item-click-event';
 import template from './add-item-dialog-item.html';
 
 export const $$ = {

@@ -12,8 +12,8 @@ import { $localFolderCollection } from '../../../datamodel/local-folder-collecti
 import { SourceType } from '../../../datamodel/source-type';
 import { LocalItemId, toItemString } from '../../../serializable/item-id';
 import { FakeGapiClient, installFakeGapiClient } from '../../../testing/fake-gapi';
-import { ItemClickEvent } from '../item-click-event';
 import { $, AddItemDialog, openDialog } from './add-item-dialog';
+import { ItemClickEvent } from './item-click-event';
 
 test('@thoth/view/folder/add-item/add-item-dialog', () => {
   const factory = new PersonaTesterFactory(_p);
