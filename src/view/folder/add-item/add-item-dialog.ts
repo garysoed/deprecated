@@ -5,20 +5,20 @@ import { $dialogService, $textInput, _p, _v, Dialog, TextInput, ThemedCustomElem
 import { api, element, InitFn, repeated, RepeatedSpec } from '@persona';
 import { BehaviorSubject, merge, Observable, of as observableOf } from '@rxjs';
 import { filter, map, pairwise, startWith, switchMap, take, tap, withLatestFrom } from '@rxjs/operators';
-import { $driveClient } from '../../api/drive-client';
-import { driveItemFactory } from '../../datamodel/drive-item';
-import { Item } from '../../datamodel/item';
-import { LocalFolder } from '../../datamodel/local-folder';
-import { $localFolderCollection } from '../../datamodel/local-folder-collection';
-import { toItemString } from '../../serializable/item-id';
-import { SerializableDriveFile } from '../../serializable/serializable-drive-file';
+import { $driveClient } from '../../../api/drive-client';
+import { driveItemFactory } from '../../../datamodel/drive-item';
+import { Item } from '../../../datamodel/item';
+import { LocalFolder } from '../../../datamodel/local-folder';
+import { $localFolderCollection } from '../../../datamodel/local-folder-collection';
+import { toItemString } from '../../../serializable/item-id';
+import { SerializableDriveFile } from '../../../serializable/serializable-drive-file';
+import { $$ as $fileListItem, AddItemDialogItem } from './add-item-dialog-item';
 import template from './add-item-dialog.html';
-import { $$ as $fileListItem, FileListItem } from './file-list-item';
 
 export const $ = {
   results: element('results', InstanceofType(HTMLDivElement), {
     ...api($fileListItem),
-    list: repeated('#list', 'th-file-list-item'),
+    list: repeated('#list', 'th-add-item-dialog-item'),
   }),
   search: element('search', ElementWithTagType('mk-text-input'), api($textInput)),
 };
@@ -26,7 +26,7 @@ export const $ = {
 const $addedItem = _v.source(() => new BehaviorSubject<Item|null>(null), globalThis);
 
 @_p.customElement({
-  dependencies: [Dialog, FileListItem, TextInput],
+  dependencies: [Dialog, AddItemDialogItem, TextInput],
   tag: 'th-add-item-dialog',
   template,
 })

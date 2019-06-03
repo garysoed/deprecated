@@ -5,7 +5,7 @@ import { api, element, InitFn } from '@persona';
 import { Observable } from '@rxjs';
 import { filter, map, switchMap, withLatestFrom } from '@rxjs/operators';
 import { localFolderFactory } from '../../datamodel/local-folder';
-import { AddItemDialog, openDialog as openAddItemDialog } from './add-item-dialog';
+import { AddItemDialog, openDialog as openAddItemDialog } from './add-item/add-item-dialog';
 import template from './folder-sidebar.html';
 import { $selectedFolderMetadata } from './selected-folder';
 

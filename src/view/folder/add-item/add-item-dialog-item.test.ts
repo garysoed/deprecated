@@ -3,20 +3,20 @@ import { _p } from '@mask';
 import { ElementTester, PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { fromEvent, ReplaySubject } from '@rxjs';
 import { map } from '@rxjs/operators';
-import { ItemType } from '../../datamodel/item-type';
-import { SourceType } from '../../datamodel/source-type';
-import { $, FileListItem } from './file-list-item';
-import { ITEM_CLICK_EVENT, ItemClickEvent } from './item-click-event';
+import { ItemType } from '../../../datamodel/item-type';
+import { SourceType } from '../../../datamodel/source-type';
+import { ITEM_CLICK_EVENT, ItemClickEvent } from '../item-click-event';
+import { $, AddItemDialogItem } from './add-item-dialog-item';
 
-test('@thoth/view/folder/file-list-item', () => {
+test('@thoth/view/folder/add-item/add-item-dialog-item', () => {
   const factory = new PersonaTesterFactory(_p);
 
   let el: ElementTester;
   let tester: PersonaTester;
 
   setup(() => {
-    tester = factory.build([FileListItem]);
-    el = tester.createElement('th-file-list-item', document.body);
+    tester = factory.build([AddItemDialogItem]);
+    el = tester.createElement('th-add-item-dialog-item', document.body);
   });
 
   test('renderDispatchItemClick', () => {

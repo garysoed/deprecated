@@ -3,10 +3,10 @@ import { $listItem, enumParser, ListItem, stringParser, ThemedCustomElementCtrl,
 import { api, attributeIn, dispatcher, element, hasAttribute, InitFn, onDom } from '@persona';
 import { combineLatest, Observable } from '@rxjs';
 import { map, withLatestFrom } from '@rxjs/operators';
-import { ItemType } from '../../datamodel/item-type';
-import { SourceType } from '../../datamodel/source-type';
-import template from './file-list-item.html';
-import { ItemClickEvent, ITEM_CLICK_EVENT } from './item-click-event';
+import { ItemType } from '../../../datamodel/item-type';
+import { SourceType } from '../../../datamodel/source-type';
+import { ItemClickEvent, ITEM_CLICK_EVENT } from '../item-click-event';
+import template from './add-item-dialog-item.html';
 
 export const $$ = {
   dispatchItemClick: dispatcher<ItemClickEvent>(ITEM_CLICK_EVENT),
@@ -27,10 +27,10 @@ export const $ = {
   dependencies: [
     ListItem,
   ],
-  tag: 'th-file-list-item',
+  tag: 'th-add-item-dialog-item',
   template,
 })
-export class FileListItem extends ThemedCustomElementCtrl {
+export class AddItemDialogItem extends ThemedCustomElementCtrl {
   private readonly itemIdObs = _p.input($.host._.itemId, this);
   private readonly itemTypeObs = _p.input($.host._.itemType, this);
   private readonly labelObs = _p.input($.host._.label, this);

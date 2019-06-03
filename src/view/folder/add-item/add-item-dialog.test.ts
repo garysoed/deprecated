@@ -5,17 +5,17 @@ import { DialogTester } from '@mask/testing';
 import { PersonaTester, PersonaTesterFactory } from '@persona/testing';
 import { Observable, of as observableOf, ReplaySubject } from '@rxjs';
 import { filter, map, shareReplay, switchMap, take, withLatestFrom } from '@rxjs/operators';
-import { $itemService } from '../../datamodel/item-service';
-import { ItemType } from '../../datamodel/item-type';
-import { LocalFolder, localFolderFactory } from '../../datamodel/local-folder';
-import { $localFolderCollection } from '../../datamodel/local-folder-collection';
-import { SourceType } from '../../datamodel/source-type';
-import { LocalItemId, toItemString } from '../../serializable/item-id';
-import { FakeGapiClient, installFakeGapiClient } from '../../testing/fake-gapi';
+import { $itemService } from '../../../datamodel/item-service';
+import { ItemType } from '../../../datamodel/item-type';
+import { LocalFolder, localFolderFactory } from '../../../datamodel/local-folder';
+import { $localFolderCollection } from '../../../datamodel/local-folder-collection';
+import { SourceType } from '../../../datamodel/source-type';
+import { LocalItemId, toItemString } from '../../../serializable/item-id';
+import { FakeGapiClient, installFakeGapiClient } from '../../../testing/fake-gapi';
+import { ItemClickEvent } from '../item-click-event';
 import { $, AddItemDialog, openDialog } from './add-item-dialog';
-import { ItemClickEvent } from './item-click-event';
 
-test('@thoth/view/folder/add-item-dialog', () => {
+test('@thoth/view/folder/add-item/add-item-dialog', () => {
   const factory = new PersonaTesterFactory(_p);
 
   let localFolderIdObs: Observable<LocalItemId>;
