@@ -1,12 +1,12 @@
 import { ElementWithTagType } from '@gs-types';
-import { $listItem, enumParser, ListItem, stringParser, ThemedCustomElementCtrl, _p, _v } from '@mask';
+import { $listItem, _p, _v, enumParser, ListItem, stringParser, ThemedCustomElementCtrl } from '@mask';
 import { api, attributeIn, dispatcher, element, hasAttribute, InitFn, onDom } from '@persona';
 import { combineLatest, Observable } from '@rxjs';
 import { map, withLatestFrom } from '@rxjs/operators';
 import { ItemType } from '../../../datamodel/item-type';
 import { SourceType } from '../../../datamodel/source-type';
-import { ItemClickEvent, ITEM_CLICK_EVENT } from './item-click-event';
 import template from './add-item-dialog-item.html';
+import { ITEM_CLICK_EVENT, ItemClickEvent } from './item-click-event';
 
 export const $$ = {
   dispatchItemClick: dispatcher<ItemClickEvent>(ITEM_CLICK_EVENT),
