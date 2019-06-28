@@ -1,6 +1,4 @@
-import { $pipe, $push, asImmutableMap } from '@gs-tools/collect';
 import { $svgConfig, Palette, start, SvgConfig, Theme } from '@mask';
-import { take } from '@rxjs/operators';
 import { ConsoleDestination, logDestination } from '@santa';
 import addIcon from '../asset/add.svg';
 import converterDriveIcon from '../asset/converter_drive.svg';
@@ -32,15 +30,7 @@ window.addEventListener('load', () => {
   );
 
   const svgConfigSubject = $svgConfig.get(vine);
-  svgConfigSubject
-      .pipe(take(1))
-      .subscribe(svgConfig => {
-        svgConfigSubject.next(
-            $pipe(
-                svgConfig,
-                $push(...iconConfigs),
-                asImmutableMap(),
-            ),
-        );
-      });
+  for (const [key, config] of iconConfigs) {
+    svgConfigSubject.next({key, type: 'set', value: config});
+  }
 });
