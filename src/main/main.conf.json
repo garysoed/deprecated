@@ -1,6 +1,0 @@
-{
-  "/bin/*": "../../out/$0",
-  "/": "main.html",
-  "/p/:route": "main.html",
-  "/asset/:name": "../asset/$name"
-}

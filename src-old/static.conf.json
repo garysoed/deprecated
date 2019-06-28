@@ -1,6 +1,0 @@
-{
-  "/bazel-genfiles/*": "../bazel-genfiles/$0",
-  "/node_modules/*": "../node_modules/$0",
-  "/main/:file": "main/$file",
-  "/preview/main.html/*": "preview/main.html"
-}
