@@ -2,106 +2,19 @@
 
 Thoth is a file based wiki page generator.
 
-## Features
+Thoth operates on files in the file system and forms a chain of processes and eventually outputs
+the result.
 
--   Create markdown files and render them as HTML.
--   Use handlebar to add templating.
--   Additional markdown features:
-    -   Variables
-    -   Asides
-    -   Graphs
+## Config
 
-## Design
+Thoth utilizes `THOTH.yml` files. These files define the "program" used for rendering.
 
-Goes like:
+A `THOTH.yml` file consists of **rules**. Each rule can be one of the following types:
 
-```
-          raw > JSON >
-            Template > Render output
-```
+-   **Processor**: This defines a processor used to process input files.
+-   **Render**: This runs the processor and optionally outputs file(s) to the output directory.
 
-1.  The pipeline starts with some **raw** files.
-2.  These files are converted to JSON through **converter** files.
-3.  You can also specify **template** files.
-4.  Thoth will take a template, a set of data files, and handlebar **helpers** to generate one or
-    more output files. An **output** file is used to determine the number of output files.
-5.  This relationship is defined by a **render** file.
+### Processor
 
-### Raw
-
--   Raw can come from various sources:
-
-    -   TSV
-    -   CSV
-    -   Google spreadsheet
-    -   XML
-    -   YAML
-    -   JSON
-
-### Converter
-
-Converter files are JavaScript files. These files must define a function that takes in the source
-file and outputs JSON.
-
-### Template and helpers
-
-Template files are written in Handlebars.
-
-### Output
-
-Output files are JavaScript files. These files must define a function that takes in the JSON of the
-converted source.
-
-### Render
-
-Render files are YAML files with the following fields:
-
-```
-type DATA_TYPE = TSV|CSV|GoogleSpreadsheet|XML|YAML|JSON;
-
-type OUTPUT_TYPE = OUTPUT;
-
-type ROOT = Render[]
-
-/**
- * Path to a file of type T.
- */
-type Path<T> = string;
-
-interface Data {
-  src: Path<DATA_TYPE>;
-  transform: Path<CONVERTER_TYPE>;
-}
-
-interface Render {
-  deps?: Array<Data|Path<HELPER_TYPE>>;
-  src: Data;
-  template: Path<TEMPLATE_TYPE>;
-  outputFn?: Path<OUTPUT_TYPE>;
-}
-
-```
-
-### Output
-
-### Data models
-Item
-|-  Folder
-    |-  LocalFolder
-    |-  RemoteFolder
-|-  File
-    |-  Data
-    |-  Template
-    |-  Converter
-    |-  Render
-
-ItemMetadata
--   isEditable
--   name
--   source: Source
--   id
-
-Source
->   LocalSource
->   DriveSource
-
+A Processor is just a rule that declares an executable. This executable are JavaScripts with given
+input and output types.
