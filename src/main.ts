@@ -1,27 +1,32 @@
-import { formatMessage, MessageType } from '@gs-tools/cli';
 import * as commandLineArgs from 'command-line-args';
-import { Commands } from './commands';
+import { CommandType } from './command-type';
+import { CLI as HELP_CLI, help } from './help';
 import { init } from './init';
+import { printSummary } from './print-summary';
 
 const COMMAND_OPTION = 'command';
-const options = commandLineArgs(
-    [
-      {
-        name: COMMAND_OPTION,
-        defaultOption: true,
-      },
-    ],
-    {
-      stopAtFirstUnknown: true,
-    },
-);
+const OPTIONS = [
+  {
+    name: COMMAND_OPTION,
+    defaultOption: true,
+  },
+];
+const CLI = {
+  body: HELP_CLI.body,
+  title: 'Thoth',
+  summary: 'Manages a chain of rendering processes to render your documents.',
+  synopsis: '$ thoth <command> [command options]',
+};
 
-const command = options[COMMAND_OPTION];
-switch (command) {
-  case Commands.INIT:
+
+const options = commandLineArgs(OPTIONS, {stopAtFirstUnknown: true});
+switch (options[COMMAND_OPTION]) {
+  case CommandType.HELP:
+    help(options._unknown || []);
+  case CommandType.INIT:
     init(options._unknown || []);
     break;
   default:
-    console.log(formatMessage(MessageType.FAILURE, `Unknown command: ${command}`));
+    printSummary(CLI);
     break;
 }
