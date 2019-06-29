@@ -2,13 +2,16 @@
   "name": "thoth",
   "version": "1.0.0",
   "description": "Thoth is a file based wiki page generator.",
-  "main": "index.js",
+  "main": "out/main.js",
+  "bin": "./out/main.js",
   "dependencies": {
     "@types/gapi.auth2": "0.0.50",
     "@types/gapi.client.drive": "^3.0.3",
     "@types/handlebars": "^4.1.0",
     "@types/showdown": "^1.9.3",
     "awesome-typescript-loader": "^5.0.0",
+    "command-line-args": "^5.1.1",
+    "command-line-usage": "^5.0.5",
     "css-loader": "^2.1.1",
     "duplicate-package-checker-webpack-plugin": "^3.0.0",
     "express": "^4.17.1",
@@ -23,10 +26,10 @@
     "rxjs": "^6.5.2",
     "tslint": "^5.16.0",
     "typescript": "^3.4.5",
-    "uglifyjs-webpack-plugin": "^2.1.3",
-    "webpack": "^4.32.2"
+    "uglifyjs-webpack-plugin": "^2.1.3"
   },
   "devDependencies": {
+    "@types/command-line-args": "^5.0.0",
     "@types/jasmine": "^3.3.12",
     "@types/js-yaml": "^3.12.1",
     "karma-chrome-launcher": "^2.2.0",
@@ -34,6 +37,7 @@
     "path": "^0.12.7",
     "source-map-loader": "^0.2.4",
     "speed-measure-webpack-plugin": "^1.3.1",
+    "webpack": "^4.35.0",
     "webpack-notifier": "^1.7.0"
   },
   "scripts": {
