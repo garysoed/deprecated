@@ -15,7 +15,7 @@ const CLI = {
   body: HELP_CLI.body,
   title: 'Thoth',
   summary: 'Manages a chain of rendering processes to render your documents.',
-  synopsis: '$ thoth <command> [command options]',
+  synopsis: '$ thoth {underline command} [command options]',
 };
 
 
@@ -23,6 +23,7 @@ const options = commandLineArgs(OPTIONS, {stopAtFirstUnknown: true});
 switch (options[COMMAND_OPTION]) {
   case CommandType.HELP:
     help(options._unknown || []);
+    break;
   case CommandType.INIT:
     init(options._unknown || []);
     break;

@@ -1,8 +1,7 @@
 import * as commandLineArgs from 'command-line-args';
-import * as commandLineUsage from 'command-line-usage';
 import { CommandType } from './command-type';
+import { CLI as INIT_CLI } from './init';
 import { printSummary } from './print-summary';
-import { CliSummary } from './types/cli-summary';
 
 const COMMAND_OPTION = 'command';
 const OPTIONS = [
@@ -13,12 +12,12 @@ const OPTIONS = [
 ];
 
 export const CLI = {
-  title: 'Help',
+  title: 'Thoth: Help',
   body: () => ({
     header: 'Commands',
     content: [
       {name: CommandType.HELP, summary: CLI.summary},
-      {name: CommandType.INIT, summary: 'Initializes thoth project.'},
+      {name: CommandType.INIT, summary: INIT_CLI.summary},
     ],
   }),
   summary: 'Display help on commands',
@@ -29,9 +28,14 @@ export function help(argv: string[]): void {
   const options = commandLineArgs(OPTIONS, {argv, stopAtFirstUnknown: true});
   switch (options[COMMAND_OPTION]) {
     case CommandType.HELP:
+      printSummary(CLI);
+      return;
+    case CommandType.INIT:
+      printSummary(INIT_CLI);
+      return;
     default:
       printSummary(CLI);
-      break;
+      return;
   }
 }
 

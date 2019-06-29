@@ -34,6 +34,8 @@
     "@types/command-line-usage": "^5.0.1",
     "@types/jasmine": "^3.3.12",
     "@types/js-yaml": "^3.12.1",
+    "@types/node": "^12.0.10",
+    "@types/yaml": "^1.0.2",
     "karma-chrome-launcher": "^2.2.0",
     "node-notifier": "^5.4.0",
     "path": "^0.12.7",
