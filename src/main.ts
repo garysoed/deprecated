@@ -1,8 +1,8 @@
 import * as commandLineArgs from 'command-line-args';
-import { CommandType } from './command-type';
-import { CLI as HELP_CLI, help } from './help';
-import { init } from './init';
-import { printSummary } from './print-summary';
+import { CLI as HELP_CLI, help } from './cli/help';
+import { init } from './cli/init';
+import { printSummary } from './cli/print-summary';
+import { CommandType } from './types/command-type';
 
 const COMMAND_OPTION = 'command';
 const OPTIONS = [

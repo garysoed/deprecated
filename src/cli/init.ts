@@ -3,8 +3,8 @@ import chalk from 'chalk';
 import * as commandLineArgs from 'command-line-args';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
-import { CommandType } from './command-type';
-import { ProjectConfig } from './types/project-config';
+import { CommandType } from '../types/command-type';
+import { ProjectConfig } from '../types/project-config';
 
 const CONFIG_FILE = 'thoth-config.yaml';
 
