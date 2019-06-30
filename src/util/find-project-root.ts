@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
+
 import { FILE_NAME } from '../types/project-config';
 
 export async function findProjectRoot(): Promise<string|null> {

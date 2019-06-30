@@ -1,15 +1,17 @@
 import chalk from 'chalk';
 import * as commandLineArgs from 'command-line-args';
 import * as fs from 'fs';
-import { formatMessage, MessageType } from 'gs-tools/export/cli';
 import * as path from 'path';
-import { findProjectRoot } from 'src/util/find-project-root';
 import * as yaml from 'yaml';
+
+import { formatMessage, MessageType } from '@gs-tools/cli';
+
 import { CommandType } from '../types/command-type';
 import { TYPE as CONFIG_SPEC_TYPE } from '../types/config-spec';
 import { Glob } from '../types/glob';
 import { RenderSpec, TYPE as RENDER_SPEC_TYPE } from '../types/render-spec';
 import { RuleSpec } from '../types/rule-spec';
+import { findProjectRoot } from '../util/find-project-root';
 
 const CONFIG_NAME = 'thoth.yml';
 const PAD = '  ';

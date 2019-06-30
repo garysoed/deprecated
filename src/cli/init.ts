@@ -1,8 +1,10 @@
-import { formatMessage, MessageType } from '@gs-tools/cli';
 import chalk from 'chalk';
 import * as commandLineArgs from 'command-line-args';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
+
+import { formatMessage, MessageType } from '@gs-tools/cli';
+
 import { CommandType } from '../types/command-type';
 import { FILE_NAME as CONFIG_FILE, ProjectConfig } from '../types/project-config';
 

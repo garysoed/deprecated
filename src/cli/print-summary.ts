@@ -1,4 +1,5 @@
 import * as commandLineUsage from 'command-line-usage';
+
 import { CliSummary } from '../types/cli-summary';
 
 export function printSummary(summary: CliSummary): void {

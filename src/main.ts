@@ -1,6 +1,8 @@
-import { formatMessage, MessageType } from '@gs-tools/cli';
 import * as commandLineArgs from 'command-line-args';
 import * as yaml from 'yaml';
+
+import { formatMessage, MessageType } from '@gs-tools/cli';
+
 import { analyze } from './cli/analyze';
 import { CLI as HELP_CLI, help } from './cli/help';
 import { init } from './cli/init';

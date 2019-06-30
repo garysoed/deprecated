@@ -1,4 +1,5 @@
 import { ArrayOfType, EqualType, HasPropertiesType, InstanceofType, IntersectType, ObjectType, StringType, UnionType } from '@gs-types';
+
 import { Glob } from './glob';
 import { RuleSpec, TYPE as RULE_SPEC_TYPE } from './rule-spec';
 import { RuleType } from './rule-type';

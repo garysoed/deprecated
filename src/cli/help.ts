@@ -1,5 +1,7 @@
 import * as commandLineArgs from 'command-line-args';
+
 import { CommandType } from '../types/command-type';
+
 import { CLI as ANALYZE_CLI } from './analyze';
 import { CLI as INIT_CLI } from './init';
 import { printSummary } from './print-summary';
