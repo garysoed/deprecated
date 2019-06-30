@@ -1,3 +1,4 @@
+import { formatMessage, MessageType } from '@gs-tools/cli';
 import * as commandLineArgs from 'command-line-args';
 import * as yaml from 'yaml';
 import { analyze } from './cli/analyze';
@@ -24,18 +25,24 @@ const CLI = {
 (yaml.defaultOptions as any).customTags = [GLOB_TAG];
 
 const options = commandLineArgs(OPTIONS, {stopAtFirstUnknown: true});
-switch (options[COMMAND_OPTION]) {
-  case CommandType.ANALYZE:
-    // tslint:disable-next-line: no-floating-promises
-    analyze(options._unknown || []);
-    break;
-  case CommandType.HELP:
-    help(options._unknown || []);
-    break;
-  case CommandType.INIT:
-    init(options._unknown || []);
-    break;
-  default:
-    printSummary(CLI);
-    break;
+async function run(): Promise<void> {
+  switch (options[COMMAND_OPTION]) {
+    case CommandType.ANALYZE:
+      await analyze(options._unknown || []);
+      break;
+    case CommandType.HELP:
+      help(options._unknown || []);
+      break;
+    case CommandType.INIT:
+      init(options._unknown || []);
+      break;
+    default:
+      printSummary(CLI);
+      break;
+  }
 }
+
+run().then(
+    null,
+    (e: Error) => console.log(formatMessage(MessageType.FAILURE, e.stack || e.message)),
+);
