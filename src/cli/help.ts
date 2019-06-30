@@ -1,5 +1,6 @@
 import * as commandLineArgs from 'command-line-args';
 import { CommandType } from '../types/command-type';
+import { CLI as ANALYZE_CLI } from './analyze';
 import { CLI as INIT_CLI } from './init';
 import { printSummary } from './print-summary';
 
@@ -17,6 +18,7 @@ export const CLI = {
     header: 'Commands',
     content: [
       {name: CommandType.HELP, summary: CLI.summary},
+      {name: CommandType.ANALYZE, summary: ANALYZE_CLI.summary},
       {name: CommandType.INIT, summary: INIT_CLI.summary},
     ],
   }),
@@ -27,6 +29,9 @@ export const CLI = {
 export function help(argv: string[]): void {
   const options = commandLineArgs(OPTIONS, {argv, stopAtFirstUnknown: true});
   switch (options[COMMAND_OPTION]) {
+    case CommandType.ANALYZE:
+      printSummary(ANALYZE_CLI);
+      return;
     case CommandType.HELP:
       printSummary(CLI);
       return;

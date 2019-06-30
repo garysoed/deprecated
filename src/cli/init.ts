@@ -48,7 +48,7 @@ export const CLI = {
     header: 'Options',
     optionList,
   }),
-  summary: 'Initializes Thoth project',
+  summary: 'Initializes Thoth project.',
   synopsis: [
     `$ thoth ${CommandType.INIT}`,
     `[--${Options.OUT_DIR}={underline file}]`,
