@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as yaml from 'yaml';
 
 import { formatMessage, MessageType } from '@gs-tools/cli';
+import { take } from '@rxjs/operators';
 
 import { CommandType } from '../types/command-type';
 import { TYPE as CONFIG_SPEC_TYPE } from '../types/config-spec';
@@ -34,7 +35,7 @@ export const CLI = {
 
 export async function analyze(argv: string[]): Promise<string> {
   const options = commandLineArgs(OPTIONS, {argv});
-  const projectRoot = await findProjectRoot();
+  const projectRoot = await findProjectRoot().pipe(take(1)).toPromise();
   if (!projectRoot) {
     throw new Error('Project root not found');
   }
