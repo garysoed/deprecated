@@ -27,24 +27,21 @@ const CLI = {
 (yaml.defaultOptions as any).customTags = [GLOB_TAG];
 
 const options = commandLineArgs(OPTIONS, {stopAtFirstUnknown: true});
-async function run(): Promise<void> {
+async function run(): Promise<string> {
   switch (options[COMMAND_OPTION]) {
     case CommandType.ANALYZE:
-      await analyze(options._unknown || []);
-      break;
+      return analyze(options._unknown || []);
     case CommandType.HELP:
-      help(options._unknown || []);
-      break;
+      return help(options._unknown || []);
     case CommandType.INIT:
-      init(options._unknown || []);
-      break;
+      return init(options._unknown || []);
     default:
-      printSummary(CLI);
-      break;
+      return printSummary(CLI);
   }
 }
 
+// tslint:disable: no-console
 run().then(
-    null,
+    results => console.log(results),
     (e: Error) => console.log(formatMessage(MessageType.FAILURE, e.stack || e.message)),
 );

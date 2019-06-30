@@ -32,7 +32,7 @@ export const CLI = {
   synopsis: `$ thoth ${CommandType.ANALYZE} {underline target}`,
 };
 
-export async function analyze(argv: string[]): Promise<void> {
+export async function analyze(argv: string[]): Promise<string> {
   const options = commandLineArgs(OPTIONS, {argv});
   const projectRoot = await findProjectRoot();
   if (!projectRoot) {
@@ -71,9 +71,11 @@ export async function analyze(argv: string[]): Promise<void> {
   }
 
   const analysis = await analyzeRule(dirName, rule, ruleName);
-  console.log(formatMessage(MessageType.SUCCESS, 'Analysis:'));
-  console.log(formatMessage(MessageType.PROGRESS, chalk`Project root: {underline ${projectRoot}}`));
-  console.log(formatMessage(MessageType.PROGRESS, analysis));
+  return [
+    formatMessage(MessageType.SUCCESS, 'Analysis:'),
+    formatMessage(MessageType.PROGRESS, chalk`Project root: {underline ${projectRoot}}`),
+    formatMessage(MessageType.PROGRESS, analysis),
+  ].join('\n');
 }
 
 async function analyzeRule(

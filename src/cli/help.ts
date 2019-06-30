@@ -28,21 +28,17 @@ export const CLI = {
   synopsis: `$ thoth ${CommandType.HELP} <command>`,
 };
 
-export function help(argv: string[]): void {
+export function help(argv: string[]): string {
   const options = commandLineArgs(OPTIONS, {argv, stopAtFirstUnknown: true});
   switch (options[COMMAND_OPTION]) {
     case CommandType.ANALYZE:
-      printSummary(ANALYZE_CLI);
-      return;
+      return printSummary(ANALYZE_CLI);
     case CommandType.HELP:
-      printSummary(CLI);
-      return;
+      return printSummary(CLI);
     case CommandType.INIT:
-      printSummary(INIT_CLI);
-      return;
+      return printSummary(INIT_CLI);
     default:
-      printSummary(CLI);
-      return;
+      return printSummary(CLI);
   }
 }
 

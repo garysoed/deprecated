@@ -57,7 +57,7 @@ export const CLI = {
   ].join(' '),
 };
 
-export function init(argv: string[]): void {
+export async function init(argv: string[]): Promise<string> {
   const options = commandLineArgs(optionList, {argv, stopAtFirstUnknown: true});
   const usedOptions = [];
   for (const key in Options) {
@@ -69,15 +69,18 @@ export function init(argv: string[]): void {
     usedOptions.push(chalk`  ${option}: {underline ${options[option]}}`);
   }
 
-  console.log(
-      formatMessage(
-          MessageType.PROGRESS,
-          `Creating Thoth project with:\n${usedOptions.join('\n')}`,
-      ),
-  );
+  const lines: string[] = [];
+
+  lines.push(formatMessage(
+      MessageType.PROGRESS,
+      `Creating Thoth project with:\n${usedOptions.join('\n')}`,
+  ));
 
   if (options[Options.DRY_RUN]) {
-    return;
+    return [
+      ...lines,
+      formatMessage(MessageType.INFO, 'Dry run complete'),
+    ].join('\n');
   }
 
   const config: ProjectConfig = {
@@ -85,12 +88,18 @@ export function init(argv: string[]): void {
     tmpDir: options[Options.TMP_DIR],
   };
   const yamlStr = yaml.stringify(config);
-  fs.writeFile(`./${CONFIG_FILE}`, yamlStr, () => {
-    console.log(
-        formatMessage(
-            MessageType.SUCCESS,
-            chalk`{underline ${CONFIG_FILE}} created`,
-        ),
-    );
+
+  return new Promise(resolve => {
+    fs.writeFile(`./${CONFIG_FILE}`, yamlStr, () => {
+      resolve(
+          [
+            ...lines,
+            formatMessage(
+                MessageType.SUCCESS,
+                chalk`{underline ${CONFIG_FILE}} created`,
+            ),
+          ].join('\n'),
+      );
+    });
   });
 }
