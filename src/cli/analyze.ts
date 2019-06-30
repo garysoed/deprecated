@@ -3,6 +3,7 @@ import * as commandLineArgs from 'command-line-args';
 import * as fs from 'fs';
 import { formatMessage, MessageType } from 'gs-tools/export/cli';
 import * as path from 'path';
+import { findProjectRoot } from 'src/util/find-project-root';
 import * as yaml from 'yaml';
 import { CommandType } from '../types/command-type';
 import { TYPE as CONFIG_SPEC_TYPE } from '../types/config-spec';
@@ -31,6 +32,11 @@ export const CLI = {
 
 export async function analyze(argv: string[]): Promise<void> {
   const options = commandLineArgs(OPTIONS, {argv});
+  const projectRoot = await findProjectRoot();
+  if (!projectRoot) {
+    throw new Error('Project root not found');
+  }
+
   const target = options[Options.TARGET];
   if (typeof target !== 'string') {
     throw new Error('Target not specified');
@@ -64,6 +70,7 @@ export async function analyze(argv: string[]): Promise<void> {
 
   const analysis = await analyzeRule(dirName, rule, ruleName);
   console.log(formatMessage(MessageType.SUCCESS, 'Analysis:'));
+  console.log(formatMessage(MessageType.PROGRESS, chalk`Project root: {underline ${projectRoot}}`));
   console.log(formatMessage(MessageType.PROGRESS, analysis));
 }
 
