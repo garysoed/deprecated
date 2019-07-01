@@ -10,7 +10,7 @@ export class Glob {
   /**
    * Emits files that matches the query on the root, then completes.
    */
-  resolveFiles(root: string): Observable<string> {
+  resolveFiles(root: string): Observable<string[]> {
     return fromEventPattern<string[]>(
         handler => {
           glob(this.expr, {root}, (err, matches) => {
@@ -21,10 +21,7 @@ export class Glob {
           });
         },
     )
-    .pipe(
-        take(1),
-        switchMap(matches => observableOf(...matches)),
-    );
+    .pipe(take(1));
   }
 }
 

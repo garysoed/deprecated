@@ -4,11 +4,12 @@ import * as fs from 'fs';
 import * as yaml from 'yaml';
 
 import { formatMessage, MessageType } from '@gs-tools/cli';
-import { Observable, of as observableOf, fromEvent, fromEventPattern } from '@rxjs';
+import { fromEventPattern, Observable, of as observableOf } from '@rxjs';
+import { mapTo } from '@rxjs/operators';
 
 import { CommandType } from '../types/command-type';
 import { FILE_NAME as CONFIG_FILE, ProjectConfig } from '../types/project-config';
-import { mapTo } from 'rxjs/operators';
+
 
 enum Options {
   DRY_RUN = 'dry-run',

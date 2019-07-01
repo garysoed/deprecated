@@ -17,7 +17,7 @@ test('@thoth/util/find-project-root', () => {
   should(`return the correct project root`, () => {
     setCwd('/a/cwd');
 
-    addFile(path.join('/a', FILE_NAME));
+    addFile(path.join('/a', FILE_NAME), {content: ''});
 
     assert(findProjectRoot()).to.emitSequence(['/a']);
   });
@@ -25,7 +25,7 @@ test('@thoth/util/find-project-root', () => {
   should(`handle current directory`, () => {
     setCwd('/a');
 
-    addFile(path.join('/a', FILE_NAME));
+    addFile(path.join('/a', FILE_NAME), {content: ''});
 
     assert(findProjectRoot()).to.emitSequence(['/a']);
   });
@@ -33,8 +33,8 @@ test('@thoth/util/find-project-root', () => {
   should(`return the inner project root if two exists`, () => {
     setCwd('/a/cwd');
 
-    addFile(path.join('/a/cwd', FILE_NAME));
-    addFile(path.join('/a', FILE_NAME));
+    addFile(path.join('/a/cwd', FILE_NAME), {content: ''});
+    addFile(path.join('/a', FILE_NAME), {content: ''});
 
     assert(findProjectRoot()).to.emitSequence(['/a/cwd']);
   });

@@ -5,6 +5,7 @@ import { CommandType } from '../types/command-type';
 import { CLI as ANALYZE_CLI } from './analyze';
 import { CLI as INIT_CLI } from './init';
 import { printSummary } from './print-summary';
+import { CLI as RENDER_CLI } from './render';
 
 const COMMAND_OPTION = 'command';
 const OPTIONS = [
@@ -22,6 +23,7 @@ export const CLI = {
       {name: CommandType.HELP, summary: CLI.summary},
       {name: CommandType.ANALYZE, summary: ANALYZE_CLI.summary},
       {name: CommandType.INIT, summary: INIT_CLI.summary},
+      {name: CommandType.RENDER, summary: RENDER_CLI.summary},
     ],
   }),
   summary: 'Display help on commands',
@@ -37,6 +39,8 @@ export function help(argv: string[]): string {
       return printSummary(CLI);
     case CommandType.INIT:
       return printSummary(INIT_CLI);
+    case CommandType.RENDER:
+      return printSummary(RENDER_CLI);
     default:
       return printSummary(CLI);
   }
