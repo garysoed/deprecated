@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
 
-import { fromEventPattern, Observable, of as observableOf } from '@rxjs';
-import { filter, map, startWith, switchMap, take, takeLast } from '@rxjs/operators';
+import { concat, fromEventPattern, Observable } from '@rxjs';
+import { find, map, take } from '@rxjs/operators';
 
 import { FILE_NAME } from '../types/project-config';
 
@@ -16,20 +16,22 @@ export function findProjectRoot(): Observable<string|null> {
     dirs.push(curr);
   }
 
-  return observableOf(...dirs)
+  const hasConfigs = dirs.map(dir => hasProjectConfig(dir).pipe(map(has => has ? dir : null)));
+  return concat(...hasConfigs)
       .pipe(
-          switchMap(dir => hasProjectConfig(dir).pipe(map(has => has ? dir : null))),
-          filter(dir => !!dir),
-          take(1),
-          startWith(null),
-          takeLast(1),
+          find(dir => !!dir),
+          map(v => v || null),
       );
 }
 
 // TODO: Add file watcher.
 function hasProjectConfig(dir: string): Observable<boolean> {
-  return fromEventPattern(
-      handler => fs.access(path.join(dir, FILE_NAME), fs.constants.R_OK, err => handler(err)),
+  return fromEventPattern<{}>(
+      handler => fs.access(
+          path.join(dir, FILE_NAME),
+          fs.constants.R_OK,
+          err => handler(err),
+      ),
   )
   .pipe(
       map(err => !err),

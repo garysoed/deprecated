@@ -1,19 +1,30 @@
 import * as glob from 'glob';
 import * as yaml from 'yaml';
 
+import { fromEventPattern, Observable, of as observableOf } from '@rxjs';
+import { switchMap, take } from '@rxjs/operators';
+
 export class Glob {
   constructor(private readonly expr: string) { }
 
-  async resolveFiles(root: string): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-      glob(this.expr, {root}, (err, matches) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(matches);
-      });
-    });
+  /**
+   * Emits files that matches the query on the root, then completes.
+   */
+  resolveFiles(root: string): Observable<string> {
+    return fromEventPattern<string[]>(
+        handler => {
+          glob(this.expr, {root}, (err, matches) => {
+            if (err) {
+              throw err;
+            }
+            handler(matches);
+          });
+        },
+    )
+    .pipe(
+        take(1),
+        switchMap(matches => observableOf(...matches)),
+    );
   }
 }
 

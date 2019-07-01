@@ -4,9 +4,11 @@ import * as fs from 'fs';
 import * as yaml from 'yaml';
 
 import { formatMessage, MessageType } from '@gs-tools/cli';
+import { Observable, of as observableOf, fromEvent, fromEventPattern } from '@rxjs';
 
 import { CommandType } from '../types/command-type';
 import { FILE_NAME as CONFIG_FILE, ProjectConfig } from '../types/project-config';
+import { mapTo } from 'rxjs/operators';
 
 enum Options {
   DRY_RUN = 'dry-run',
@@ -57,7 +59,7 @@ export const CLI = {
   ].join(' '),
 };
 
-export async function init(argv: string[]): Promise<string> {
+export function init(argv: string[]): Observable<string> {
   const options = commandLineArgs(optionList, {argv, stopAtFirstUnknown: true});
   const usedOptions = [];
   for (const key in Options) {
@@ -77,10 +79,10 @@ export async function init(argv: string[]): Promise<string> {
   ));
 
   if (options[Options.DRY_RUN]) {
-    return [
+    return observableOf([
       ...lines,
       formatMessage(MessageType.INFO, 'Dry run complete'),
-    ].join('\n');
+    ].join('\n'));
   }
 
   const config: ProjectConfig = {
@@ -89,17 +91,17 @@ export async function init(argv: string[]): Promise<string> {
   };
   const yamlStr = yaml.stringify(config);
 
-  return new Promise(resolve => {
-    fs.writeFile(`./${CONFIG_FILE}`, yamlStr, () => {
-      resolve(
-          [
+  return fromEventPattern(
+      handler => {
+        fs.writeFile(`./${CONFIG_FILE}`, yamlStr, () => handler());
+      })
+      .pipe(
+          mapTo([
             ...lines,
             formatMessage(
                 MessageType.SUCCESS,
                 chalk`{underline ${CONFIG_FILE}} created`,
             ),
-          ].join('\n'),
+          ].join('\n')),
       );
-    });
-  });
 }
