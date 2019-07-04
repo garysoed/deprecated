@@ -2,7 +2,7 @@ import { assert, createSpyInstance, fake, should, test } from '@gs-testing';
 import { of as observableOf } from '@rxjs';
 import { switchMap } from '@rxjs/operators';
 
-import { Glob } from '../types/glob';
+import { Glob } from '../types/yaml/glob';
 
 import { resolveFileList } from './resolve-file-list';
 

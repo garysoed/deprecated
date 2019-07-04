@@ -9,7 +9,7 @@ import { CLI as HELP_CLI, help } from './cli/help';
 import { init } from './cli/init';
 import { printSummary } from './cli/print-summary';
 import { CommandType } from './types/command-type';
-import { TAG as GLOB_TAG } from './types/glob';
+import { TAG as GLOB_TAG } from './types/yaml/glob';
 
 const COMMAND_OPTION = 'command';
 const OPTIONS = [

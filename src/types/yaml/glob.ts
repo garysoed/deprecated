@@ -1,8 +1,8 @@
 import * as glob from 'glob';
 import * as yaml from 'yaml';
 
-import { fromEventPattern, Observable, of as observableOf } from '@rxjs';
-import { switchMap, take } from '@rxjs/operators';
+import { fromEventPattern, Observable } from '@rxjs';
+import { take } from '@rxjs/operators';
 
 export class Glob {
   constructor(private readonly expr: string) { }
