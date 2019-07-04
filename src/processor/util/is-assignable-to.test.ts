@@ -1,7 +1,7 @@
 import { assert, should, test } from '@gs-testing';
 
-import { arrayType } from './array-type';
-import { newFileType as fileType } from './file-type';
+import { arrayType } from '../type/array-type';
+import { newFileType as fileType } from '../type/file-type';
 import { AssignableState, isAssignableTo } from './is-assignable-to';
 
 

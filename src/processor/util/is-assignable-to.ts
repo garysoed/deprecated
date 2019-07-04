@@ -1,6 +1,6 @@
-import { ArrayType } from './array-type';
-import { FileType } from './file-type';
-import { ProcessorType } from './processor-type';
+import { ArrayType } from '../type/array-type';
+import { FileType } from '../type/file-type';
+import { ProcessorType } from '../type/processor-type';
 
 export enum AssignableState {
   ASSIGNABLE,
