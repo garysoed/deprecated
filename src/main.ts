@@ -4,7 +4,7 @@ import * as yaml from 'yaml';
 import { formatMessage, MessageType } from '@gs-tools/cli';
 import { Observable, of as observableOf } from '@rxjs';
 
-import { analyze } from './cli/analyze';
+// import { analyze } from './cli/analyze';
 import { CLI as HELP_CLI, help } from './cli/help';
 import { init } from './cli/init';
 import { printSummary } from './cli/print-summary';
@@ -30,8 +30,8 @@ const CLI = {
 const options = commandLineArgs(OPTIONS, {stopAtFirstUnknown: true});
 function run(): Observable<string> {
   switch (options[COMMAND_OPTION]) {
-    case CommandType.ANALYZE:
-      return analyze(options._unknown || []);
+    // case CommandType.ANALYZE:
+    //   return analyze(options._unknown || []);
     case CommandType.HELP:
       return observableOf(help(options._unknown || []));
     case CommandType.INIT:

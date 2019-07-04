@@ -9,12 +9,13 @@ import { TYPE as CONFIG_SPEC_TYPE } from '../types/config-spec';
 import { RuleSpec } from '../types/rule-spec';
 import { Target } from '../types/target';
 
+
 export const CONFIG_NAME = 'thoth.yml';
 
-export function loadRuleSpec({dir, rule}: Target): Observable<RuleSpec|null> {
+export function loadRuleSpec({dir, rule}: Target, root: string): Observable<RuleSpec|null> {
   return fromEventPattern<string>(
       handler => {
-        const fileName = path.join(dir, CONFIG_NAME);
+        const fileName = path.join(root, dir, CONFIG_NAME);
         fs.readFile(fileName, {encoding: 'utf8'}, (_err, data) => handler(data));
       },
   )

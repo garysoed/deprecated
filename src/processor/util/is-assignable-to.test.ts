@@ -2,8 +2,8 @@ import { assert, should, test } from '@gs-testing';
 
 import { arrayType } from '../type/array-type';
 import { newFileType as fileType } from '../type/file-type';
-import { AssignableState, isAssignableTo } from './is-assignable-to';
 
+import { AssignableState, isAssignableTo } from './is-assignable-to';
 
 test('@thoth/processor/type/is-assignable-to', () => {
   test('isAssignableTo', () => {

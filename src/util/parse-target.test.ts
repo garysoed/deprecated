@@ -13,7 +13,7 @@ test('@thoth/util/parse-target', () => {
     }));
   });
 
-  should(`throw error if invalid`, () => {
-    assert(() => parseTarget('blah')).to.throwErrorWithMessage(/is invalid/);
+  should(`return null if invalid`, () => {
+    assert(parseTarget('blah')).to.beNull();
   });
 });

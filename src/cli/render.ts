@@ -51,7 +51,7 @@ export function render(argv: string[]): Observable<string> {
     throw new Error('Target not specified');
   }
 
-  const rule$ = loadRuleSpec(target)
+  const rule$ = loadRuleSpec(target, 'TODO')
       .pipe(
           assertNonNull(chalk`Rule {underline ${target.rule}} cannot be found`),
           map(rule => {

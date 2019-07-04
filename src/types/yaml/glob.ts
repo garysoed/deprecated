@@ -1,4 +1,5 @@
 import * as glob from 'glob';
+import * as path from 'path';
 import * as yaml from 'yaml';
 
 import { fromEventPattern, Observable } from '@rxjs';
@@ -13,7 +14,7 @@ export class Glob {
   resolveFiles(root: string): Observable<string[]> {
     return fromEventPattern<string[]>(
         handler => {
-          glob(this.expr, {root}, (err, matches) => {
+          glob(this.expr, {cwd: root}, (err, matches) => {
             if (err) {
               throw err;
             }

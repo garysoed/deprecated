@@ -1,63 +1,60 @@
 import * as path from 'path';
 import * as yaml from 'yaml';
 
-import { assert, fake, match, setup, should, spy, test } from '@gs-testing';
-import { of as observableOf } from '@rxjs';
-import { catchError } from '@rxjs/operators';
+import { assert, setup, should, teardown, test } from '@gs-testing';
+import { take } from '@rxjs/operators';
 
-import { addFile, mockFs } from '../testing/fake-fs';
+import { FsTester, newTester } from '../testing/fs-tester';
 import { RuleType } from '../types/rule-type';
 
 import { CONFIG_NAME, loadRuleSpec } from './load-rule-spec';
 
+
 test('@thoth/util/load-rule-spec', () => {
-  setup(() => {
-    mockFs();
+  let fsTester: FsTester;
+
+  setup(async () => {
+    fsTester = await newTester();
   });
 
-  should(`return the correct rule`, () => {
-    const dir = 'dir';
-    const rule = 'rule';
-    const content = 'content';
-
-    const ruleSpec = {type: RuleType.RENDER};
-    const spyParse = spy(yaml, 'parse');
-    fake(spyParse).always().return({[rule]: ruleSpec});
-
-    addFile(path.join(dir, CONFIG_NAME), {content});
-
-    assert(loadRuleSpec({dir, rule})).to.emitSequence([ruleSpec]);
-    assert(spyParse).to.haveBeenCalledWith(content);
+  teardown(async () => {
+    await fsTester.cleanup();
   });
 
-  should(`return null if the rule cannot be found`, () => {
+  should(`return the correct rule`, async () => {
     const dir = 'dir';
     const rule = 'rule';
-    const content = 'content';
+    const configContent = yaml.stringify({
+      [rule]: {
+        type: RuleType.RENDER,
+      },
+    });
+    await fsTester.createFile(path.join(dir, CONFIG_NAME), configContent);
 
-    const spyParse = spy(yaml, 'parse');
-    fake(spyParse).always().return({});
-
-    addFile(path.join(dir, CONFIG_NAME), {content});
-
-    assert(loadRuleSpec({dir, rule})).to.emitSequence([null]);
-    assert(spyParse).to.haveBeenCalledWith(content);
+    const spec = await loadRuleSpec({dir, rule}, fsTester.root).pipe(take(1)).toPromise();
+    assert(spec!.type).to.equal(RuleType.RENDER);
   });
 
-  should(`throw error if the file is invalid`, () => {
+  should(`return null if the rule cannot be found`, async () => {
     const dir = 'dir';
     const rule = 'rule';
-    const content = 'content';
+    const configContent = yaml.stringify({});
+    await fsTester.createFile(path.join(dir, CONFIG_NAME), configContent);
 
-    const spyParse = spy(yaml, 'parse');
-    fake(spyParse).always().return({blah: {}});
+    const spec = await loadRuleSpec({dir, rule}, fsTester.root).pipe(take(1)).toPromise();
+    assert(spec).to.beNull();
+  });
 
-    addFile(path.join(dir, CONFIG_NAME), {content});
+  should(`throw error if the file is invalid`, async () => {
+    const dir = 'dir';
+    const rule = 'rule';
+    await fsTester.createFile(path.join(dir, CONFIG_NAME), 'content');
 
-    assert(
-        loadRuleSpec({dir, rule})
-            .pipe(catchError((err: Error) => observableOf(err.message))),
-    ).to.emitSequence([match.anyStringThat().match(/valid config file/)]);
-    assert(spyParse).to.haveBeenCalledWith(content);
+    try {
+      await loadRuleSpec({dir, rule}, fsTester.root).pipe(take(1)).toPromise();
+      fail('Expected to throw');
+    } catch (e) {
+      assert((e as Error).message).to.match(/config file/);
+    }
   });
 });
