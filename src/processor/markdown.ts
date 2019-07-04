@@ -1,5 +1,13 @@
 import * as marked from 'marked';
 
-export function markdown(markdownString: string): string {
-  return marked(markdownString, {headerIds: true});
-}
+import { Processor } from '../types/processor';
+
+export const markdown: Processor<{file: string}> = {
+  inputType: {
+    file: 'text/markdown',
+  },
+  outputType: 'text/html',
+  run(inputs: {file: string}): string {
+    return marked(inputs.file, {headerIds: true});
+  },
+};

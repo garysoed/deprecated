@@ -1,8 +1,6 @@
-interface InputType {
-  [key: string]: string;
-}
+import { ProcessorInput } from '../util/processor-input';
 
-export interface Processor<I extends InputType> {
+export interface Processor<I extends ProcessorInput> {
   inputType: I;
   outputType: string;
 
