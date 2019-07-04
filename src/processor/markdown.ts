@@ -1,12 +1,13 @@
 import * as marked from 'marked';
 
-import { Processor } from '../types/processor';
+import { newFileType as fileType } from './type/file-type';
 
-export const markdown: Processor<{file: string}> = {
+
+export const markdown = {
   inputType: {
-    file: 'text/markdown',
+    file: fileType('text/markdown'),
   },
-  outputType: 'text/html',
+  outputType: fileType('text/html'),
   run(inputs: {file: string}): string {
     return marked(inputs.file, {headerIds: true});
   },
