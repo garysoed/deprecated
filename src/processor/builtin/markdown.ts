@@ -1,6 +1,6 @@
 import * as marked from 'marked';
 
-import { newFileType as fileType } from './type/file-type';
+import { newFileType as fileType } from '../type/file-type';
 
 
 export const markdown = {

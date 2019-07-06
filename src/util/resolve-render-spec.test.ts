@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
 
@@ -28,7 +27,7 @@ test('@thoth/util/resolve-render-spec', () => {
 
   test('resolveRenderSpec', () => {
     should(`resolve correctly`, async () => {
-      const processor = 'processor';
+      const processor = '$markdown';
       const filePath = './path';
       const ruleName = 'rule';
       const ruleDName = 'ruled';
@@ -37,7 +36,7 @@ test('@thoth/util/resolve-render-spec', () => {
         [ruleDName]: {
           inputs: {},
           output: 'output.txt',
-          processor: 'otherProcessor',
+          processor: '$markdown',
           type: RuleType.RENDER,
         },
       });
@@ -65,24 +64,94 @@ test('@thoth/util/resolve-render-spec', () => {
 
       assert(render.name).to.equal(`${filePath}:${ruleName}`);
       assert(render.type).to.equal(RuleType.RENDER);
-      assert(render.inputs.a).to
-          .equal(match.anyArrayThat<string>().haveExactElements([spec.inputs.a as string]));
-      assert(render.inputs.b).to.equal(match.anyArrayThat<string>().haveExactElements([
+      assert(render.inputs.get('a')!).to.haveExactElements([spec.inputs.a as string]);
+      assert(render.inputs.get('b')!).to.haveExactElements([
         'file-b-1.txt',
         'file-b-2.txt',
         'file-b-3.txt',
-      ]));
-      assert(render.inputs.c).to.equal(match.anyArrayThat<string>().haveExactElements([
+      ]);
+      assert(render.inputs.get('c')!).to.haveExactElements([
         'file-c-1.txt',
         'file-c-2.txt',
-      ]));
-      assert(render.inputs.d).to.equal(
-        match.anyArrayThat<RenderRule>().haveExactElements([
-          match.anyObjectThat<RenderRule>().haveProperties({
-            name: `${filePath}:${ruleDName}`,
-          }),
-        ]),
-      );
+      ]);
+      assert(render.inputs.get('d')!).to.haveExactElements(['output.txt']);
+      assert(render.deps).to.haveExactElements([
+        match.anyObjectThat<RenderRule>().haveProperties({
+          name: `${filePath}:${ruleDName}`,
+        }),
+      ]);
+      assert(render.outputs).to.haveExactElements(['output.txt']);
+    });
+
+    should(`throw error if processor cannot be found`, async () => {
+      const filePath = './path';
+      const ruleName = 'rule';
+
+      const spec: RenderSpec = {
+        type: RuleType.RENDER,
+        inputs: {},
+        output: 'output.txt',
+        processor: 'unknown',
+      };
+
+      try {
+        await resolveRenderSpec(spec, filePath, ruleName, fsTester.root)
+            .pipe(take(1))
+            .toPromise();
+        fail('error expected');
+      } catch (e) {
+        assert((e as Error).message).to.match(/cannot be found/);
+      }
+    });
+  });
+
+  test('generateOutputs', () => {
+    should(`generate outputs correctly`, async () => {
+      const processor = '$markdown';
+      const filePath = './path';
+      const ruleName = 'rule';
+
+      await fsTester.createFile('file-1.md');
+      await fsTester.createFile('file-2.md');
+      await fsTester.createFile('file-3.md');
+
+      const spec: RenderSpec = {
+        type: RuleType.RENDER,
+        inputs: {
+          file: new Glob('file-*.md'),
+        },
+        output: `[file].html`,
+        processor,
+      };
+
+      const render = await resolveRenderSpec(spec, filePath, ruleName, fsTester.root)
+          .pipe(take(1))
+          .toPromise();
+
+      assert(render.outputs).to.haveExactElements([
+        'file-1.md.html',
+        'file-2.md.html',
+        'file-3.md.html',
+      ]);
+    });
+
+    should(`return one item if there are no inputs`, async () => {
+      const processor = '$markdown';
+      const filePath = './path';
+      const ruleName = 'rule';
+
+      const spec: RenderSpec = {
+        type: RuleType.RENDER,
+        inputs: {},
+        output: `[file].html`,
+        processor,
+      };
+
+      const render = await resolveRenderSpec(spec, filePath, ruleName, fsTester.root)
+          .pipe(take(1))
+          .toPromise();
+
+      assert(render.outputs).to.haveExactElements(['[file].html']);
     });
   });
 
@@ -94,7 +163,7 @@ test('@thoth/util/resolve-render-spec', () => {
         type: RuleType.RENDER,
         inputs: {},
         output: 'output.txt',
-        processor: 'processor',
+        processor: '$markdown',
       };
     });
 
@@ -105,7 +174,7 @@ test('@thoth/util/resolve-render-spec', () => {
         rule: {
           inputs: {},
           output: 'output.txt',
-          processor: 'otherProcessor',
+          processor: '$markdown',
           type: RuleType.RENDER,
         },
       });
@@ -124,17 +193,20 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.inputs.a).to.equal(
+      assert(render.inputs.get('a')).to.equal(
           match.anyArrayThat<RenderRule|string>().haveExactElements([
             'path.txt',
-            match.anyObjectThat<RenderRule>().haveProperties({
-              name: `path/target:rule`,
-            }),
+            'output.txt',
             'file-a.txt',
             'file-b.txt',
             'file-c.txt',
           ]),
       );
+      assert(render.deps).to.haveExactElements([
+        match.anyObjectThat<RenderRule>().haveProperties({
+          name: `path/target:rule`,
+        }),
+      ]);
     });
 
     should(`resolve empty array correctly`, async () => {
@@ -144,7 +216,7 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.inputs.a).to.equal(
+      assert(render.inputs.get('a')).to.equal(
           match.anyArrayThat<RenderRule|string>().haveExactElements([]),
       );
     });
@@ -154,7 +226,7 @@ test('@thoth/util/resolve-render-spec', () => {
         rule: {
           inputs: {},
           output: 'output.txt',
-          processor: 'otherProcessor',
+          processor: '$markdown',
           type: RuleType.RENDER,
         },
       });
@@ -166,13 +238,13 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.inputs.a).to.equal(
-          match.anyArrayThat<RenderRule|string>().haveExactElements([
-            match.anyObjectThat<RenderRule>().haveProperties({
-              name: `path/target:rule`,
-            }),
-          ]),
-      );
+      assert(render.inputs.get('a')).to
+          .equal(match.anyArrayThat().haveExactElements(['output.txt']));
+      assert(render.deps).to.haveExactElements([
+        match.anyObjectThat<RenderRule>().haveProperties({
+          name: `path/target:rule`,
+        }),
+      ]);
     });
 
     should(`ignore non render rules`, async () => {
@@ -189,7 +261,7 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.inputs.a).to.equal(
+      assert(render.inputs.get('a')).to.equal(
           match.anyArrayThat<RenderRule|string>().haveExactElements([]),
       );
     });
@@ -201,7 +273,7 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.inputs.a).to.equal(
+      assert(render.inputs.get('a')).to.equal(
           match.anyArrayThat<RenderRule|string>().haveExactElements(['path/target']),
       );
     });
@@ -219,13 +291,67 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.inputs.a).to.equal(
+      assert(render.inputs.get('a')).to.equal(
           match.anyArrayThat<RenderRule|string>().haveExactElements([
             'file-a.txt',
             'file-b.txt',
             'file-c.txt',
           ]),
       );
+    });
+  });
+
+  test('resolveOutputFiles', () => {
+    should(`unnest input parameters correctly`, async () => {
+      const processor = '$markdown';
+      const filePath = './path';
+      const ruleName = 'rule';
+
+      const spec: RenderSpec = {
+        type: RuleType.RENDER,
+        inputs: {
+          file: [
+            'file-1.md',
+            'file-2.md',
+            'file-3.md',
+          ],
+        },
+        output: `[file].html`,
+        processor,
+      };
+
+      const render = await resolveRenderSpec(spec, filePath, ruleName, fsTester.root)
+          .pipe(take(1))
+          .toPromise();
+
+      assert(render.outputs).to.haveExactElements([
+        'file-1.md.html',
+        'file-2.md.html',
+        'file-3.md.html',
+      ]);
+    });
+
+    should(`not unnest input parameter if directly assignable`, async () => {
+      const processor = '$markdown';
+      const filePath = './path';
+      const ruleName = 'rule';
+
+      const spec: RenderSpec = {
+        type: RuleType.RENDER,
+        inputs: {
+          file: 'file.md',
+        },
+        output: `[file].html`,
+        processor,
+      };
+
+      const render = await resolveRenderSpec(spec, filePath, ruleName, fsTester.root)
+          .pipe(take(1))
+          .toPromise();
+
+      assert(render.outputs).to.haveExactElements([
+        '[file].html',
+      ]);
     });
   });
 });

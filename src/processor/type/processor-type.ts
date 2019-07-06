@@ -5,4 +5,5 @@ interface Type<T> {
   type: T;
 }
 
-export type ProcessorType = Type<'boolean'>|Type<'number'>|Type<'string'>|FileType|ArrayType<any>;
+export type ProcessorType = Type<'unknown'>|Type<'boolean'>|Type<'number'>|Type<'string'>|
+    FileType|ArrayType<any>;
