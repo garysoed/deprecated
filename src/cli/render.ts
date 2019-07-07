@@ -1,18 +1,25 @@
 import chalk from 'chalk';
 import * as commandLineArgs from 'command-line-args';
-import { resolveRenderSpec } from 'src/util/resolve-render-spec';
 
 import { assertNonNull } from '@gs-tools/rxjs';
-import { Observable, of as observableOf, throwError } from '@rxjs';
-import { map, switchMap } from '@rxjs/operators';
+import { combineLatest, Observable, of as observableOf, throwError } from '@rxjs';
+import { map, share, switchMap } from '@rxjs/operators';
 
+import { ProcessorInput } from '../processor/type/processor-input';
 import { CommandType } from '../types/command-type';
 import { TYPE as RENDER_TYPE } from '../types/render-spec';
 import { Target } from '../types/target';
+import { createOutputFilename } from '../util/create-output-filename';
 import { findProjectRoot } from '../util/find-project-root';
+import { generateOutputSpecs } from '../util/generate-output-specs';
 import { loadRuleSpec } from '../util/load-rule-spec';
 import { parseTarget } from '../util/parse-target';
+import { resolveRenderSpec } from '../util/resolve-render-spec';
 
+interface RunSpec {
+  filename: string;
+  inputFilenames: Map<string, string|string[]>;
+}
 
 enum Options {
   DRY_RUN = 'dry-run',
@@ -54,7 +61,7 @@ export function render(argv: string[]): Observable<string> {
     throw new Error('Target not specified');
   }
 
-  const rule$ = findProjectRoot()
+  const outputs$ = findProjectRoot()
       .pipe(
           assertNonNull(`Cannot find project root`),
           switchMap(root => loadRuleSpec(target, root).pipe(
@@ -69,12 +76,35 @@ export function render(argv: string[]): Observable<string> {
 
             return resolveRenderSpec(spec, target.dir, target.rule, root);
           }),
-      )
-  ;
 
-  const processor$ = rule$.pipe(
-      map(rule => rule.processor),
-  );
+          // TODO: Run dependencies.
+          map(rule => {
+            const outputSpecs = generateOutputSpecs(rule.processor, rule.unnestInputs, rule.inputs);
+            const runSpec: RunSpec[] = outputSpecs.map(spec => {
+              const filename = createOutputFilename(rule.outputTemplate, spec);
+              const unnestKeys = new Set(spec.keys());
+
+              // Generate the inputs. First, add the unnest keys.
+              const inputFilenames = new Map<string, string|string[]>();
+              for (const [key, filename] of spec) {
+                inputFilenames.set(key, filename);
+              }
+
+              // Now add the rest of the inputs.
+              for (const [key, filenames] of rule.inputs) {
+                if (unnestKeys.has(key)) {
+                  continue;
+                }
+
+                inputFilenames.set(key, filenames);
+              }
+
+              return {filename, inputFilenames};
+            });
+
+            return runSpec;
+          }),
+      );
 
   return observableOf();
 }

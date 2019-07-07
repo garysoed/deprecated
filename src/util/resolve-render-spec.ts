@@ -13,6 +13,8 @@ import { Rule } from '../types/rule';
 import { RuleSpec } from '../types/rule-spec';
 import { Glob } from '../types/yaml/glob';
 
+import { createOutputFilename } from './create-output-filename';
+import { generateOutputSpecs } from './generate-output-specs';
 import { getProcessorType } from './get-processor-type';
 import { loadRuleSpec } from './load-rule-spec';
 import { parseTarget } from './parse-target';
@@ -99,24 +101,6 @@ export function resolveRenderSpec(
   })));
 }
 
-function generateOutputs(
-    template: string,
-    valuesMap: Map<string, string[]>,
-    ): string[] {
-  if (valuesMap.size === 0) {
-    return [template];
-  }
-
-  const [[key, values], ...rest] = valuesMap;
-  const restMap = new Map(rest);
-  const output = [];
-
-  for (const value of values) {
-    output.push(...generateOutputs(template.replace(`[${key}]`, value), restMap));
-  }
-  return output;
-}
-
 function resolveInputValue(
     inputValue: Glob|string|Array<Glob|string>,
     root: string,
@@ -183,30 +167,8 @@ function getUnnestInputs(
 }
 
 function generateOutputFiles(rule: RenderRule): string[] {
-  const processor = rule.processor;
-  const unnestMap = new Map<string, string[]>();
-  for (const key of rule.unnestInputs) {
-    const value = rule.inputs.get(key);
-    if (!value) {
-      continue;
-    }
-
-    if (!processor.inputType.hasOwnProperty(key)) {
-      continue;
-    }
-
-    const inputType = getProcessorType(value);
-    const assignableState = isAssignableTo(inputType, processor.inputType[key]);
-    switch (assignableState) {
-      case AssignableState.UNASSIGNABLE:
-        throw new Error(`Input parameter ${key} is incompatible`);
-      case AssignableState.ASSIGNABLE_WITH_UNNEST:
-        unnestMap.set(key, value);
-        break;
-    }
-  }
-
-  return generateOutputs(rule.outputTemplate, unnestMap);
+  return generateOutputSpecs(rule.processor, rule.unnestInputs, rule.inputs)
+      .map(spec => createOutputFilename(rule.outputTemplate, spec));
 }
 
 function resolveProcessor(processor: string): Processor|null {
