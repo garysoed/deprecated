@@ -80,7 +80,8 @@ test('@thoth/util/resolve-render-spec', () => {
           name: `${filePath}:${ruleDName}`,
         }),
       ]);
-      assert(render.outputs).to.haveExactElements(['output.txt']);
+      assert(render.unnestInputs).to.haveExactElements([]);
+      assert(render.outputTemplate).to.equal('output.txt');
     });
 
     should(`throw error if processor cannot be found`, async () => {
@@ -128,11 +129,10 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.outputs).to.haveExactElements([
-        'file-1.md.html',
-        'file-2.md.html',
-        'file-3.md.html',
+      assert(render.unnestInputs).to.haveExactElements([
+        'file',
       ]);
+      assert(render.outputTemplate).to.equal(spec.output);
     });
 
     should(`return one item if there are no inputs`, async () => {
@@ -151,7 +151,8 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.outputs).to.haveExactElements(['[file].html']);
+      assert(render.unnestInputs).to.haveExactElements([]);
+      assert(render.outputTemplate).to.equal(spec.output);
     });
   });
 
@@ -324,11 +325,8 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.outputs).to.haveExactElements([
-        'file-1.md.html',
-        'file-2.md.html',
-        'file-3.md.html',
-      ]);
+      assert(render.unnestInputs).to.haveExactElements(['file']);
+      assert(render.outputTemplate).to.equal(spec.output);
     });
 
     should(`not unnest input parameter if directly assignable`, async () => {
@@ -349,9 +347,8 @@ test('@thoth/util/resolve-render-spec', () => {
           .pipe(take(1))
           .toPromise();
 
-      assert(render.outputs).to.haveExactElements([
-        '[file].html',
-      ]);
+      assert(render.unnestInputs).to.haveExactElements([]);
+      assert(render.outputTemplate).to.equal(spec.output);
     });
   });
 });

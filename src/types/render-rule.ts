@@ -1,3 +1,5 @@
+import { Processor } from '../processor/type/processor';
+
 import { Rule } from './rule';
 import { RuleType } from './rule-type';
 
@@ -14,8 +16,13 @@ export interface RenderRule extends Rule {
    */
   inputs: RenderInputs;
   /**
-   * File names created by the render rule.
+   * Template for generating output file names.
    */
-  outputs: string[];
+  outputTemplate: string;
+  processor: Processor;
   type: RuleType.RENDER;
+  /**
+   * Keys of inputs used for unnesting.
+   */
+  unnestInputs: string[];
 }

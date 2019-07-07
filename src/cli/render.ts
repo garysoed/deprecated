@@ -1,15 +1,18 @@
 import chalk from 'chalk';
 import * as commandLineArgs from 'command-line-args';
+import { resolveRenderSpec } from 'src/util/resolve-render-spec';
 
 import { assertNonNull } from '@gs-tools/rxjs';
-import { Observable, of as observableOf } from '@rxjs';
-import { map, share } from '@rxjs/operators';
+import { Observable, of as observableOf, throwError } from '@rxjs';
+import { map, switchMap } from '@rxjs/operators';
 
 import { CommandType } from '../types/command-type';
 import { TYPE as RENDER_TYPE } from '../types/render-spec';
 import { Target } from '../types/target';
+import { findProjectRoot } from '../util/find-project-root';
 import { loadRuleSpec } from '../util/load-rule-spec';
 import { parseTarget } from '../util/parse-target';
+
 
 enum Options {
   DRY_RUN = 'dry-run',
@@ -51,19 +54,23 @@ export function render(argv: string[]): Observable<string> {
     throw new Error('Target not specified');
   }
 
-  const rule$ = loadRuleSpec(target, 'TODO')
+  const rule$ = findProjectRoot()
       .pipe(
-          assertNonNull(chalk`Rule {underline ${target.rule}} cannot be found`),
-          map(rule => {
-            if (!RENDER_TYPE.check(rule)) {
-              throw new Error(
-                  chalk`Target {underline ${target.dir}:${target.rule}} is not a render target`);
+          assertNonNull(`Cannot find project root`),
+          switchMap(root => loadRuleSpec(target, root).pipe(
+              assertNonNull(chalk`Rule {underline ${target.rule}} cannot be found`),
+              map(spec => ({spec, root})),
+          )),
+          switchMap(({root, spec}) => {
+            if (!RENDER_TYPE.check(spec)) {
+              return throwError(new Error(
+                  chalk`Target {underline ${target.dir}:${target.rule}} is not a render target`));
             }
 
-            return rule;
+            return resolveRenderSpec(spec, target.dir, target.rule, root);
           }),
-          share(),
-      );
+      )
+  ;
 
   const processor$ = rule$.pipe(
       map(rule => rule.processor),

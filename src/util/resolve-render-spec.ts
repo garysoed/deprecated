@@ -1,4 +1,6 @@
 
+import { RuleType } from 'src/types/rule-type';
+
 import { combineLatest, Observable, of as observableOf, throwError } from '@rxjs';
 import { map, share, switchMap } from '@rxjs/operators';
 
@@ -55,7 +57,8 @@ export function resolveRenderSpec(
           for (const file of mixed) {
             if (typeof file === 'string') {
               inputFiles.push(file);
-            } else {              inputFiles.push(...file.outputs);
+            } else {
+              inputFiles.push(...generateOutputFiles(file));
             }
           }
           inputs.set(key, inputFiles);
@@ -79,14 +82,21 @@ export function resolveRenderSpec(
     return throwError(new Error(`Processor ${spec.processor} cannot be found`));
   }
 
-  const outputs$ = resolveOutputFiles(spec.output, inputs$, processor);
+  const unnestInputs$ = getUnnestInputs(inputs$, processor);
   return combineLatest([
     deps$,
     inputs$,
-    outputs$,
+    unnestInputs$,
   ])
-  // tslint:disable-next-line: no-object-literal-type-assertion
-  .pipe(map(([deps, inputs, outputs]) => ({...rule, deps, inputs, outputs} as RenderRule)));
+  .pipe(map(([deps, inputs, unnestInputs]) => ({
+    ...rule,
+    deps,
+    inputs,
+    outputTemplate: spec.output,
+    processor,
+    type: RuleType.RENDER,
+    unnestInputs,
+  })));
 }
 
 function generateOutputs(
@@ -141,36 +151,62 @@ function resolveInputValue(
   }
 }
 
-function resolveOutputFiles(
-    template: string,
+function getUnnestInputs(
     inputs$: Observable<Map<string, string[]>>,
     processor: Processor,
 ): Observable<string[]> {
   return inputs$.pipe(
-    map(inputs => {
-      const unnestMap = new Map<string, string[]>();
+      map(inputs => {
+        const unnestKeys: string[] = [];
 
-      // For every input key, check the compatibility.
-      for (const [key, files] of inputs) {
-        if (!processor.inputType.hasOwnProperty(key)) {
-          continue;
+        // For every input key, check the compatibility.
+        for (const [key, files] of inputs) {
+          if (!processor.inputType.hasOwnProperty(key)) {
+            continue;
+          }
+
+          const inputType = getProcessorType(files);
+          const assignableState = isAssignableTo(inputType, processor.inputType[key]);
+          switch (assignableState) {
+            case AssignableState.UNASSIGNABLE:
+              throw new Error(`Input parameter ${key} is incompatible`);
+            case AssignableState.ASSIGNABLE_WITH_UNNEST:
+              unnestKeys.push(key);
+              break;
+          }
         }
 
-        const inputType = getProcessorType(files);
-        const assignableState = isAssignableTo(inputType, processor.inputType[key]);
-        switch (assignableState) {
-          case AssignableState.UNASSIGNABLE:
-            throw new Error(`Input parameter ${key} is incompatible`);
-          case AssignableState.ASSIGNABLE_WITH_UNNEST:
-            unnestMap.set(key, files);
-            break;
-        }
-      }
+        // TODO: Now generate all the output files.
+        return unnestKeys;
+      }),
+  );
+}
 
-      // TODO: Now generate all the output files.
-      return generateOutputs(template, unnestMap);
-    }),
-);
+function generateOutputFiles(rule: RenderRule): string[] {
+  const processor = rule.processor;
+  const unnestMap = new Map<string, string[]>();
+  for (const key of rule.unnestInputs) {
+    const value = rule.inputs.get(key);
+    if (!value) {
+      continue;
+    }
+
+    if (!processor.inputType.hasOwnProperty(key)) {
+      continue;
+    }
+
+    const inputType = getProcessorType(value);
+    const assignableState = isAssignableTo(inputType, processor.inputType[key]);
+    switch (assignableState) {
+      case AssignableState.UNASSIGNABLE:
+        throw new Error(`Input parameter ${key} is incompatible`);
+      case AssignableState.ASSIGNABLE_WITH_UNNEST:
+        unnestMap.set(key, value);
+        break;
+    }
+  }
+
+  return generateOutputs(rule.outputTemplate, unnestMap);
 }
 
 function resolveProcessor(processor: string): Processor|null {
