@@ -77,7 +77,6 @@ export function render(argv: string[]): Observable<string> {
             return resolveRenderSpec(spec, target.dir, target.rule, root);
           }),
 
-          // TODO: Run dependencies.
           map(rule => {
             const outputSpecs = generateOutputSpecs(rule.processor, rule.unnestInputs, rule.inputs);
             const runSpec: RunSpec[] = outputSpecs.map(spec => {
@@ -105,6 +104,12 @@ export function render(argv: string[]): Observable<string> {
             return runSpec;
           }),
       );
+
+  // TODO: Print dryrunmessage.
+  // TODO: Run dependencies.
+  // TODO: Load / copy the input files
+  // TODO: Run processor
+  // TODO: Write outputs
 
   return observableOf();
 }
